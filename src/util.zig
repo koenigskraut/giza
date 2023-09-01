@@ -222,6 +222,12 @@ pub const RectangleInt = extern struct {
     width: c_int,
     /// height of the rectangle
     height: c_int,
+
+    /// Init `cairo.RectangleInt` from [4]c_int array. Values are
+    /// `.{x, y, width, height}`
+    pub fn init(arr: [4]c_int) RectangleInt {
+        return @bitCast(arr);
+    }
 };
 
 pub fn FromToInt(comptime Self: type) type {
