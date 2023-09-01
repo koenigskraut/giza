@@ -17,6 +17,7 @@ const safety = @import("../safety.zig");
 const Status = enums.Status;
 const CairoError = enums.CairoError;
 const Surface = @import("../surface.zig").Surface;
+const Path = @import("paths.zig").Path;
 const Matrix = util.Matrix;
 const UserDataKey = util.UserDataKey;
 const DestroyFn = util.DestroyFn;
@@ -970,8 +971,27 @@ const MeshPattern = opaque {
         return @intCast(count);
     }
 
+    /// Gets path defining the patch `patchNum` for a mesh pattern.
+    ///
+    /// `patch_num` can range from 0 to n-1 where n is the number returned by
+    /// `meshPattern.getPatchCount()`.
+    ///
+    /// **Parameters**
+    /// - `patchNum`: the patch number to return data for
+    ///
+    /// **Returns**
+    ///
+    /// the path defining the patch, or a path with status
+    /// `cairo.Status.InvalidIndex` if `patchNum` is not valid for `pattern`.
+    /// If `pattern` is not a mesh pattern, a path with status
+    /// `cairo.Status.PatternTypeMismatch` is returned, you don't have to worry
+    /// about that unless you've casted a pointer from one pattern type into
+    /// another, which you **SHOULDN'T**.
+    ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-get-path)
-    // TODO: this
+    pub fn getPath(self: *MeshPattern, patchNum: u32) *Path {
+        return cairo_mesh_pattern_get_path(self, @intCast(patchNum)).?;
+    }
 
     /// Gets the control point `pointNum` of patch `patchNum` for a mesh
     /// pattern.
@@ -1130,7 +1150,7 @@ extern fn cairo_mesh_pattern_set_control_point(pattern: ?*MeshPattern, point_num
 extern fn cairo_mesh_pattern_set_corner_color_rgb(pattern: ?*MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64) void;
 extern fn cairo_mesh_pattern_set_corner_color_rgba(pattern: ?*MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64, alpha: f64) void;
 extern fn cairo_mesh_pattern_get_patch_count(pattern: ?*MeshPattern, count: [*c]c_uint) Status;
-// extern fn cairo_mesh_pattern_get_path(pattern: ?*MeshPattern, patch_num: c_uint) [*c]Path;
+extern fn cairo_mesh_pattern_get_path(pattern: ?*MeshPattern, patch_num: c_uint) [*c]Path;
 extern fn cairo_mesh_pattern_get_control_point(pattern: ?*MeshPattern, patch_num: c_uint, point_num: c_uint, x: [*c]f64, y: [*c]f64) Status;
 extern fn cairo_mesh_pattern_get_corner_color_rgba(pattern: ?*MeshPattern, patch_num: c_uint, corner_num: c_uint, red: [*c]f64, green: [*c]f64, blue: [*c]f64, alpha: [*c]f64) Status;
 extern fn cairo_pattern_reference(pattern: ?*anyopaque) ?*anyopaque;
