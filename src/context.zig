@@ -14,6 +14,7 @@ const Status = @import("enums.zig").Status;
 /// [Link to Cairo Manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-t)
 pub const Context = opaque {
     pub usingnamespace @import("drawing/basic.zig").Mixin;
+    pub usingnamespace @import("drawing/paths.zig").Mixin;
 };
 
 /// Specifies the type of antialiasing to do when rendering text or shapes.
