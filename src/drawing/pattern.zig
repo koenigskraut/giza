@@ -14,6 +14,9 @@ const util = @import("../util.zig");
 const enums = @import("../enums.zig");
 const safety = @import("../safety.zig");
 
+const Extend = enums.Extend;
+const Filter = enums.Filter;
+const PatternType = enums.PatternType;
 const Status = enums.Status;
 const CairoError = enums.CairoError;
 const Surface = @import("../surface.zig").Surface;
@@ -1049,82 +1052,6 @@ const MeshPattern = opaque {
     pub fn getCornerColorRGBA(self: *MeshPattern, patchNum: u32, cornerNum: u32, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
         try cairo_mesh_pattern_get_corner_color_rgba(self, @intCast(patchNum), @intCast(cornerNum), red, green, blue, alpha).toErr();
     }
-};
-
-/// `cairo.Extend` is used to describe how pattern color/alpha will be
-/// determined for areas "outside" the pattern's natural area, (for example,
-/// outside the surface bounds or outside the gradient geometry).
-///
-/// Mesh patterns are not affected by the extend mode.
-///
-/// The default extend mode is `.None` for surface patterns and `.Pad` for
-/// gradient patterns.
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-extend-t)
-pub const Extend = enum(c_uint) {
-    /// pixels outside of the source pattern are fully transparent
-    None,
-    /// the pattern is tiled by repeating
-    Repeat,
-    /// the pattern is tiled by reflecting at the edges
-    Reflect,
-    /// pixels outside of the pattern copy the closest pixel from the source
-    Pad,
-};
-
-/// `cairo.Filter` is used to indicate what filtering should be applied when
-/// reading pixel values from patterns. See `cairo.Pattern.setFilter()` for
-/// indicating the desired filter to be used with a particular pattern.
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-filter-t)
-pub const Filter = enum(c_uint) {
-    /// A high-performance filter, with quality similar to `.Nearest`
-    Fast,
-    /// A reasonable-performance filter, with quality similar to `.Bilinear`
-    Good,
-    /// The highest-quality available, performance may not be suitable for
-    /// interactive use
-    Best,
-    /// Nearest-neighbor filtering
-    Nearest,
-    /// Linear interpolation in two dimensions
-    Bilinear,
-    /// This filter value is currently unimplemented, and should not be used in
-    /// current code
-    Gaussian,
-};
-
-/// `cairo.PatternType` is used to describe the type of a given pattern.
-///
-/// The type of a pattern is determined by the function used to create it. The
-/// `cairo.Pattern.createRGB()` and `cairo.Pattern.createRGBA()` functions
-/// create SOLID patterns. The remaining cairo.Pattern.create functions map to
-/// pattern types in obvious ways.
-///
-/// The pattern type can be queried with `pattern.getType()`
-///
-/// Most `cairo.Pattern` functions can be called with a pattern of any type,
-/// (though trying to change the extend or filter for a solid pattern will have
-/// no effect). A notable exception is `pattern.addColorStopRGB()` and
-/// `pattern.addColorStopRGBA()` which must only be called with gradient
-/// patterns (either `.Linear` or `.Radial`). Otherwise the pattern will be
-/// shutdown and put into an error state.
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-type-t)
-pub const PatternType = enum(c_uint) {
-    /// The pattern is a solid (uniform) color. It may be opaque or
-    /// translucent.
-    Solid,
-    /// The pattern is a based on a surface (an image).
-    Surface,
-    /// The pattern is a linear gradient.
-    Linear,
-    /// The pattern is a radial gradient.
-    Radial,
-    /// The pattern is a mesh.
-    Mesh,
-    /// The pattern is a user pattern providing raster data.
-    RasterSource,
 };
 
 extern fn cairo_pattern_add_color_stop_rgb(pattern: ?*anyopaque, offset: f64, red: f64, green: f64, blue: f64) void;

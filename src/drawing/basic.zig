@@ -8,16 +8,16 @@ const context = @import("../context.zig");
 const util = @import("../util.zig");
 
 const Context = context.Context;
-const Antialias = context.Antialias;
-const FillRule = context.FillRule;
-const LineCap = context.LineCap;
-const LineJoin = context.LineJoin;
-const Operator = context.Operator;
 const RectangleList = context.RectangleList;
 
 const Surface = surfaces.Surface;
-const Content = surfaces.Content;
 
+const Antialias = enums.Antialias;
+const Content = enums.Content;
+const FillRule = enums.FillRule;
+const LineCap = enums.LineCap;
+const LineJoin = enums.LineJoin;
+const Operator = enums.Operator;
 const Status = enums.Status;
 const CairoError = enums.CairoError;
 

@@ -5,5 +5,3 @@ const svg = @import("surfaces/svg.zig");
 pub const ImageSurface = image.ImageSurface;
 pub const SvgSurface = svg.SvgSurface;
 pub const Surface = base.Surface;
-
-pub const Content = base.Content;

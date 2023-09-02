@@ -12,6 +12,8 @@ const safety = @import("../safety.zig");
 
 const Context = @import("../context.zig").Context;
 const RectangleInt = @import("../util.zig").RectangleInt;
+
+const RegionOverlap = enums.RegionOverlap;
 const Status = enums.Status;
 const CairoError = enums.CairoError;
 
@@ -352,18 +354,6 @@ pub const Region = opaque {
     pub fn xorRectangle(self: *Region, rectangle: *const RectangleInt) CairoError!void {
         try cairo_region_xor_rectangle(self, rectangle).toErr();
     }
-};
-
-/// Used as the return value for `region.containsRectangle()`.
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-overlap-t)
-pub const RegionOverlap = enum(c_uint) {
-    /// The contents are entirely inside the region
-    In,
-    /// The contents are entirely outside the region
-    Out,
-    /// The contents are partially inside and partially outside the region
-    Part,
 };
 
 extern fn cairo_region_create() ?*Region;

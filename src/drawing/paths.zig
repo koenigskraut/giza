@@ -15,6 +15,7 @@ const Rectangle = context.Rectangle;
 const ExtentsRectangle = util.ExtentsRectangle;
 
 const CairoError = enums.CairoError;
+const PathDataType = enums.PathDataType;
 
 pub const Mixin = struct {
     /// Creates a copy of the current path and returns it to the user as a
@@ -546,21 +547,6 @@ pub const PathData = extern union {
     // TODO: fix C code
     header: extern struct { h_type: PathDataType, length: c_int },
     point: extern struct { x: f64, y: f64 },
-};
-
-/// `PathDataType` is used to describe the type of one portion of a path when
-/// represented as a `Path`. See `PathData` for details.
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-data-type-t)
-pub const PathDataType = enum(c_uint) {
-    /// A move-to operation
-    MoveTo,
-    /// A line-to operation
-    LineTo,
-    /// A curve-to operation
-    CurveTo,
-    /// A close-path operation
-    ClosePath,
 };
 
 extern fn cairo_copy_path(cr: ?*Context) [*c]Path;

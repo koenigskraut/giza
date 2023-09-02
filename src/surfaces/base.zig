@@ -43,8 +43,11 @@ const enums = @import("../enums.zig");
 const util = @import("../util.zig");
 const safety = @import("../safety.zig");
 
+const Content = enums.Content;
 const CairoError = enums.CairoError;
+const MimeType = enums.MimeType;
 const Status = enums.Status;
+const SurfaceType = enums.SurfaceType;
 const Format = enums.Format;
 const ImageSurface = @import("image.zig").ImageSurface;
 const RectangleInt = util.RectangleInt;
@@ -497,152 +500,6 @@ pub fn Base(comptime Self: type) type {
         }
     };
 }
-
-/// `cairo.Content` is used to describe the content that a surface will
-/// contain, whether color information, alpha information (translucence vs.
-/// opacity), or both.
-///
-/// **Note:** The large values here are designed to keep `cairo.Content` values
-/// distinct from `cairo.Format` values so that the implementation can detect
-/// the error if users confuse the two types.
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-content-t)
-pub const Content = enum(c_uint) {
-    pub usingnamespace util.FromToInt(SurfaceType);
-
-    /// The surface will hold color content only
-    Color = 4096,
-    /// The surface will hold alpha content only
-    Alpha = 8192,
-    /// The surface will hold color and alpha content
-    ColorAlpha = 12288,
-};
-
-/// `cairo.SurfaceType` is used to describe the type of a given surface. The
-/// surface types are also known as "backends" or "surface backends" within
-/// cairo.
-///
-/// The type of a surface is determined by the function used to create it,
-/// which will generally be a struct method of specific type (though see
-/// `surface.createSimilar()` as well).
-///
-/// The surface type can be queried with `surface.getType()`. The behavior of
-/// calling a type-specific function with a surface of the wrong type is
-/// undefined.
-///
-/// **Zig note:** you shouldn't be worried about that if you're not casting
-/// surfaces manually, which you shouldn't
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-type-t)
-pub const SurfaceType = enum(c_uint) {
-    pub usingnamespace util.FromToInt(SurfaceType);
-
-    /// The surface is of type image
-    Image,
-    /// The surface is of type pdf
-    PDF,
-    /// The surface is of type ps
-    PS,
-    /// The surface is of type xlib
-    XLib,
-    /// The surface is of type xcb
-    XCB,
-    /// The surface is of type glitz
-    Glitz,
-    /// The surface is of type quartz
-    Quartz,
-    /// The surface is of type win32
-    Win32,
-    /// The surface is of type beos
-    BeOS,
-    /// The surface is of type directfb
-    DirectFB,
-    /// The surface is of type svg
-    SVG,
-    /// The surface is of type os2
-    OS2,
-    /// The surface is a win32 printing surface
-    Win32Printing,
-    /// The surface is of type quartz_image
-    QuartzImage,
-    /// The surface is of type script
-    Script,
-    /// The surface is of type Qt
-    Qt,
-    /// The surface is of type recording
-    Recording,
-    /// The surface is a OpenVG surface
-    VG,
-    /// The surface is of type OpenGL
-    GL,
-    /// The surface is of type Direct Render Manager
-    DRM,
-    /// The surface is of type 'tee' (a multiplexing surface)
-    Tee, // ?
-    /// The surface is of type XML (for debugging)
-    XML,
-    /// The surface is of type Skia
-    Skia,
-    /// The surface is a subsurface created with
-    /// `surface.createForRectangle()`
-    Subsurface,
-    /// The surface is of type Cogl
-    Cogl,
-};
-
-pub const MimeType = enum {
-    /// Group 3 or Group 4 CCITT facsimile encoding (International
-    /// Telecommunication Union, Recommendations T.4 and T.6.)
-    CcittFax,
-    /// Decode parameters for Group 3 or Group 4 CCITT facsimile encoding.
-    /// See [CCITT Fax Images](https://www.cairographics.org/manual/cairo-PDF-Surfaces.html#ccitt).
-    CcittFaxParams,
-    /// Encapsulated PostScript file.
-    /// [Encapsulated PostScript File Format Specification](http://wwwimages.adobe.com/content/dam/Adobe/endevnet/postscript/pdfs/5002.EPSF_Spec.pdf)
-    Eps,
-    /// Embedding parameters Encapsulated PostScript data. See
-    /// [Embedding EPS files](https://www.cairographics.org/manual/cairo-PostScript-Surfaces.html#eps).
-    EpsParams,
-    /// Joint Bi-level Image Experts Group image coding standard (ISO/IEC
-    /// 11544).
-    Jbig2,
-    /// Joint Bi-level Image Experts Group image coding standard (ISO/IEC
-    /// 11544) global segment.
-    Jbig2Global,
-    /// An unique identifier shared by a JBIG2 global segment and all JBIG2
-    /// images that depend on the global segment.
-    Jbig2GlobalId,
-    /// The Joint Photographic Experts Group (JPEG) 2000 image coding standard
-    ///  (ISO/IEC 15444-1).
-    Jp2,
-    /// The Joint Photographic Experts Group (JPEG) image coding standard
-    /// (ISO/IEC 10918-1).
-    Jpeg,
-    /// The Portable Network Graphics image file format (ISO/IEC 15948).
-    Png,
-    /// URI for an image file (unofficial MIME type).
-    Uri,
-    /// Unique identifier for a surface (cairo specific MIME type). All
-    /// surfaces with the same unique identifier will only be embedded once.
-    UniqueId,
-
-    pub fn toString(self: MimeType) []const u8 {
-        return switch (self) {
-            .CcittFax => "image/g3fax",
-            .CcittFaxParams => "application/x-cairo.ccitt.params",
-            .Eps => "application/postscript",
-            .EpsParams => "application/x-cairo.eps.params",
-            .Jbig2 => "application/x-cairo.jbig2",
-            .Jbig2Global => "application/x-cairo.jbig2-global",
-            .Jbig2GlobalId => "application/x-cairo.jbig2-global-id",
-            .Jp2 => "image/jp2",
-            .Jpeg => "image/jpeg",
-            .Png => "image/png",
-            .Uri => "text/x-uri",
-            .UniqueId => "application/x-cairo.uuid",
-        };
-    }
-};
 
 extern fn cairo_surface_create_similar(other: ?*anyopaque, content: Content, width: c_int, height: c_int) ?*anyopaque;
 extern fn cairo_surface_create_similar_image(other: ?*anyopaque, format: Format, width: c_int, height: c_int) ?*anyopaque;
