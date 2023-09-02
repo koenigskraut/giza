@@ -14,6 +14,7 @@ const util = @import("../util.zig");
 const enums = @import("../enums.zig");
 const safety = @import("../safety.zig");
 
+const Content = enums.Content;
 const Extend = enums.Extend;
 const Filter = enums.Filter;
 const PatternType = enums.PatternType;
@@ -21,6 +22,8 @@ const Status = enums.Status;
 const CairoError = enums.CairoError;
 const Surface = @import("../surface.zig").Surface;
 const Path = @import("paths.zig").Path;
+
+const RectangleInt = util.RectangleInt;
 const Matrix = util.Matrix;
 const UserDataKey = util.UserDataKey;
 const DestroyFn = util.DestroyFn;
@@ -1054,6 +1057,258 @@ const MeshPattern = opaque {
     }
 };
 
+/// Raster Sources — Supplying arbitrary image data
+///
+/// The raster source provides the ability to supply arbitrary pixel data
+/// whilst rendering. The pixels are queried at the time of rasterisation by
+/// means of user callback functions, allowing for the ultimate flexibility.
+/// For example, in handling compressed image sources, you may keep a MRU cache
+/// of decompressed images and decompress sources on the fly and discard old
+/// ones to conserve memory.
+///
+/// For the raster source to be effective, you must at least specify the
+/// acquire and release callbacks which are used to retrieve the pixel data for
+/// the region of interest and demark when it can be freed afterwards. Other
+/// callbacks are provided for when the pattern is copied temporarily during
+/// rasterisation, or more permanently as a snapshot in order to keep the pixel
+/// data available for printing.
+pub const RasterSourcePattern = opaque {
+    /// Creates a new user pattern for providing pixel data.
+    ///
+    /// Use the setter functions to associate callbacks with the returned pattern.
+    /// The only mandatory callback is acquire.
+    ///
+    /// **Parameters**
+    /// - `userData`: the user data to be passed to all callbacks
+    /// - `content`: content type for the pixel data that will be returned. Knowing
+    /// the content type ahead of time is used for analysing the operation and
+    /// picking the appropriate rendering path.
+    /// - `width`: maximum size of the sample area
+    /// - `height`: maximum size of the sample area
+    ///
+    /// **Returns**
+    ///
+    /// a newly created `cairo.RasterSourcePattern`.
+    ///
+    /// **NOTE**: The caller owns the returned object and should call
+    /// `pattern.destroy()` when done with it. You can use idiomatic Zig
+    /// pattern with `defer`:
+    /// ```zig
+    /// const pattern = cairo.RasterSourcePattern.create(...);
+    /// defer pattern.destroy();
+    /// ```
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-pattern-create-raster-source)
+    pub fn create(userData: ?*anyopaque, content: Content, width: c_int, height: c_int) CairoError!*Pattern {
+        // TODO: fix doc example
+        cairo_pattern_create_raster_source(userData, content, width, height);
+    }
+
+    /// Updates the user data that is provided to all callbacks.
+    ///
+    /// **Parameters**
+    /// - `data`: the user data to be passed to all callbacks
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-callback-data)
+    pub fn setFallbackData(self: *RasterSourcePattern, data: ?*anyopaque) void {
+        cairo_raster_source_pattern_set_callback_data(self, data);
+    }
+
+    /// Queries the current user data.
+    ///
+    /// **Returns**
+    ///
+    /// the current user-data passed to each callback
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-callback-data)
+    pub fn getFallbackData(self: *RasterSourcePattern) ?*anyopaque {
+        return cairo_raster_source_pattern_get_callback_data(self);
+    }
+
+    /// Specifies the callbacks used to generate the image surface for a
+    /// rendering operation (acquire) and the function used to cleanup that
+    /// surface afterwards.
+    ///
+    /// The `acquire` callback should create a surface (preferably an image
+    /// surface created to match the target using
+    /// `cairo.Surface.createSimilarImage()`) that defines at least the region
+    /// of interest specified by extents. The surface is allowed to be the
+    /// entire sample area, but if it does contain a subsection of the sample
+    /// area, the surface extents should be provided by setting the device
+    /// offset (along with its width and height) using
+    /// `cairo.Surface.setDeviceOffset()`.
+    ///
+    /// **Parameters**
+    /// - `acquire`: the acquire callback
+    /// - `release`: the release callback
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-acquire)
+    pub fn setAcquire(self: *RasterSourcePattern, acquire: RasterSourcePattern.AcquireFn, release: RasterSourcePattern.ReleaseFn) void {
+        cairo_raster_source_pattern_set_acquire(self, acquire, release);
+    }
+
+    /// Queries the current acquire and release callbacks.
+    ///
+    /// **Parameters**
+    /// - `acquire`: return value for the current acquire callback
+    /// - `release`: return value for the current release callback
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-acquire)
+    pub fn getAcquire(self: *RasterSourcePattern, acquire: *RasterSourcePattern.AcquireFn, release: *RasterSourcePattern.ReleaseFn) void {
+        cairo_raster_source_pattern_get_acquire(self, acquire, release);
+    }
+
+    /// Sets the callback that will be used whenever a snapshot is taken of the
+    /// pattern, that is whenever the current contents of the pattern should be
+    /// preserved for later use. This is typically invoked whilst printing.
+    ///
+    /// **Parameters**
+    /// - `snapshot`: the snapshot callback
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-snapshot)
+    pub fn setSnapshot(self: *RasterSourcePattern, snapshot: RasterSourcePattern.SnapshotFn) void {
+        cairo_raster_source_pattern_set_snapshot(self, snapshot);
+    }
+
+    /// Queries the current snapshot callback.
+    ///
+    /// **Returns**
+    ///
+    /// the current snapshot callback.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-snapshot)
+    pub fn getSnapshot(self: *RasterSourcePattern) RasterSourcePattern.SnapshotFn {
+        return cairo_raster_source_pattern_get_snapshot(self);
+    }
+
+    /// Updates the copy callback which is used whenever a temporary copy of
+    /// the pattern is taken.
+    ///
+    /// **Parameters**
+    /// - `copy`: the copy callback
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-copy)
+    pub fn setCopy(self: *RasterSourcePattern, copy: RasterSourcePattern.CopyFn) void {
+        cairo_raster_source_pattern_set_copy(self, copy);
+    }
+
+    /// Queries the current copy callback.
+    ///
+    /// **Returns**
+    ///
+    /// the current copy callback.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-copy)
+    pub fn getCopy(self: *RasterSourcePattern) RasterSourcePattern.CopyFn {
+        return cairo_raster_source_pattern_get_copy(self);
+    }
+
+    /// Updates the finish callback which is used whenever a pattern (or a copy
+    /// thereof) will no longer be used.
+    ///
+    /// **Parameters**
+    /// - `copy`: the finish callback
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-finish)
+    pub fn setFinish(self: *RasterSourcePattern, finish: RasterSourcePattern.FinishFn) void {
+        cairo_raster_source_pattern_set_finish(self, finish);
+    }
+
+    /// Queries the current finish callback.
+    ///
+    /// **Returns**
+    ///
+    /// the current finish callback.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-finish)
+    pub fn getFinish(self: *RasterSourcePattern) RasterSourcePattern.FinishFn {
+        return cairo_raster_source_pattern_get_finish(self);
+    }
+
+    /// `cairo.RasterSourcePattern.AcquireFn` is the type of function which is
+    /// called when a pattern is being rendered from. It should create a
+    /// surface that provides the pixel data for the region of interest as
+    /// defined by extents, though the surface itself does not have to be
+    /// limited to that area. For convenience the surface should probably be of
+    /// image type, created with `cairo.Surface.createSimilarImage()` for the
+    /// target (which enables the number of copies to be reduced during
+    /// transfer to the device). Another option, might be to return a similar
+    /// surface to the target for explicit handling by the application of a set
+    /// of cached sources on the device. The region of sample data provided
+    /// should be defined using `cairo.Surface.setDeviceOffset()` to specify
+    /// the top-left corner of the sample data (along with width and height of
+    /// the surface).
+    ///
+    /// **Parameters**
+    /// - `pattern`: the pattern being rendered from
+    /// - `callbackData`: the user data supplied during creation
+    /// - `target`: the rendering target surface
+    /// - `extents`: rectangular region of interest in pixels in sample space
+    ///
+    /// **Returns**
+    ///
+    /// a `cairo.Surface`
+    ///
+    /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-acquire-func-t)
+    pub const AcquireFn = *const fn (pattern: ?*Pattern, callbackData: ?*anyopaque, target: ?*Surface, extents: ?*const RectangleInt) callconv(.C) ?*Surface;
+
+    /// `cairo.RasterSourcePattern.ReleaseFn` is the type of function which is
+    /// called when the pixel data is no longer being access by the pattern for
+    /// the rendering operation. Typically this function will simply destroy
+    /// the surface created during acquire.
+    ///
+    /// **Parameters**
+    /// - `pattern`: the pattern being rendered from
+    /// - `callbackData`: the user data supplied during creation
+    /// - `surface`: the surface created during acquire
+    ///
+    /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-release-func-t)
+    pub const ReleaseFn = ?*const fn (pattern: ?*Pattern, callbackData: ?*anyopaque, surface: ?*Surface) callconv(.C) void;
+
+    /// `cairo.RasterSourcePattern.SnapshotFn` is the type of function which is
+    /// called when the pixel data needs to be preserved for later use during
+    /// printing. This pattern will be accessed again later, and it is expected
+    /// to provide the pixel data that was current at the time of snapshotting.
+    ///
+    /// **Parameters**
+    /// - `pattern`: the pattern being rendered from
+    /// - `callbackData`: the user data supplied during creation
+    ///
+    /// **Returns**
+    ///
+    /// `cairo.Status.Success` on success, or one of the `cairo.Status` error
+    /// codes for failure.
+    ///
+    /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-snapshot-func-t)
+    pub const SnapshotFn = ?*const fn (pattern: ?*Pattern, callbackData: ?*anyopaque) callconv(.C) Status;
+
+    /// `cairo.RasterSourcePattern.CopyFn` is the type of function which is
+    /// called when the pattern gets copied as a normal part of rendering.
+    ///
+    /// **Parameters**
+    /// - `pattern`: the `cairo.Pattern` that was copied to
+    /// - `callbackData`: the user data supplied during creation
+    /// - `other`: the `cairo.Pattern` being used as the source for the copy
+    ///
+    /// **Returns**
+    ///
+    /// `cairo.Status.Success` on success, or one of the `cairo.Status` error
+    /// codes for failure.
+    ///
+    /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-copy-func-t)
+    pub const CopyFn = ?*const fn (pattern: ?*Pattern, callbackData: ?*anyopaque, other: ?*const Pattern) callconv(.C) Status;
+
+    /// `cairo.RasterSourcePattern.SnapshotFn` is the type of function which is
+    /// called when the pattern (or a copy thereof) is no longer required.
+    ///
+    /// **Parameters**
+    /// - `pattern`: the pattern being rendered from
+    /// - `callbackData`: the user data supplied during creation
+    ///
+    /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-finish-func-t)
+    pub const FinishFn = ?*const fn (pattern: ?*Pattern, callbackData: ?*anyopaque) callconv(.C) void;
+};
+
 extern fn cairo_pattern_add_color_stop_rgb(pattern: ?*anyopaque, offset: f64, red: f64, green: f64, blue: f64) void;
 extern fn cairo_pattern_add_color_stop_rgba(pattern: ?*anyopaque, offset: f64, red: f64, green: f64, blue: f64, alpha: f64) void;
 extern fn cairo_pattern_get_color_stop_count(pattern: ?*anyopaque, count: [*c]c_int) Status;
@@ -1093,3 +1348,14 @@ extern fn cairo_pattern_get_type(pattern: ?*anyopaque) PatternType;
 extern fn cairo_pattern_get_reference_count(pattern: ?*anyopaque) c_uint;
 extern fn cairo_pattern_set_user_data(pattern: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
 extern fn cairo_pattern_get_user_data(pattern: ?*anyopaque, key: [*c]const UserDataKey) ?*anyopaque;
+extern fn cairo_pattern_create_raster_source(user_data: ?*anyopaque, content: Content, width: c_int, height: c_int) ?*Pattern;
+extern fn cairo_raster_source_pattern_set_callback_data(pattern: ?*Pattern, data: ?*anyopaque) void;
+extern fn cairo_raster_source_pattern_get_callback_data(pattern: ?*Pattern) ?*anyopaque;
+extern fn cairo_raster_source_pattern_set_acquire(pattern: ?*Pattern, acquire: RasterSourcePattern.AcquireFn, release: RasterSourcePattern.ReleaseFn) void;
+extern fn cairo_raster_source_pattern_get_acquire(pattern: ?*Pattern, acquire: [*c]RasterSourcePattern.AcquireFn, release: [*c]RasterSourcePattern.ReleaseFn) void;
+extern fn cairo_raster_source_pattern_set_snapshot(pattern: ?*Pattern, snapshot: RasterSourcePattern.SnapshotFn) void;
+extern fn cairo_raster_source_pattern_get_snapshot(pattern: ?*Pattern) RasterSourcePattern.SnapshotFn;
+extern fn cairo_raster_source_pattern_set_copy(pattern: ?*Pattern, copy: RasterSourcePattern.CopyFn) void;
+extern fn cairo_raster_source_pattern_get_copy(pattern: ?*Pattern) RasterSourcePattern.CopyFn;
+extern fn cairo_raster_source_pattern_set_finish(pattern: ?*Pattern, finish: RasterSourcePattern.FinishFn) void;
+extern fn cairo_raster_source_pattern_get_finish(pattern: ?*Pattern) RasterSourcePattern.FinishFn;
