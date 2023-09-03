@@ -51,7 +51,7 @@ pub const Mixin = struct {
     /// `ctx.destroy()` when done with it. You can use idiomatic Zig pattern
     /// with `defer`:
     /// ```zig
-    /// var ctx = cairo.Context.create(surface);
+    /// const ctx = cairo.Context.create(surface);
     /// defer ctx.destroy();
     /// ```
     ///
@@ -214,7 +214,7 @@ pub const Mixin = struct {
     /// `patern.destroy()` when done with it. You can use idiomatic Zig pattern
     /// with `defer`:
     /// ```zig
-    /// var pattern = ctx.popGroup();
+    /// const pattern = ctx.popGroup();
     /// defer pattern.destroy();
     /// ```
     ///
@@ -230,7 +230,7 @@ pub const Mixin = struct {
     /// The behavior of this function is equivalent to the sequence of
     /// operations:
     /// ```zig
-    /// var group = ctx.popGroup();
+    /// const group = ctx.popGroup();
     /// ctx.setSource(group);
     /// group.destroy();
     /// ```

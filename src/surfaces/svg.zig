@@ -175,7 +175,7 @@ pub const SvgUnit = enum(c_uint) {
 };
 
 /// Used to retrieve the list of supported SVG versions. See
-/// `cairo.Surface.restrictToSvgVersion()`
+/// `cairo.SvgSurface.restrictToVersion()`
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-get-versions)
 pub fn getSvgVersions() []const SvgVersion {

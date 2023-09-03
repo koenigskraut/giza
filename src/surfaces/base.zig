@@ -84,7 +84,7 @@ pub fn Base(comptime Self: type) type {
         /// cast an instance of `cairo.Surface` to a base type; used when the
         /// function can accept any type of surface, example:
         /// ```zig
-        /// cairo.Context.create(image.asSurface());
+        /// const ctx = cairo.Context.create(image.asSurface());
         /// ```
         /// where `image` is `cairo.ImageSurface`
         pub inline fn asSurface(surface: *Self) *Surface {

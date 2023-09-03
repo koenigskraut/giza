@@ -697,7 +697,7 @@ pub const RadialGradientPattern = opaque {
 /// Additional patches may be added with additional calls to
 /// `meshPattern.beginPatch()`/`meshPattern.endPatch().
 /// ```zig
-/// var meshPattern = cairo.MeshPattern.create();
+/// const meshPattern = cairo.MeshPattern.create();
 ///
 /// // Add a Coons patch
 /// meshPattern.beginPatch();
