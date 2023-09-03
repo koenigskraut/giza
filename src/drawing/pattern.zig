@@ -165,7 +165,7 @@ pub fn Mixin(comptime Self: type) type {
         /// `cairo.Pattern.reference()`.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-destroy)
-        pub fn destroy(self: *Pattern) void {
+        pub fn destroy(self: *Self) void {
             if (safety.tracing) safety.destroy(self);
             return cairo_pattern_destroy(self);
         }
@@ -173,7 +173,7 @@ pub fn Mixin(comptime Self: type) type {
         /// Checks whether an error has previously occurred for this pattern.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-status)
-        pub fn status(self: *Pattern) Status {
+        pub fn status(self: *Self) Status {
             return cairo_pattern_status(self);
         }
 
@@ -266,6 +266,7 @@ pub const Pattern = opaque {
 
 pub const SolidPattern = opaque {
     pub usingnamespace Mixin(@This());
+
     /// Creates a new `cairo.SolidPattern` corresponding to an opaque color.
     /// The color components are floating point numbers in the range 0 to 1. If
     /// the values passed in are outside that range, they will be clamped.
@@ -292,7 +293,8 @@ pub const SolidPattern = opaque {
     pub fn createRGB(red: f64, green: f64, blue: f64) CairoError!*SolidPattern {
         var pattern = cairo_pattern_create_rgb(red, green, blue).?;
         try pattern.status().toErr();
-        if (safety.tracing) safety.markForLeakDetection(@returnAddress(), pattern);
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
+        return pattern;
     }
 
     /// Creates a new `cairo.SolidPattern` corresponding to an translucent
@@ -323,7 +325,8 @@ pub const SolidPattern = opaque {
     pub fn createRGBA(red: f64, green: f64, blue: f64, alpha: f64) CairoError!*SolidPattern {
         var pattern = cairo_pattern_create_rgba(red, green, blue, alpha).?;
         try pattern.status().toErr();
-        if (safety.tracing) safety.markForLeakDetection(@returnAddress(), pattern);
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
+        return pattern;
     }
 
     /// Gets the solid color for a solid color pattern.
@@ -346,6 +349,7 @@ pub const SolidPattern = opaque {
 
 pub const SurfacePattern = opaque {
     pub usingnamespace Mixin(@This());
+
     /// Create a new `cairo.SurfacePattern` for the given surface.
     ///
     /// **Parameters**
@@ -382,15 +386,16 @@ pub const SurfacePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-surface)
     pub fn getSurface(self: *SurfacePattern) CairoError!*Surface {
-        var surface: *Surface = undefined;
+        var surface: ?*Surface = undefined;
         try cairo_pattern_get_surface(self, &surface).toErr();
-        return surface;
+        return surface.?;
     }
 };
 
 pub fn Gradient(comptime Self: type) type {
     return struct {
-        pub usingnamespace Mixin(@This());
+        pub usingnamespace Mixin(Self);
+
         /// Adds an opaque color stop to a gradient pattern. The offset
         /// specifies the location along the gradient's control vector. For
         /// example, a linear gradient's control vector is from (x0,y0) to
@@ -556,6 +561,8 @@ pub const LinearGradientPattern = opaque {
 };
 
 pub const RadialGradientPattern = opaque {
+    pub usingnamespace Gradient(@This());
+
     /// Creates a new radial gradient `cairo.RadialGradientPattern` between the
     /// two circles defined by (cx0, cy0, radius0) and (cx1, cy1, radius1).
     /// Before using the gradient pattern, a number of color stops should be
@@ -737,6 +744,7 @@ pub const RadialGradientPattern = opaque {
 /// spaces can be changed with `pattern.setMatrix()`.
 const MeshPattern = opaque {
     pub usingnamespace Mixin(@This());
+
     /// Create a new mesh pattern.
     ///
     /// **Returns**
@@ -1073,6 +1081,8 @@ const MeshPattern = opaque {
 /// rasterisation, or more permanently as a snapshot in order to keep the pixel
 /// data available for printing.
 pub const RasterSourcePattern = opaque {
+    pub usingnamespace Mixin(@This());
+
     /// Creates a new user pattern for providing pixel data.
     ///
     /// Use the setter functions to associate callbacks with the returned pattern.
@@ -1101,7 +1111,9 @@ pub const RasterSourcePattern = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-pattern-create-raster-source)
     pub fn create(userData: ?*anyopaque, content: Content, width: c_int, height: c_int) CairoError!*Pattern {
         // TODO: fix doc example
-        cairo_pattern_create_raster_source(userData, content, width, height);
+        const pattern = cairo_pattern_create_raster_source(userData, content, width, height).?;
+        try pattern.status().toErr();
+        return pattern;
     }
 
     /// Updates the user data that is provided to all callbacks.
@@ -1349,13 +1361,13 @@ extern fn cairo_pattern_get_reference_count(pattern: ?*anyopaque) c_uint;
 extern fn cairo_pattern_set_user_data(pattern: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
 extern fn cairo_pattern_get_user_data(pattern: ?*anyopaque, key: [*c]const UserDataKey) ?*anyopaque;
 extern fn cairo_pattern_create_raster_source(user_data: ?*anyopaque, content: Content, width: c_int, height: c_int) ?*Pattern;
-extern fn cairo_raster_source_pattern_set_callback_data(pattern: ?*Pattern, data: ?*anyopaque) void;
-extern fn cairo_raster_source_pattern_get_callback_data(pattern: ?*Pattern) ?*anyopaque;
-extern fn cairo_raster_source_pattern_set_acquire(pattern: ?*Pattern, acquire: RasterSourcePattern.AcquireFn, release: RasterSourcePattern.ReleaseFn) void;
-extern fn cairo_raster_source_pattern_get_acquire(pattern: ?*Pattern, acquire: [*c]RasterSourcePattern.AcquireFn, release: [*c]RasterSourcePattern.ReleaseFn) void;
-extern fn cairo_raster_source_pattern_set_snapshot(pattern: ?*Pattern, snapshot: RasterSourcePattern.SnapshotFn) void;
-extern fn cairo_raster_source_pattern_get_snapshot(pattern: ?*Pattern) RasterSourcePattern.SnapshotFn;
-extern fn cairo_raster_source_pattern_set_copy(pattern: ?*Pattern, copy: RasterSourcePattern.CopyFn) void;
-extern fn cairo_raster_source_pattern_get_copy(pattern: ?*Pattern) RasterSourcePattern.CopyFn;
-extern fn cairo_raster_source_pattern_set_finish(pattern: ?*Pattern, finish: RasterSourcePattern.FinishFn) void;
-extern fn cairo_raster_source_pattern_get_finish(pattern: ?*Pattern) RasterSourcePattern.FinishFn;
+extern fn cairo_raster_source_pattern_set_callback_data(pattern: ?*RasterSourcePattern, data: ?*anyopaque) void;
+extern fn cairo_raster_source_pattern_get_callback_data(pattern: ?*RasterSourcePattern) ?*anyopaque;
+extern fn cairo_raster_source_pattern_set_acquire(pattern: ?*RasterSourcePattern, acquire: RasterSourcePattern.AcquireFn, release: RasterSourcePattern.ReleaseFn) void;
+extern fn cairo_raster_source_pattern_get_acquire(pattern: ?*RasterSourcePattern, acquire: [*c]RasterSourcePattern.AcquireFn, release: [*c]RasterSourcePattern.ReleaseFn) void;
+extern fn cairo_raster_source_pattern_set_snapshot(pattern: ?*RasterSourcePattern, snapshot: RasterSourcePattern.SnapshotFn) void;
+extern fn cairo_raster_source_pattern_get_snapshot(pattern: ?*RasterSourcePattern) RasterSourcePattern.SnapshotFn;
+extern fn cairo_raster_source_pattern_set_copy(pattern: ?*RasterSourcePattern, copy: RasterSourcePattern.CopyFn) void;
+extern fn cairo_raster_source_pattern_get_copy(pattern: ?*RasterSourcePattern) RasterSourcePattern.CopyFn;
+extern fn cairo_raster_source_pattern_set_finish(pattern: ?*RasterSourcePattern, finish: RasterSourcePattern.FinishFn) void;
+extern fn cairo_raster_source_pattern_get_finish(pattern: ?*RasterSourcePattern) RasterSourcePattern.FinishFn;
