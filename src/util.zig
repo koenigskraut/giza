@@ -26,8 +26,8 @@ pub const Matrix = extern struct {
     /// Y translation component of the affine transformation
     y0: f64,
 
-    /// Sets matrix to be the affine transformation given by `xx`, `yx`, `xy`,
-    /// `yy`, `x0`, `y0`. The transformation is given by:
+    /// Creates a matrix to be the affine transformation given by `xx`, `yx`,
+    /// `xy`, `yy`, `x0`, `y0`. The transformation is given by:
     /// ```code
     /// x_new = xx * x + xy * y + x0;
     /// y_new = yx * x + yy * y + y0;
@@ -42,42 +42,51 @@ pub const Matrix = extern struct {
     /// - `y0`: Y translation component of the affine transformation
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init)
-    pub fn init(self: *Matrix, xx: f64, yx: f64, xy: f64, yy: f64, x0: f64, y0: f64) void {
-        cairo_matrix_init(self, xx, yx, xy, yy, x0, y0);
+    pub fn init(xx: f64, yx: f64, xy: f64, yy: f64, x0: f64, y0: f64) Matrix {
+        var m: Matrix = undefined;
+        cairo_matrix_init(&m, xx, yx, xy, yy, x0, y0);
+        return m;
     }
 
-    /// Modifies `matrix` to be an identity transformation.
+    /// Creates a `cairo.Matrix` initialized to be an identity transformation.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init-identity)
-    pub fn initIdentity(self: *Matrix) void {
-        cairo_matrix_init_identity(self);
+    pub fn identity() Matrix {
+        var m: Matrix = undefined;
+        cairo_matrix_init_identity(&m);
+        return m;
     }
 
-    /// Initializes `matrix` to a transformation that translates by `tx` and
-    /// `ty` in the X and Y dimensions, respectively.
+    /// Creates a `cairo.Matrix` initialized to a transformation that
+    /// translates by `tx` and `ty` in the X and Y dimensions, respectively.
     ///
     /// **Parameters**
     /// - `tx`: amount to translate in the X direction
     /// - `ty`: amount to translate in the Y direction
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init-translate)
-    pub fn initTranslate(self: *Matrix, tx: f64, ty: f64) void {
-        cairo_matrix_init_translate(self, tx, ty);
+    pub fn translation(tx: f64, ty: f64) Matrix {
+        var m: Matrix = undefined;
+        cairo_matrix_init_translate(&m, tx, ty);
+        return m;
     }
 
-    /// Initializes `matrix` to a transformation that scales by `sx` and `sy`
-    /// in the X and Y dimensions, respectively.
+    /// Creates a `cairo.Matrix` inititalized to a transformation that scales
+    /// by `sx` and `sy` in the X and Y dimensions, respectively.
     ///
     /// **Parameters**
     /// - `sx`: scale factor in the X direction
     /// - `sy`: scale factor in the Y direction
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init-scale)
-    pub fn initScale(self: *Matrix, sx: f64, sy: f64) void {
-        cairo_matrix_init_scale(self, sx, sy);
+    pub fn scaling(sx: f64, sy: f64) Matrix {
+        var m: Matrix = undefined;
+        cairo_matrix_init_scale(&m, sx, sy);
+        return m;
     }
 
-    /// Initialized `matrix` to a transformation that rotates by `radians`.
+    /// Creates a `cairo.Matrix` initialized to a transformation that rotates
+    /// by `radians`.
     ///
     /// **Parameters**
     /// - `radians`: angle of rotation, in radians. The direction of rotation
@@ -86,8 +95,10 @@ pub const Matrix = extern struct {
     /// orientation of cairo, positive angles rotate in a clockwise direction.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init-rotate)
-    pub fn initRotate(self: *Matrix, radians: f64) void {
-        cairo_matrix_init_rotate(self, radians);
+    pub fn rotation(radians: f64) Matrix {
+        var m: Matrix = undefined;
+        cairo_matrix_init_rotate(&m, radians);
+        return m;
     }
 
     /// Applies a translation by `tx`, `ty` to the transformation in `matrix`.
