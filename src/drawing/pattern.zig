@@ -10,6 +10,10 @@
 //!
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html)
 
+const std = @import("std");
+const ArrayList = std.ArrayList;
+const Allocator = std.mem.Allocator;
+
 const util = @import("../util.zig");
 const enums = @import("../enums.zig");
 const safety = @import("../safety.zig");
@@ -62,40 +66,6 @@ pub fn Mixin(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-extend)
         pub fn getExtend(self: *Self) Extend {
             return cairo_pattern_get_extend(self);
-        }
-
-        /// Sets the filter to be used for resizing when using this pattern. See
-        /// `cairo.Filter` for details on each filter.
-        ///
-        /// >Note that you might want to control filtering even when you do not
-        /// have an explicit `cairo.Pattern` object, (for example when using
-        /// `ctx.setSourceSurface()`). In these cases, it is convenient to use
-        /// `ctx.getSource()` to get access to the pattern that cairo creates
-        /// implicitly. For example:
-        /// ```zig
-        /// ctx.setSourceSurface(image, x, y);
-        /// Pattern.setFilter(ctx.getSource(), .Nearest);
-        /// ```
-        ///
-        /// **Parameters**
-        /// - `filter`: a `cairo.Filter` describing the filter to use for resizing
-        /// the pattern
-        ///
-        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-set-filter)
-        pub fn setFilter(self: *Self, filter: Filter) void {
-            cairo_pattern_set_filter(self, filter);
-        }
-
-        /// Gets the current filter for a pattern. See `cairo.Filter` for details
-        /// on each filter.
-        ///
-        /// **Returns**
-        ///
-        /// the current filter used for resizing the pattern.
-        ///
-        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-filter)
-        pub fn getFilter(self: *Self) Filter {
-            return cairo_pattern_get_filter(self);
         }
 
         /// Sets the pattern's transformation matrix to `matrix`. This matrix is a
@@ -390,6 +360,40 @@ pub const SurfacePattern = opaque {
         try cairo_pattern_get_surface(self, &surface).toErr();
         return surface.?;
     }
+
+    /// Sets the filter to be used for resizing when using this pattern. See
+    /// `cairo.Filter` for details on each filter.
+    ///
+    /// >Note that you might want to control filtering even when you do not
+    /// have an explicit `cairo.Pattern` object, (for example when using
+    /// `ctx.setSourceSurface()`). In these cases, it is convenient to use
+    /// `ctx.getSource()` to get access to the pattern that cairo creates
+    /// implicitly. For example:
+    /// ```zig
+    /// ctx.setSourceSurface(image, x, y);
+    /// Pattern.setFilter(ctx.getSource(), .Nearest);
+    /// ```
+    ///
+    /// **Parameters**
+    /// - `filter`: a `cairo.Filter` describing the filter to use for resizing
+    /// the pattern
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-set-filter)
+    pub fn setFilter(self: *SurfacePattern, filter: Filter) void {
+        cairo_pattern_set_filter(self, filter);
+    }
+
+    /// Gets the current filter for a pattern. See `cairo.Filter` for details
+    /// on each filter.
+    ///
+    /// **Returns**
+    ///
+    /// the current filter used for resizing the pattern.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-filter)
+    pub fn getFilter(self: *SurfacePattern) Filter {
+        return cairo_pattern_get_filter(self);
+    }
 };
 
 pub fn Gradient(comptime Self: type) type {
@@ -457,6 +461,19 @@ pub fn Gradient(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-add-color-stop-rgba)
         pub fn addColorStopRGBA(self: *Self, offset: f64, red: f64, green: f64, blue: f64, alpha: f64) void {
             cairo_pattern_add_color_stop_rgba(self, offset, red, green, blue, alpha);
+        }
+
+        /// A convenience function that gets all color stops and offsets for
+        /// this `color.Gradient`. Don't forget to `.deinit()`.
+        pub fn getColorStops(self: *Self, allocator: Allocator) CairoError!ArrayList(ColorStop) {
+            const numStops = try self.getColorStopCount();
+            var stops = try ArrayList(ColorStop).initCapacity(allocator, numStops);
+            for (0..numStops) |n| {
+                var stop: ColorStop = undefined;
+                self.getColorStopRGBA(@intCast(n), &stop.offset, &stop.red, &stop.green, &stop.blue, &stop.alpha);
+                stops.append(stop);
+            }
+            return stops;
         }
 
         /// Gets the number of color stops specified in the given gradient
@@ -1319,6 +1336,15 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-finish-func-t)
     pub const FinishFn = ?*const fn (pattern: ?*Pattern, callbackData: ?*anyopaque) callconv(.C) void;
+};
+
+/// Holds info about color stop for gradient patterns
+pub const ColorStop = struct {
+    offset: f64,
+    red: f64,
+    green: f64,
+    blue: f64,
+    alpha: f64,
 };
 
 extern fn cairo_pattern_add_color_stop_rgb(pattern: ?*anyopaque, offset: f64, red: f64, green: f64, blue: f64) void;
