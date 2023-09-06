@@ -16,6 +16,16 @@ const HintStyle = cairo.HintStyle;
 const Status = cairo.Status;
 const SubpixelOrder = cairo.SubpixelOrder;
 
+/// An opaque structure holding all options that are used when rendering fonts.
+///
+/// Individual features of a `cairo.FontOptions` can be set or accessed using
+/// functions named `.set*FeatureName*()` and `.get*FeatureName*()`, like
+/// `cairo.FontOptions.setAntialias()` and `cairo.FontOptions.getAntialias()`.
+///
+/// New features may be added to a `cairo.FontOptions` in the future. For this
+/// reason, `cairo.FontOptions` `.copy()`, `.equal()`, `.merge()`, and
+/// `.hash()` should be used to copy, check for equality, merge, or compute a
+/// hash value of `cairo.FontOptions` objects.
 pub const FontOptions = opaque {
     /// Allocates a new font options object with all options initialized to default values.
     ///
