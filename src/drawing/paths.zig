@@ -5,9 +5,10 @@
 //!
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html)
 
-const enums = @import("../enums.zig");
+const cairo = @import("../cairo.zig");
+
 const util = @import("../util.zig");
-// const Glyph = @import("text.zig").Glyph;
+const Glyph = cairo.Glyph;
 const context = @import("../context.zig");
 const safety = @import("../safety.zig");
 
@@ -15,8 +16,9 @@ const Context = context.Context;
 const Rectangle = context.Rectangle;
 const ExtentsRectangle = util.ExtentsRectangle;
 
-const CairoError = enums.CairoError;
-const PathDataType = enums.PathDataType;
+const CairoError = cairo.CairoError;
+const PathDataType = cairo.PathDataType;
+const Status = cairo.Status;
 
 pub const Mixin = struct {
     /// Creates a copy of the current path and returns it to the user as a
@@ -314,15 +316,15 @@ pub const Mixin = struct {
 
     /// Adds closed paths for the glyphs to the current path. The generated
     /// path if filled, achieves an effect similar to that of
-    /// `ctx.showGlyphs()`.
+    /// `cairo.Context.showGlyphs()`.
     ///
     /// **Parameters**
     /// - `glyphs`: slice of glyphs to show
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-glyph-path)
-    // pub fn glyphPath(self: *Context, glyphs: []const Glyph) void {
-    //     cairo_glyph_path(self, glyphs.ptr, @intCast(c_int, glyphs.len));
-    // }
+    pub fn glyphPath(self: *Context, glyphs: []const Glyph) void {
+        cairo_glyph_path(self, glyphs.ptr, @intCast(glyphs.len));
+    }
 
     /// Adds closed paths for text to the current path. The generated path if
     /// filled, achieves an effect similar to that of `ctx.showText()`.
@@ -347,7 +349,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-text-path)
     pub fn textPath(self: *Context, utf8: ?[:0]const u8) void {
-        cairo_text_path(self, if (utf8) |u| u.ptr else null);
+        cairo_text_path(self, utf8 orelse null);
     }
 
     /// Relative-coordinate version of `ctx.curveTo()`. All offsets are
@@ -466,7 +468,7 @@ pub const Mixin = struct {
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-t)
 pub const Path = extern struct {
     /// the current error status
-    status: enums.Status,
+    status: Status,
     /// the elements in the path
     data: [*c]PathData,
     /// the number of elements in the data array
@@ -566,7 +568,7 @@ extern fn cairo_curve_to(cr: ?*Context, x1: f64, y1: f64, x2: f64, y2: f64, x3: 
 extern fn cairo_line_to(cr: ?*Context, x: f64, y: f64) void;
 extern fn cairo_move_to(cr: ?*Context, x: f64, y: f64) void;
 extern fn cairo_rectangle(cr: ?*Context, x: f64, y: f64, width: f64, height: f64) void;
-// extern fn cairo_glyph_path(cr: ?*Context, glyphs: [*c]const Glyph, num_glyphs: c_int) callconv(.C) void;
+extern fn cairo_glyph_path(cr: ?*Context, glyphs: [*c]const Glyph, num_glyphs: c_int) void;
 extern fn cairo_text_path(cr: ?*Context, utf8: [*c]const u8) void;
 extern fn cairo_rel_curve_to(cr: ?*Context, dx1: f64, dy1: f64, dx2: f64, dy2: f64, dx3: f64, dy3: f64) void;
 extern fn cairo_rel_line_to(cr: ?*Context, dx: f64, dy: f64) void;

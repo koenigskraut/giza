@@ -807,6 +807,7 @@ pub const SurfaceType = enum(c_uint) {
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-text-cluster-flags-t)
 pub const TextClusterFlags = enum(c_uint) {
+    None,
     /// The clusters in the cluster array map to glyphs in the glyph array from
     /// end to start.
     Backward = 1,

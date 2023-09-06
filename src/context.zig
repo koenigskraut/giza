@@ -4,6 +4,8 @@ const testing = std.testing;
 const cairo = @import("cairo.zig");
 const safety = @import("safety.zig");
 
+const text = @import("drawing/text.zig");
+
 const Status = cairo.Status;
 
 /// A `cairo.Context` contains the current state of the rendering device,
@@ -19,7 +21,12 @@ const Status = cairo.Status;
 pub const Context = opaque {
     pub usingnamespace @import("drawing/basic.zig").Mixin;
     pub usingnamespace @import("drawing/paths.zig").Mixin;
+    pub usingnamespace @import("drawing/text.zig").Mixin;
+    pub usingnamespace @import("drawing/tags_and_links.zig");
 };
+
+pub const Glyph = text.Glyph;
+pub const TextCluster = text.TextCluster;
 
 /// A data structure for holding a rectangle.
 ///

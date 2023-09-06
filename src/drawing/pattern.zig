@@ -1155,7 +1155,7 @@ pub const RasterSourcePattern = opaque {
     /// - `data`: the user data to be passed to all callbacks
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-callback-data)
-    pub fn setFallbackData(self: *RasterSourcePattern, data: ?*anyopaque) void {
+    pub fn setCallbackData(self: *RasterSourcePattern, data: ?*anyopaque) void {
         cairo_raster_source_pattern_set_callback_data(self, data);
     }
 
@@ -1166,7 +1166,7 @@ pub const RasterSourcePattern = opaque {
     /// the current user-data passed to each callback
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-callback-data)
-    pub fn getFallbackData(self: *RasterSourcePattern) ?*anyopaque {
+    pub fn getCallbackData(self: *RasterSourcePattern) ?*anyopaque {
         return cairo_raster_source_pattern_get_callback_data(self);
     }
 

@@ -39,18 +39,24 @@
 // TODO ^^^ device
 
 const std = @import("std");
-const enums = @import("../enums.zig");
+
+const cairo = @import("../cairo.zig");
+
 const util = @import("../util.zig");
 const safety = @import("../safety.zig");
 
-const Content = enums.Content;
-const CairoError = enums.CairoError;
-const MimeType = enums.MimeType;
-const Status = enums.Status;
-const SurfaceType = enums.SurfaceType;
-const Format = enums.Format;
+const Content = cairo.Content;
+const CairoError = cairo.CairoError;
+const MimeType = cairo.MimeType;
+const Status = cairo.Status;
+const SurfaceType = cairo.SurfaceType;
+const Format = cairo.Format;
 const ImageSurface = @import("image.zig").ImageSurface;
 const RectangleInt = util.RectangleInt;
+
+const FontOptions = cairo.FontOptions;
+const UserDataKey = cairo.UserDataKey;
+const DestroyFn = cairo.DestroyFn;
 
 /// A `cairo.Surface` represents an image, either as the destination of a
 /// drawing operation or as source when drawing onto another surface. To draw
@@ -124,7 +130,6 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-create-similar)
         pub fn createSimilar(surface: *Self, content: Content, width: c_int, height: c_int) CairoError!*Self {
-            // TODO: safety
             const s: *Self = @ptrCast(cairo_surface_create_similar(surface, content, width, height).?);
             try s.status().toErr();
             if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), s);
@@ -162,7 +167,6 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-create-similar-image)
         pub fn createSimilarImage(surface: *Self, format: Format, width: c_int, height: c_int) CairoError!*ImageSurface {
-            // TODO: safety
             const image = @as(*ImageSurface, @ptrCast(cairo_surface_create_similar_image(surface, format, width, height).?));
             try image.status().toErr();
             if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
@@ -275,8 +279,22 @@ pub fn Base(comptime Self: type) type {
         }
 
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-device)
-        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-font-options)
         //
+
+        /// Retrieves the default font rendering options for the surface. This
+        /// allows display surfaces to report the correct subpixel order for
+        /// rendering on them, print surfaces to disable hinting of metrics and
+        /// so forth. The result can then be used with
+        /// `cairo.ScaledFont.create()`.
+        ///
+        /// **Parameters**
+        /// - `options`: a `cairo.FontOptions` object into which to store the
+        /// retrieved options. All existing values are overwritten
+        ///
+        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-font-options)
+        pub fn getFontOptions(surface: *Self, options: *FontOptions) void {
+            cairo_surface_get_font_options(surface, options);
+        }
 
         /// This function returns the content type of `surface` which indicates
         /// whether the surface contains color and/or alpha information.
@@ -336,9 +354,42 @@ pub fn Base(comptime Self: type) type {
             return @intCast(cairo_surface_get_reference_count(surface));
         }
 
+        /// Attach user data to `surface`. To remove user data from a surface,
+        /// call this function with the key that was used to set it and `null`
+        /// for `data`.
+        ///
+        /// **Parameters**
+        /// - `key`: the address of a `cairo.UserDataKey` to attach the user
+        /// data to
+        /// - `user_data`: the user data to attach to the surface
+        /// - `destroyFn`: a `cairo.DestroyFn` which will be called when the
+        /// surface is destroyed or when new user data is attached using the
+        /// same key.
+        ///
+        /// The only possible error is `error.OutOfMemory` if a slot could not
+        /// be allocated for the user data.
+        ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-user-data)
+        pub fn setUserData(surface: *Self, key: *const UserDataKey, user_data: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
+            return cairo_surface_set_user_data(surface, key, user_data, destroyFn).toErr();
+        }
+
+        /// Return user data previously attached to surface using the specified
+        /// key. If no user data has been attached with the given key this
+        /// function returns `null`.
+        ///
+        /// **Parameters**
+        /// - `key`: the address of a `cairo.UserDataKey` the user data was
+        /// attached to
+        ///
+        /// **Returns**
+        ///
+        /// the user data previously attached or `null`.
+        ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-user-data)
-        //
+        pub fn getUserData(surface: *Self, key: *const UserDataKey) ?*anyopaque {
+            return cairo_surface_get_user_data(surface, key);
+        }
 
         /// Emits the current page for backends that support multiple pages,
         /// but doesn't clear it, so that the contents of the current page
@@ -450,7 +501,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-supports-mime-type)
         pub fn supportsMimeType(surface: *Self, mimeType: MimeType) bool {
-            return cairo_surface_supports_mime_type(surface, mimeType.toString().ptr) > 0;
+            return cairo_surface_supports_mime_type(surface, mimeType.toString().ptr) != 0;
         }
 
         /// Returns an image surface that is the most efficient mechanism for
@@ -514,11 +565,41 @@ pub fn Base(comptime Self: type) type {
             if (safety.tracing) safety.destroy(image);
         }
 
-        pub fn writeToPNG(surface: *Self, filename: []const u8) !void {
+        /// Writes the contents of surface to a new file `filename` as a PNG
+        /// image.
+        ///
+        /// **Parameters**
+        /// - `filename`: the name of a file to write to; on Windows this
+        /// filename is encoded in UTF-8.
+        ///
+        /// Possible errors are:
+        /// ```zig
+        /// error{ OutOfMemory, SurfaceTypeMismatch, WriteError, PngError }
+        /// ```
+        ///
+        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-surface-write-to-png)
+        pub fn writeToPNG(surface: *Self, filename: []const u8) (CairoError || error{NameTooLong})!void {
             var buf: [4097]u8 = undefined;
-            const fileNameZ = try std.fmt.bufPrintZ(&buf, "{s}", .{filename});
-            const writeStatus = cairo_surface_write_to_png(surface, fileNameZ.ptr);
-            if (writeStatus != .Success) return writeStatus.toErr();
+            const fileNameZ = std.fmt.bufPrintZ(&buf, "{s}", .{filename}) catch return error.NameTooLong;
+            return cairo_surface_write_to_png(surface, fileNameZ.ptr).toErr();
+        }
+
+        /// Writes the image surface to the `writer` stream.
+        ///
+        /// **Parameters**
+        /// - `writer`: pointer to a writeable object, e.g. `std.io.Writer` or
+        /// `std.fs.File` (it should have a `.writeAll()` function)
+        ///
+        /// Possible errors are:
+        /// ```zig
+        /// error{ OutOfMemory, SurfaceTypeMismatch, PngError }
+        /// ```
+        ///
+        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png-stream)
+        pub fn writeToPNGStream(surface: *Self, writer: anytype) CairoError!*ImageSurface {
+            const writeFn = util.createWriteFn(@TypeOf(writer));
+            const imageSurface = cairo_surface_write_to_png_stream(surface, writeFn, writer).?;
+            return imageSurface.status().toErr();
         }
     };
 }
@@ -532,7 +613,7 @@ extern fn cairo_surface_status(surface: ?*anyopaque) Status;
 extern fn cairo_surface_finish(surface: ?*anyopaque) void;
 extern fn cairo_surface_flush(surface: ?*anyopaque) void;
 // cairo_device_t * 	cairo_surface_get_device ()
-// void 	cairo_surface_get_font_options ()
+extern fn cairo_surface_get_font_options(surface: ?*anyopaque, options: ?*FontOptions) void;
 extern fn cairo_surface_get_content(surface: ?*anyopaque) Content;
 extern fn cairo_surface_mark_dirty(surface: ?*anyopaque) void;
 extern fn cairo_surface_mark_dirty_rectangle(surface: ?*anyopaque, x: c_int, y: c_int, width: c_int, height: c_int) void;
@@ -544,8 +625,8 @@ extern fn cairo_surface_mark_dirty_rectangle(surface: ?*anyopaque, x: c_int, y: 
 // extern fn cairo_surface_get_fallback_resolution(surface: ?*anyopaque, x_pixels_per_inch: [*c]f64, y_pixels_per_inch: [*c]f64) void;
 extern fn cairo_surface_get_type(surface: ?*anyopaque) SurfaceType;
 extern fn cairo_surface_get_reference_count(surface: ?*anyopaque) c_uint;
-// cairo_status_t 	cairo_surface_set_user_data ()
-// void * 	cairo_surface_get_user_data ()
+extern fn cairo_surface_set_user_data(surface: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
+extern fn cairo_surface_get_user_data(surface: ?*anyopaque, key: [*c]const UserDataKey) ?*anyopaque;
 extern fn cairo_surface_copy_page(surface: ?*anyopaque) void;
 extern fn cairo_surface_show_page(surface: ?*anyopaque) void;
 extern fn cairo_surface_has_show_text_glyphs(surface: ?*anyopaque) c_int;

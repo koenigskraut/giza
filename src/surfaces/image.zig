@@ -93,8 +93,10 @@ pub const ImageSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-create-for-data)
     pub fn createForData(data: [*c]u8, format: Format, width: u16, height: u16, stride: u18) CairoError!*ImageSurface {
+        // TODO: check destroy
         const imageSurface = cairo_image_surface_create_for_data(data, format, width, height, stride).?;
         try imageSurface.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
         return imageSurface;
     }
 
@@ -142,11 +144,11 @@ pub const ImageSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png-stream)
     pub fn createFromPNGStream(reader: anytype) CairoError!*ImageSurface {
-        // TODO: allow errors to propagate?
         // TODO is this owned?
         const readFn = util.createReadFn(@TypeOf(reader));
         const imageSurface = cairo_image_surface_create_from_png_stream(readFn, reader).?;
         try imageSurface.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
         return imageSurface;
     }
 

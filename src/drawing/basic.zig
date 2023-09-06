@@ -220,7 +220,9 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-pop-group)
     pub fn popGroup(self: *Context) *SurfacePattern {
-        return cairo_pop_group(self).?;
+        const pattern = cairo_pop_group(self).?;
+        if (safety.tracing) safety.markForLeakDetection(@returnAddress(), pattern) catch |e| std.debug.panic("{any}", .{e});
+        return pattern;
     }
 
     /// Terminates the redirection begun by a call to `ctx.pushGroup()` or
@@ -447,7 +449,7 @@ pub const Mixin = struct {
     /// - `offset`: return value for the current dash offset, or `null`
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-dash)
-    pub fn getDash(self: *Context, dashes: ?*f64, offset: ?*f64) void {
+    pub fn getDash(self: *Context, dashes: ?[*]f64, offset: ?*f64) void {
         // TODO: think about return values
         cairo_get_dash(self, dashes, offset);
     }

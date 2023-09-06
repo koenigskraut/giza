@@ -3,13 +3,21 @@ const testing = std.testing;
 
 const Status = @import("enums.zig").Status;
 
-/// A `cairo.Matrix` holds an affine transformation, such as a scale, rotation,
-/// shear, or a combination of those. The transformation of a point (x, y)
-/// is given by:
+/// A Transformation matrix.
+///
+/// `cairo.Matrix` is used to convert between different coordinate spaces. It
+/// holds an affine transformation, such as a scale, rotation, shear, or a
+/// combination of those. The transformation of a point (x, y) is given by:
 /// ```code
 /// x_new = xx * x + xy * y + x0;
 /// y_new = yx * x + yy * y + y0;
 /// ```
+///
+/// The current transformation matrix of a `cairo.Context`, represented as a
+/// `cairo.Matrix`, defines the transformation from user-space coordinates to
+/// device-space coordinates. See also:
+/// - `cairo.Context.getMatrix()`
+/// - `cairo.Context.setMatrix()`
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-t)
 pub const Matrix = extern struct {
