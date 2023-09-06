@@ -6,6 +6,10 @@
 | Types and Values | 35/94 | ![](https://geps.dev/progress/39) |
 
 ✔️ | ❌ | ⬜️ | 🕝
+✔️ — done
+❌ — not done
+⬜️ — not required
+🕝 — incomplete/questionable
 
 ## [Drawing](https://www.cairographics.org/manual/cairo-drawing.html)
 - ### [cairo_t](https://www.cairographics.org/manual/cairo-cairo-t.html) — The cairo drawing context
