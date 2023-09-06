@@ -30,6 +30,8 @@ const DestroyFn = cairo.DestroyFn;
 ///
 /// Memory management of `cairo.FontFace` is done with `fontFace.reference()`
 /// and `fontFace.destroy()`
+///
+/// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-t)
 pub const FontFace = opaque {
     /// Increases the reference count on `self` by one. This prevents `self`
     /// from being destroyed until a matching call to `.destroy()` is made.
@@ -116,7 +118,7 @@ pub const FontFace = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-set-user-data)
     pub fn getUserData(self: *FontFace, key: *const UserDataKey) ?*anyopaque {
-        cairo_font_face_get_user_data(self, key);
+        return cairo_font_face_get_user_data(self, key);
     }
 };
 
