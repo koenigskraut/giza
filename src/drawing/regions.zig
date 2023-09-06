@@ -138,7 +138,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-reference)
     pub fn reference(self: *Region) *Region {
-        if (safety.tracing) safety.reference(self);
+        if (safety.tracing) safety.reference(@returnAddress(), self);
         return cairo_region_reference(self).?;
     }
 
@@ -147,8 +147,8 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-destroy)
     pub fn destroy(self: *Region) void {
-        if (safety.tracing) safety.destroy(self);
         cairo_region_destroy(self);
+        if (safety.tracing) safety.destroy(self);
     }
 
     /// Checks whether an error has previous occurred for this region object.

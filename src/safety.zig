@@ -92,13 +92,17 @@ pub fn markForLeakDetection(address: usize, ptr: anytype) !void {
     liEnd += 1;
 }
 
-pub fn reference(ptr: *anyopaque) void {
-    var entry = leaks.getPtr(@intFromPtr(ptr)) orelse return;
-    entry.*.count += 1;
+pub fn reference(address: usize, ptr: anytype) void {
+    var entry = leaks.getPtr(@intFromPtr(ptr));
+    if (entry) |e| {
+        e.*.count += 1;
+        return;
+    }
+    markForLeakDetection(address, ptr) catch |e| std.debug.panic("{any}", .{e});
 }
 
 pub fn destroy(ptr: *anyopaque) void {
-    var entry = leaks.getPtr(@intFromPtr(ptr)) orelse return;
+    var entry = leaks.getPtr(@intFromPtr(ptr)) orelse std.debug.panic("Double free!", .{});
     entry.*.count -= 1;
     if (entry.count == 0) {
         _ = leaks.swapRemove(@intFromPtr(ptr));
@@ -110,16 +114,19 @@ pub fn markAsDestroyed(ptr: *anyopaque) void {
 }
 
 pub export fn detectLeaks() void {
+    var error_state = false;
     defer {
         if (arena) |a| a.deinit();
         arena = null;
         leakInfos = undefined;
         ibEnd = 0;
         liEnd = 0;
+        if (error_state) @panic("giza safety check failure");
     }
     const writer = leaksWriter;
     var it = leaks.iterator();
     while (it.next()) |pair| {
+        error_state = true;
         const debugInfo = std.debug.getSelfDebugInfo() catch |err| {
             writer.print("\nUnable to print stack trace: Unable to open debug info: {s}\n", .{@errorName(err)}) catch return;
             return;

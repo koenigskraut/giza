@@ -127,6 +127,7 @@ pub fn Base(comptime Self: type) type {
             // TODO: safety
             const s: *Self = @ptrCast(cairo_surface_create_similar(surface, content, width, height).?);
             try s.status().toErr();
+            if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), s);
             return s;
         }
 
@@ -164,6 +165,7 @@ pub fn Base(comptime Self: type) type {
             // TODO: safety
             const image = @as(*ImageSurface, @ptrCast(cairo_surface_create_similar_image(surface, format, width, height).?));
             try image.status().toErr();
+            if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
             return image;
         }
 
@@ -207,6 +209,7 @@ pub fn Base(comptime Self: type) type {
             // TODO: safety
             const s = @as(*Self, @ptrCast(cairo_surface_create_for_rectangle(surface, x, y, width, height).?));
             try s.status().toErr();
+            if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), s);
             return s;
         }
 
@@ -219,7 +222,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-reference)
         pub fn reference(surface: *Self) *Self {
-            if (safety.tracing) safety.reference(surface);
+            if (safety.tracing) safety.reference(@returnAddress(), surface);
             return @ptrCast(cairo_surface_reference(surface).?);
         }
 
@@ -468,12 +471,30 @@ pub fn Base(comptime Self: type) type {
         ///
         /// **Returns**
         ///
-        /// a pointer to the newly allocated image surface. The caller must
-        /// use `surface.unmapImage()` to destroy this image surface.
+        /// a pointer to the newly allocated image surface or an error if
+        /// `surface` in an error state or any other error occurs.
+        ///
+        /// **NOTE**: the
+        /// caller owns the surface, **BUT** calling `.destroy()` on the
+        /// resulting `cairo.ImageSurface` is an **UNDEFINED BEHAVIOR**.
+        /// Instead, you should call `.unmapImage()` on the original surface as
+        /// such:
+        /// ```zig
+        /// // surface is some cairo.Surface
+        /// const extents = cairo.RectangleInt.init(.{0, 0, 10, 10});
+        /// const image = try surface.mapToImage(&extents);
+        /// defer surface.unmapImage(image);
+        /// ```
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-map-to-image)
-        pub fn mapToImage(surface: *Self, extents: ?*const RectangleInt) *ImageSurface {
-            return cairo_surface_map_to_image(surface, extents).?;
+        pub fn mapToImage(surface: *Self, extents: ?*const RectangleInt) CairoError!*ImageSurface {
+            // TODO: this is the only case where the user can screw up garbage
+            // collection while using provided .destroy() function. Should we
+            // cover this case in debug mode?
+            const image = cairo_surface_map_to_image(surface, extents).?;
+            try image.status().toErr();
+            if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
+            return image;
         }
 
         /// Unmaps the image surface as returned from `surface.mapToImage()`.
@@ -490,6 +511,7 @@ pub fn Base(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-unmap-image)
         pub fn unmapImage(surface: *Self, image: *ImageSurface) void {
             cairo_surface_unmap_image(surface, image);
+            if (safety.tracing) safety.destroy(image);
         }
 
         pub fn writeToPNG(surface: *Self, filename: []const u8) !void {

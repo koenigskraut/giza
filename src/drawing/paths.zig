@@ -9,6 +9,7 @@ const enums = @import("../enums.zig");
 const util = @import("../util.zig");
 // const Glyph = @import("text.zig").Glyph;
 const context = @import("../context.zig");
+const safety = @import("../safety.zig");
 
 const Context = context.Context;
 const Rectangle = context.Rectangle;
@@ -36,6 +37,7 @@ pub const Mixin = struct {
     pub fn copyPath(self: *Context) CairoError!*Path {
         var path: *Path = cairo_copy_path(self).?;
         try path.status.toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), path);
         return path;
     }
 
@@ -63,6 +65,7 @@ pub const Mixin = struct {
     pub fn copyPathFlat(self: *Context) CairoError!*Path {
         var path: *Path = cairo_copy_path_flat(self).?;
         try path.status.toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), path);
         return path;
     }
 
@@ -477,11 +480,10 @@ pub const Path = extern struct {
     /// `cairo.Path` returned by a cairo function. Any path that is created
     /// manually (ie. outside of cairo) should be destroyed manually as well.
     ///
-    ///
-    ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-destroy)
     pub fn destroy(self: *Path) void {
         cairo_path_destroy(self);
+        if (safety.tracing) safety.destroy(self);
     }
 };
 

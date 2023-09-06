@@ -126,7 +126,7 @@ pub fn Mixin(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-reference)
         pub fn reference(self: *Self) *Self {
-            if (safety.tracing) safety.reference(self);
+            if (safety.tracing) safety.reference(@returnAddress(), self);
             return @ptrCast(cairo_pattern_reference(self).?);
         }
 
@@ -261,7 +261,7 @@ pub const SolidPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-rgb)
     pub fn createRGB(red: f64, green: f64, blue: f64) CairoError!*SolidPattern {
-        var pattern = cairo_pattern_create_rgb(red, green, blue).?;
+        const pattern = cairo_pattern_create_rgb(red, green, blue).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -293,7 +293,7 @@ pub const SolidPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-rgba)
     pub fn createRGBA(red: f64, green: f64, blue: f64, alpha: f64) CairoError!*SolidPattern {
-        var pattern = cairo_pattern_create_rgba(red, green, blue, alpha).?;
+        const pattern = cairo_pattern_create_rgba(red, green, blue, alpha).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -341,8 +341,9 @@ pub const SurfacePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-for-surface)
     pub fn createFor(surface: *Surface) CairoError!*SurfacePattern {
-        var pattern = cairo_pattern_create_for_surface(surface).?;
+        const pattern = cairo_pattern_create_for_surface(surface).?;
         try pattern.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
     }
 
@@ -470,8 +471,8 @@ pub fn Gradient(comptime Self: type) type {
             var stops = try ArrayList(ColorStop).initCapacity(allocator, numStops);
             for (0..numStops) |n| {
                 var stop: ColorStop = undefined;
-                self.getColorStopRGBA(@intCast(n), &stop.offset, &stop.red, &stop.green, &stop.blue, &stop.alpha);
-                stops.append(stop);
+                try self.getColorStopRGBA(@intCast(n), &stop.offset, &stop.red, &stop.green, &stop.blue, &stop.alpha);
+                try stops.append(stop);
             }
             return stops;
         }
@@ -554,6 +555,7 @@ pub const LinearGradientPattern = opaque {
     pub fn create(x0: f64, y0: f64, x1: f64, y1: f64) CairoError!*LinearGradientPattern {
         var pattern = cairo_pattern_create_linear(x0, y0, x1, y1).?;
         try pattern.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
     }
 
@@ -615,6 +617,7 @@ pub const RadialGradientPattern = opaque {
     pub fn create(cx0: f64, cy0: f64, radius0: f64, cx1: f64, cy1: f64, radius1: f64) CairoError!*RadialGradientPattern {
         var pattern = cairo_pattern_create_radial(cx0, cy0, radius0, cx1, cy1, radius1).?;
         try pattern.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
     }
 
@@ -781,6 +784,7 @@ const MeshPattern = opaque {
     pub fn create() CairoError!*MeshPattern {
         var pattern = cairo_pattern_create_mesh().?;
         try pattern.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
     }
 
@@ -1021,6 +1025,17 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-get-path)
     pub fn getPath(self: *MeshPattern, patchNum: u32) *Path {
+        // TODO: who ownes this? check with valgrind or smth, ChatGPT says:
+        // Based on the available information, the ownership of the struct
+        // returned by the cairo_mesh_pattern_get_path function depends on
+        // whether the user has finished defining the patch or not:
+        // 1. If the user has not finished defining the patch, the returned
+        // struct is still owned by the library. The user should not destroy
+        // it explicitly.
+        // 2. If the user has finished defining the patch using
+        // cairo_mesh_pattern_end_patch, then the user becomes the owner of the
+        // returned struct and is responsible for destroying it when it is no
+        // longer needed.
         return cairo_mesh_pattern_get_path(self, @intCast(patchNum)).?;
     }
 
@@ -1130,6 +1145,7 @@ pub const RasterSourcePattern = opaque {
         // TODO: fix doc example
         const pattern = cairo_pattern_create_raster_source(userData, content, width, height).?;
         try pattern.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
     }
 

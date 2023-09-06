@@ -75,7 +75,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-reference)
     pub fn reference(self: *Context) *Context {
-        if (safety.tracing) safety.reference(self);
+        if (safety.tracing) safety.reference(@returnAddress(), self);
         return cairo_reference(self).?;
     }
 
@@ -85,8 +85,8 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-destroy)
     pub fn destroy(self: *Context) void {
-        if (safety.tracing) safety.destroy(self);
         cairo_destroy(self);
+        if (safety.tracing) safety.destroy(self);
     }
 
     /// Checks whether an error has previously occurred for this context.
@@ -780,8 +780,11 @@ pub const Mixin = struct {
     /// which should be destroyed using `rectangleList.destroy()`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-copy-clip-rectangle-list)
-    pub fn copyClipRectangleList(self: *Context) *RectangleList {
-        return cairo_copy_clip_rectangle_list(self).?;
+    pub fn copyClipRectangleList(self: *Context) CairoError!*RectangleList {
+        const list: *RectangleList = cairo_copy_clip_rectangle_list(self).?;
+        try list.status.toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), list);
+        return list;
     }
 
     /// A drawing operator that fills the current path according to the current
