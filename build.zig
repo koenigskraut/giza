@@ -29,13 +29,15 @@ pub fn build(b: *std.Build) void {
     // running `zig build`).
     b.installArtifact(lib);
 
+    var module = b.addModule("cairo", .{ .source_file = .{ .path = "src/cairo.zig" } });
     // Creates a step for unit testing. This only builds the test executable
     // but does not run it.
     const main_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = .{ .path = "src/cairo.zig" },
         .target = target,
         .optimize = optimize,
     });
+    main_tests.addModule("cairo", module);
     main_tests.linkLibC();
     main_tests.linkSystemLibrary("cairo");
 
