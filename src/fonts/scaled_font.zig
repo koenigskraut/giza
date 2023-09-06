@@ -11,8 +11,11 @@ const DestroyFn = cairo.DestroyFn;
 const FontFace = cairo.FontFace;
 const FontOptions = cairo.FontOptions;
 const FontType = cairo.FontType;
+const Glyph = cairo.Glyph;
 const Matrix = cairo.Matrix;
 const Status = cairo.Status;
+const TextCluster = cairo.TextCluster;
+const TextClusterFlags = cairo.TextClusterFlags;
 const UserDataKey = cairo.UserDataKey;
 
 /// A `cairo.ScaledFont` is a font scaled to a particular size and device
@@ -142,9 +145,81 @@ pub const ScaledFont = opaque {
         return text_extents;
     }
 
+    /// Gets the extents for a slice of glyphs. The extents describe a
+    /// user-space rectangle that encloses the "inked" portion of the glyphs,
+    /// (as they would be drawn by `cairo.Context.showGlyphs()` if the cairo
+    /// graphics state were set to the same font_face, font_matrix, ctm, and
+    /// font_options as scaled_font ). Additionally, the `x_advance` and
+    /// `y_advance` values indicate the amount by which the current point would
+    /// be advanced by `cairo.Context.showGlyphs()`.
+    ///
+    /// Note that whitespace glyphs do not contribute to the size of the
+    /// rectangle (extents.width and extents.height).
+    ///
+    /// **Parameters**
+    /// - `glyphs`: a slice of glyph IDs with X and Y offsets.
+    ///
+    /// **Returns**
+    ///
+    /// a `cairo.TextExtents` with the retrieved extents.
+    ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-glyph-extents)
+    pub fn glyphExtents(self: *ScaledFont, glyphs: []const Glyph) TextExtents {
+        var extents: TextExtents = undefined;
+        cairo_scaled_font_glyph_extents(self, glyphs.ptr, @intCast(glyphs.len), &extents);
+        return extents;
+    }
+
+    /// Converts UTF-8 text to a slice of glyphs, optionally with cluster
+    /// mapping, that can be used to render later using `self` scaled font.
+    ///
+    /// If `glyphs` initially points to a non-zero size slice, that slice is
+    /// used as a glyph buffer. If the provided glyph array is too short for
+    /// the conversion, a new glyph array is allocated using
+    /// `cairo.Glyph.allocate()` and placed in `glyphs`. Upon return,
+    /// `num_glyphs` always contains the number of generated glyphs. If the
+    /// value `glyphs` points to has changed after the call, the user is
+    /// responsible for freeing the allocated glyph slice using
+    /// `cairo.Glyph.free()`. This may happen even if the provided array was
+    /// large enough.
+    ///
+    /// If clusters is not NULL, num_clusters and cluster_flags should not be NULL, and cluster mapping will be computed. The semantics of how cluster array allocation works is similar to the glyph array. That is, if clusters initially points to a non-NULL value, that array is used as a cluster buffer, and num_clusters should point to the number of cluster entries available there. If the provided cluster array is too short for the conversion, a new cluster array is allocated using cairo_text_cluster_allocate() and placed in clusters . Upon return, num_clusters always contains the number of generated clusters. If the value clusters points at has changed after the call, the user is responsible for freeing the allocated cluster array using cairo_text_cluster_free(). This may happen even if the provided array was large enough
+    ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-text-to-glyphs)
-    const _1 = {};
+    pub fn textToGlyphs(
+        self: *ScaledFont,
+        x: f64,
+        y: f64,
+        utf8: [:0]const u8,
+        glyphs: *[]Glyph,
+        clusters: *[]TextCluster,
+        cluster_flags: *TextClusterFlags,
+    ) CairoError!void {
+        var glyph_ptr: [*c][*c]Glyph = @ptrCast(@alignCast(glyphs));
+        var glyphs_num: c_int = @intCast(glyphs.len);
+        var cluster_ptr: [*c][*c]TextCluster = @ptrCast(@alignCast(clusters));
+        var clusters_num: c_int = @intCast(clusters.len);
+        try cairo_scaled_font_text_to_glyphs(
+            self,
+            x,
+            y,
+            utf8.ptr,
+            @intCast(utf8.len),
+            glyph_ptr,
+            &glyphs_num,
+            cluster_ptr,
+            &clusters_num,
+            cluster_flags,
+        ).toErr();
+        if (safety.tracing) {
+            if (@intFromPtr(glyphs) != @intFromPtr(glyph_ptr)) try safety.markForLeakDetection(@returnAddress(), glyph_ptr.*);
+        }
+
+        // x: f64, y: f64,
+        // utf8: [*c]const u8, utf8_len: c_int,
+        // glyphs: [*c][*c]Glyph, num_glyphs: [*c]c_int,
+        // clusters: [*c][*c]TextCluster, num_clusters: [*c]c_int, cluster_flags: [*c]TextClusterFlags
+    }
 
     /// Gets the font face that this scaled font uses. This might be the font
     /// face passed to `cairo.ScaledFont.create()`, but this does not hold true
@@ -336,8 +411,8 @@ extern fn cairo_scaled_font_destroy(scaled_font: ?*ScaledFont) void;
 extern fn cairo_scaled_font_status(scaled_font: ?*ScaledFont) Status;
 extern fn cairo_scaled_font_extents(scaled_font: ?*ScaledFont, extents: [*c]FontExtents) void;
 extern fn cairo_scaled_font_text_extents(scaled_font: ?*ScaledFont, utf8: [*c]const u8, extents: [*c]TextExtents) void;
-// extern fn cairo_scaled_font_glyph_extents(scaled_font: ?*ScaledFont, glyphs: [*c]const cairo_glyph_t, num_glyphs: c_int, extents: [*c]cairo_text_extents_t) void;
-// extern fn cairo_scaled_font_text_to_glyphs(scaled_font: ?*ScaledFont, x: f64, y: f64, utf8: [*c]const u8, utf8_len: c_int, glyphs: [*c][*c]cairo_glyph_t, num_glyphs: [*c]c_int, clusters: [*c][*c]cairo_text_cluster_t, num_clusters: [*c]c_int, cluster_flags: [*c]cairo_text_cluster_flags_t) Status;
+extern fn cairo_scaled_font_glyph_extents(scaled_font: ?*ScaledFont, glyphs: [*c]const Glyph, num_glyphs: c_int, extents: [*c]TextExtents) void;
+extern fn cairo_scaled_font_text_to_glyphs(scaled_font: ?*ScaledFont, x: f64, y: f64, utf8: [*c]const u8, utf8_len: c_int, glyphs: [*c][*c]Glyph, num_glyphs: [*c]c_int, clusters: [*c][*c]TextCluster, num_clusters: [*c]c_int, cluster_flags: [*c]TextClusterFlags) Status;
 extern fn cairo_scaled_font_get_font_face(scaled_font: ?*ScaledFont) ?*FontFace;
 extern fn cairo_scaled_font_get_font_options(scaled_font: ?*ScaledFont, options: ?*FontOptions) void;
 extern fn cairo_scaled_font_get_font_matrix(scaled_font: ?*ScaledFont, font_matrix: [*c]Matrix) void;
@@ -348,6 +423,23 @@ extern fn cairo_scaled_font_get_reference_count(scaled_font: ?*ScaledFont) c_uin
 extern fn cairo_scaled_font_set_user_data(scaled_font: ?*ScaledFont, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
 extern fn cairo_scaled_font_get_user_data(scaled_font: ?*ScaledFont, key: [*c]const UserDataKey) ?*anyopaque;
 
+const std = @import("std");
+
 test {
-    @import("std").debug.print("scaled font\n", .{});
+    std.debug.print("scaled font\n", .{});
+    var kek = "abcd".*;
+    var kekSlice: []u8 = &kek;
+    var ptrToSlice: *[]u8 = &kekSlice;
+
+    var kek1 = "abcd".*;
+    var kekSlice1: []u8 = &kek1;
+    var ptrToSlice1: *[]u8 = &kekSlice1;
+
+    var ptr2_casted: [*c][*c]u8 = @ptrCast(@alignCast(ptrToSlice));
+    ptr2_casted = @ptrCast(@alignCast(ptrToSlice1));
+    // std.debug.print("{any}\n", .{ptr});
+    std.debug.print("{*} {any}\n", .{ ptrToSlice, @alignOf(@TypeOf(ptrToSlice)) });
+    std.debug.print("{*} {any}\n", .{ ptr2_casted, @alignOf(@TypeOf(ptr2_casted)) });
+
+    // std.debug.print("{any} {any}\n", .{ ptr2_true.*.*, ptr2_casted.*.* });
 }
