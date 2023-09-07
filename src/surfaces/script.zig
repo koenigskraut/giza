@@ -187,18 +187,6 @@ pub const ScriptSurface = opaque {
     }
 };
 
-test {
-    // @import("std").debug.print("script test\n", .{});
-    // const surface = try cairo.ImageSurface.create(.ARGB32, 100, 100);
-    // defer surface.destroy();
-    // const context = try cairo.Context.create(surface.asSurface());
-    // defer context.destroy();
-
-    const device = try ScriptDevice.create("script.txt");
-    defer device.destroy();
-    device.writeComment("aboba\nkek");
-}
-
 extern fn cairo_script_create(filename: [*c]const u8) ?*ScriptDevice;
 extern fn cairo_script_create_for_stream(write_func: WriteFn, closure: ?*anyopaque) ?*ScriptDevice;
 extern fn cairo_script_from_recording_surface(script: ?*ScriptDevice, recording_surface: ?*RecordingSurface) Status;
