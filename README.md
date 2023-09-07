@@ -44,7 +44,7 @@ test transitive failure
 ```
 Yes, **giza** detected a leak, printed stacktrace and panicked at return of the program, just like if it was a native Zig allocator leak!
 
-Since we are linking libc anyway, I just interject some pointer counting in `create()`/`.reference()`/`destroy()` functions and check for leaks with `atexit()` at the end. This happens only in debug and shouldn't be a performance issue then.
+Since we are linking libc anyway, I just interject some pointer counting in `create()`/`.reference()`/`.destroy()` functions and check for leaks with `atexit()` at the end. This happens only in debug and shouldn't be a performance issue then.
 
 ### `opaque` types
 
@@ -52,7 +52,7 @@ We have a C object, but what we want is a native one. Popular pattern: pointer t
 
 Thanks to Zig's easy C interop, in **giza** there is no such pattern. All C objects behave like native ones. What are advantages and should you care? Let's see. 
 
-Every function in **giza**, that returns object with `.status()` method **and** could set it into an error state, checks it's status and raises error immediately. It's not always the intended behavoir: **cairo** safely allows errors to propagate in these cases, plus it's overhead.
+Every function in **giza**, that returns object with `.status()` method **and** could set it into an error state, checks its status and raises error immediately. It's not always the intended behavoir: **cairo** safely allows errors to propagate in these cases, plus it's overhead.
 
 So for example let's create `ImageSurface` unsafely and manage it manually:
 ```zig
@@ -103,10 +103,10 @@ test "interop 4" {
 }
 extern fn cairo_matrix_init_identity(matrix: ?*cairo.Matrix) void;
 ```
-Every C object in **giza** is a valid Zig `opaque`, so you can call C functions with them like nothing yourself!
+Every C object in **giza** is a valid Zig `opaque`/`extern struct`/`enum`, so you can call C functions with them like nothing yourself!
 
 ## Coverage and progress
 
-You can find coverage info [here](https://github.com/koenigskraut/giza/blob/master/coverage.md). Current progress is 77.2% regarding library functionality, __*but*__ it generally should work already. The only two parts that are missing are fonts and real devices (other than script one). If you only need cairo to draw some PNG or SVG files, that is already covered. There are other surfaces, devices and fonts in plans, but that would require using header files, which this wrapping has avoided so far, so we'll see.
+You can find coverage info [here](https://github.com/koenigskraut/giza/blob/master/coverage.md). Current progress is 77.2% regarding **cairo** functionality, __*but*__ it generally should work already. The only two parts that are missing are fonts and real devices (other than script one). If you only need cairo to draw some PNG or SVG files, that is already covered. There are other surfaces, devices and fonts coverage planned, but that would require using header files, which this wrapping has avoided so far, so we'll see.
 
-Also there is pango support in plans, probably as part of this repo.
+Also pango support is planned, probably as part of this repo.
