@@ -597,6 +597,16 @@ pub const CairoError = error{
     UnknownStatus,
 };
 
+/// A set of script output variants.
+///
+/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-mode-t)
+pub const ScriptMode = enum(c_uint) {
+    // the output will be in readable text (default).
+    Ascii,
+    /// the output will use byte codes.
+    Binary,
+};
+
 /// `cairo.Status` is used to indicate errors that can occur when using Cairo.
 /// In some cases it is returned directly by functions, but when using
 /// `cairo.Context`, the last error, if any, is stored in the context

@@ -6,3 +6,4 @@ pub const ImageSurface = image.ImageSurface;
 pub const SvgSurface = svg.SvgSurface;
 pub const RecordingSurface = @import("surfaces/recording.zig").RecordingSurface;
 pub const Surface = base.Surface;
+pub usingnamespace @import("surfaces/script.zig");
