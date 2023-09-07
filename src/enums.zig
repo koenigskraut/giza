@@ -62,6 +62,35 @@ pub const Content = enum(c_uint) {
     ColorAlpha = 12288,
 };
 
+/// `cairo.DeviceType` is used to describe the type of a given device. The
+/// devices types are also known as "backends" within cairo.
+///
+/// The device type can be queried with `cairo.Device.getType()`.
+///
+/// The various `cairo.Device` functions can be used with devices of any type,
+/// but some backends also provide type-specific functions that must only be
+/// called with a device of the appropriate type. These functions are methids
+/// of specific `cairo.Device` instances such as
+/// `cairo.ScriptDevice.writeComment()`.
+///
+/// The behavior of calling a type-specific function with a device of the wrong
+/// type is undefined, that is — **DO NOT** cast pointers into `cairo.Device`
+/// manually, use `.asDevice()` on a specific type and **DO NOT** keep the
+/// result.
+///
+/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-type-t)
+pub const DeviceType = enum(c_int) {
+    Drm = 0,
+    Gl,
+    Script,
+    Xcb,
+    Xlib,
+    Xml,
+    Cogl,
+    Wn32,
+    Invalid = -1,
+};
+
 /// `cairo.Extend` is used to describe how pattern color/alpha will be
 /// determined for areas "outside" the pattern's natural area, (for example,
 /// outside the surface bounds or outside the gradient geometry).

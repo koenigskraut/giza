@@ -47,6 +47,7 @@ const safety = @import("../safety.zig");
 
 const Content = cairo.Content;
 const CairoError = cairo.CairoError;
+const Device = cairo.Device;
 const MimeType = cairo.MimeType;
 const Status = cairo.Status;
 const SurfaceType = cairo.SurfaceType;
@@ -278,8 +279,17 @@ pub fn Base(comptime Self: type) type {
             cairo_surface_flush(surface);
         }
 
+        /// This function returns the device for a `surface`. See
+        /// `cairo.Device`.
+        ///
+        /// The device for `surface` or `null` if the surface does not have an
+        /// associated device.
+        ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-device)
-        //
+        pub fn getDevice(surface: *Self) ?*Device {
+            // TODO: safety checks?
+            return cairo_surface_get_device(surface);
+        }
 
         /// Retrieves the default font rendering options for the surface. This
         /// allows display surfaces to report the correct subpixel order for
@@ -331,13 +341,117 @@ pub fn Base(comptime Self: type) type {
             cairo_surface_mark_dirty_rectangle(surface, rect.x, rect.y, rect.width, rect.height);
         }
 
+        /// Sets an offset that is added to the device coordinates determined
+        /// by the CTM when drawing to `surface`. One use case for this
+        /// function is when we want to create a `cairo.Surface` that redirects
+        /// drawing for a portion of an onscreen surface to an offscreen
+        /// surface in a way that is completely invisible to the user of the
+        /// cairo API. Setting a transformation via `cairo.Context.translate()`
+        /// isn't sufficient to do this, since functions like
+        /// `cairo.Context.deviceToUser()` will expose the hidden offset.
+        ///
+        /// Note that the offset affects drawing to the surface as well as
+        /// using the surface in a source pattern.
+        ///
+        /// **Parameters**
+        /// - `x_offset`: the offset in the X direction, in device units
+        /// - `y_offset`: the offset in the Y direction, in device units
+        ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-device-offset)
+        pub fn setDeviceOffset(surface: *Self, x_offset: f64, y_offset: f64) void {
+            cairo_surface_set_device_offset(surface, x_offset, y_offset);
+        }
+
+        /// This function returns the previous device offset set by
+        /// `cairo.Surface.setDeviceOffset()`.
+        ///
+        /// **Parameters**
+        /// - `x_offset`: the offset in the X direction, in device units
+        /// - `y_offset`: the offset in the Y direction, in device units
+        ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-device-offset)
-        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-device-scale)
+        pub fn getDeviceOffset(surface: *Self, x_offset: *f64, y_offset: *f64) void {
+            cairo_surface_get_device_offset(surface, x_offset, y_offset);
+        }
+
+        /// Sets a scale that is multiplied to the device coordinates
+        /// determined by the CTM when drawing to `surface`. One common use for
+        /// this is to render to very high resolution display devices at a
+        /// scale factor, so that code that assumes 1 pixel will be a certain
+        /// size will still work. Setting a transformation via
+        /// `cairo.Context.translate()` isn't sufficient to do this, since
+        /// functions like `cairo.Context.deviceToUser()` will expose the
+        /// hidden scale.
+        ///
+        /// Note that the scale affects drawing to the surface as well as using
+        /// the surface in a source pattern.
+        ///
+        /// **Parameters**
+        /// - `x_scale`: the scale in the X direction
+        /// - `y_scale`: the scale in the Y direction
+        ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-device-scale)
+        pub fn setDeviceScale(surface: *Self, x_scale: f64, y_scale: f64) void {
+            cairo_surface_set_device_scale(surface, x_scale, y_scale);
+        }
+
+        /// This function returns the previous device scale set by
+        /// `cairo.Surface.setDeviceScale()`.
+        ///
+        /// **Parameters**
+        /// - `x_scale`: the scale in the X direction, in device units
+        /// - `y_scale`: the scale in the Y direction, in device units
+        ///
+        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-device-scale)
+        pub fn getDeviceScale(surface: *Self, x_scale: *f64, y_scale: *f64) void {
+            cairo_surface_get_device_scale(surface, x_scale, y_scale);
+        }
+
+        /// Set the horizontal and vertical resolution for image fallbacks.
+        ///
+        /// When certain operations aren't supported natively by a backend,
+        /// cairo will fallback by rendering operations to an image and then
+        /// overlaying that image onto the output. For backends that are
+        /// natively vector-oriented, this function can be used to set the
+        /// resolution used for these image fallbacks, (larger values will
+        /// result in more detailed images, but also larger file sizes).
+        ///
+        /// Some examples of natively vector-oriented backends are the ps, pdf,
+        /// and svg backends.
+        ///
+        /// For backends that are natively raster-oriented, image fallbacks are
+        /// still possible, but they are always performed at the native device
+        /// resolution. So this function has no effect on those backends.
+        ///
+        /// Note: The fallback resolution only takes effect at the time of
+        /// completing a page (with `cairo.Context.showPage()` or
+        /// `cairo.Context.copyPage()`) so there is currently no way to have
+        /// more than one fallback resolution in effect on a single page.
+        ///
+        /// The default fallback resoultion is 300 pixels per inch in both
+        /// dimensions.
+        ///
+        /// **Parameters**
+        /// - `x_pixels_per_inch`: horizontal setting for pixels per inch
+        /// - `y_pixels_per_inch`: vertical setting for pixels per inch
+        ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-fallback-resolution)
+        pub fn setFallbackResolution(surface: *Self, x_pixels_per_inch: f64, y_pixels_per_inch: f64) void {
+            cairo_surface_set_fallback_resolution(surface, x_pixels_per_inch, y_pixels_per_inch);
+        }
+
+        /// This function returns the previous fallback resolution set by
+        /// `cairo.Surface.setFallbackResolution()`, or default fallback
+        /// resolution if never set.
+        ///
+        /// **Parameters**
+        /// - `x_pixels_per_inch`: horizontal pixels per inch
+        /// - `y_pixels_per_inch`: vertical pixels per inch
+        ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-fallback-resolution)
-        //
+        pub fn getFallbackResolution(surface: *Self, x_pixels_per_inch: *f64, y_pixels_per_inch: *f64) void {
+            cairo_surface_get_fallback_resolution(surface, x_pixels_per_inch, y_pixels_per_inch);
+        }
 
         /// This function returns the type of the backend used to create a
         /// surface. See `cairo.SurfaceType` for available types.
@@ -612,17 +726,17 @@ extern fn cairo_surface_destroy(surface: ?*anyopaque) void;
 extern fn cairo_surface_status(surface: ?*anyopaque) Status;
 extern fn cairo_surface_finish(surface: ?*anyopaque) void;
 extern fn cairo_surface_flush(surface: ?*anyopaque) void;
-// cairo_device_t * 	cairo_surface_get_device ()
+extern fn cairo_surface_get_device(surface: ?*anyopaque) ?*Device;
 extern fn cairo_surface_get_font_options(surface: ?*anyopaque, options: ?*FontOptions) void;
 extern fn cairo_surface_get_content(surface: ?*anyopaque) Content;
 extern fn cairo_surface_mark_dirty(surface: ?*anyopaque) void;
 extern fn cairo_surface_mark_dirty_rectangle(surface: ?*anyopaque, x: c_int, y: c_int, width: c_int, height: c_int) void;
-// extern fn cairo_surface_set_device_offset(surface: ?*anyopaque, x_offset: f64, y_offset: f64) void;
-// extern fn cairo_surface_get_device_offset(surface: ?*anyopaque, x_offset: [*c]f64, y_offset: [*c]f64) void;
-// extern fn cairo_surface_get_device_scale(surface: ?*anyopaque, x_scale: [*c]f64, y_scale: [*c]f64) void;
-// extern fn cairo_surface_set_device_scale(surface: ?*anyopaque, x_scale: f64, y_scale: f64) void;
-// extern fn cairo_surface_set_fallback_resolution(surface: ?*anyopaque, x_pixels_per_inch: f64, y_pixels_per_inch: f64) void;
-// extern fn cairo_surface_get_fallback_resolution(surface: ?*anyopaque, x_pixels_per_inch: [*c]f64, y_pixels_per_inch: [*c]f64) void;
+extern fn cairo_surface_set_device_offset(surface: ?*anyopaque, x_offset: f64, y_offset: f64) void;
+extern fn cairo_surface_get_device_offset(surface: ?*anyopaque, x_offset: [*c]f64, y_offset: [*c]f64) void;
+extern fn cairo_surface_get_device_scale(surface: ?*anyopaque, x_scale: [*c]f64, y_scale: [*c]f64) void;
+extern fn cairo_surface_set_device_scale(surface: ?*anyopaque, x_scale: f64, y_scale: f64) void;
+extern fn cairo_surface_set_fallback_resolution(surface: ?*anyopaque, x_pixels_per_inch: f64, y_pixels_per_inch: f64) void;
+extern fn cairo_surface_get_fallback_resolution(surface: ?*anyopaque, x_pixels_per_inch: [*c]f64, y_pixels_per_inch: [*c]f64) void;
 extern fn cairo_surface_get_type(surface: ?*anyopaque) SurfaceType;
 extern fn cairo_surface_get_reference_count(surface: ?*anyopaque) c_uint;
 extern fn cairo_surface_set_user_data(surface: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;

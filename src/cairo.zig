@@ -1,7 +1,10 @@
 const std = @import("std");
 
 pub usingnamespace @import("enums.zig");
+
 pub usingnamespace @import("surface.zig");
+pub const Device = @import("device.zig").Device;
+
 pub usingnamespace @import("context.zig");
 pub usingnamespace @import("drawing/pattern.zig");
 pub usingnamespace @import("util.zig");
