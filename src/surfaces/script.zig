@@ -201,7 +201,7 @@ test {
 
 extern fn cairo_script_create(filename: [*c]const u8) ?*ScriptDevice;
 extern fn cairo_script_create_for_stream(write_func: WriteFn, closure: ?*anyopaque) ?*ScriptDevice;
-extern fn cairo_script_from_recording_surface(script: ?*ScriptDevice, recording_surface: ?*Surface) Status;
+extern fn cairo_script_from_recording_surface(script: ?*ScriptDevice, recording_surface: ?*RecordingSurface) Status;
 extern fn cairo_script_set_mode(script: ?*ScriptDevice, mode: ScriptMode) void;
 extern fn cairo_script_get_mode(script: ?*ScriptDevice) ScriptMode;
 extern fn cairo_script_surface_create(script: ?*ScriptDevice, content: Content, width: f64, height: f64) ?*ScriptSurface;

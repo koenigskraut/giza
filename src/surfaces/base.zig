@@ -710,10 +710,9 @@ pub fn Base(comptime Self: type) type {
         /// ```
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png-stream)
-        pub fn writeToPNGStream(surface: *Self, writer: anytype) CairoError!*ImageSurface {
+        pub fn writeToPNGStream(surface: *Self, writer: anytype) CairoError!void {
             const writeFn = util.createWriteFn(@TypeOf(writer));
-            const imageSurface = cairo_surface_write_to_png_stream(surface, writeFn, writer).?;
-            return imageSurface.status().toErr();
+            return cairo_surface_write_to_png_stream(surface, writeFn, writer).toErr();
         }
     };
 }

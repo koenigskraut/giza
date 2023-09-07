@@ -214,7 +214,6 @@ pub const Matrix = extern struct {
     pub fn transformPoint(self: *const Matrix, x: *f64, y: *f64) void {
         cairo_matrix_transform_point(self, x, y);
     }
-    const _ = {};
 };
 
 /// `cairo.UserDataKey` is used for attaching user data to cairo data

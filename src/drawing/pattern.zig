@@ -33,7 +33,7 @@ const UserDataKey = util.UserDataKey;
 const DestroyFn = util.DestroyFn;
 const Point = util.Point;
 
-pub fn Mixin(comptime Self: type) type {
+fn Mixin(comptime Self: type) type {
     return struct {
         /// Casts a pointer to the particular pattern into base
         /// `*cairo.Pattern` object.

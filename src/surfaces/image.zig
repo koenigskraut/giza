@@ -9,6 +9,8 @@
 const std = @import("std");
 const testing = std.testing;
 
+const cairo = @import("../cairo.zig");
+
 const enums = @import("../enums.zig");
 const safety = @import("../safety.zig");
 const util = @import("../util.zig");
@@ -114,6 +116,13 @@ pub const ImageSurface = opaque {
     /// ```zig
     /// error{ NameTooLong, OutOfMemory, FileNotFound, ReadError, PngError }
     /// ```
+    /// **NOTE**: The caller owns the created surface and should call
+    /// `surface.destroy()` when done with it. You can use idiomatic Zig
+    /// pattern with `defer`:
+    /// ```zig
+    /// const surface = cairo.ImageSurface.createFromPNG("file.png");
+    /// defer surface.destroy();
+    /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png)
     pub fn createFromPNG(filename: []const u8) (CairoError || error{NameTooLong})!*ImageSurface {
@@ -141,10 +150,17 @@ pub const ImageSurface = opaque {
     /// ```zig
     /// error{ OutOfMemory, ReadError, PngError }
     /// ```
+    /// **NOTE**: The caller owns the created surface and should call
+    /// `surface.destroy()` when done with it. You can use idiomatic Zig
+    /// pattern with `defer`:
+    /// ```zig
+    /// var file = try std.fs.cwd.open("image.png", .{});
+    /// const surface = cairo.ImageSurface.createFromPNGStream(&file);
+    /// defer surface.destroy();
+    /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png-stream)
     pub fn createFromPNGStream(reader: anytype) CairoError!*ImageSurface {
-        // TODO is this owned?
         const readFn = util.createReadFn(@TypeOf(reader));
         const imageSurface = cairo_image_surface_create_from_png_stream(readFn, reader).?;
         try imageSurface.status().toErr();
@@ -214,6 +230,19 @@ test "ImageSurface" {
         try testing.expect(surface.getType() == .Image);
         try testing.expect(surface.status() == .Success);
     }
+}
+
+test "createFromPNGStream" {
+    var file1 = try std.fs.cwd().openFile("out1.png", .{});
+    const surface = try ImageSurface.createFromPNGStream(&file1);
+    defer surface.destroy();
+    const ctx = try cairo.Context.create(surface.asSurface());
+    defer ctx.destroy();
+    ctx.rectangle(.{ .x = 500, .y = 300, .width = 80, .height = 80 });
+    ctx.setSourceRGBA(0, 0, 0, 0.8);
+    ctx.fill();
+    var file2 = try std.fs.cwd().createFile("out2.png", .{});
+    try surface.writeToPNGStream(&file2);
 }
 
 extern fn cairo_image_surface_create(format: Format, width: c_int, height: c_int) callconv(.C) ?*ImageSurface;
