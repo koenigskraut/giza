@@ -2,13 +2,12 @@
 
 |Objects|Number|Progress|
 |:-:|:-:|:-:|
-| Functions | 283/413 | ![](https://geps.dev/progress/69) |
+| Functions | 319/413 | ![](https://geps.dev/progress/77) |
 | Types and Values | 35/94 | ![](https://geps.dev/progress/39) |
 
-✔️ | ❌ | ⬜️ | 🕝
-✔️ — done
-❌ — not done
-⬜️ — not required
+✔️ — done  
+❌ — not done  
+⬜️ — not required  
 🕝 — incomplete/questionable
 
 ## [Drawing](https://www.cairographics.org/manual/cairo-drawing.html)
@@ -427,13 +426,39 @@
 - ### [cairo_device_t](https://www.cairographics.org/manual/cairo-cairo-device-t.html) — interface to underlying rendering system
     ||||
     |:-:|:-:|:-:|
-    | Functions | 0/18 | ![](https://geps.dev/progress/0) |
-    | Types and Values | 0/2 | ![](https://geps.dev/progress/0) |  
+    | Functions | 18/18 | ![](https://geps.dev/progress/100) |
+    | Types and Values | 2/2 | ![](https://geps.dev/progress/100) |  
+
+    <details>
+    <summary>Functions</summary> 
+
+    | Name | Exists | Errors | Safety | Doc |
+    |:-|:-:|:-:|:-:|:-:|
+    | cairo_device_reference | ✔️ | ⬜️ | ✔️ | ✔️ |
+    | cairo_device_destroy | ✔️ | ⬜️ | ✔️ | ✔️ |
+    | cairo_device_status | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_device_finish | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_device_flush | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_device_get_type | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_device_get_reference_count | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_device_set_user_data | ✔️ | ✔️ | ⬜️ | ✔️ |
+    | cairo_device_get_user_data | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_device_acquire | ✔️ | ✔️ | ⬜️ | ✔️ |
+    | cairo_device_release | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_device_observer_elapsed | ✔️ | ⬜️ | ⬜️ | 🕝 |
+    | cairo_device_observer_fill_elapsed | ✔️ | ⬜️ | ⬜️ | 🕝 |
+    | cairo_device_observer_glyphs_elapsed | ✔️ | ⬜️ | ⬜️ | 🕝 |
+    | cairo_device_observer_mask_elapsed | ✔️ | ⬜️ | ⬜️ | 🕝 |
+    | cairo_device_observer_paint_elapsed | ✔️ | ⬜️ | ⬜️ | 🕝 |
+    | cairo_device_observer_print | ✔️ | ⬜️ | ⬜️ | 🕝 |
+    | cairo_device_observer_stroke_elapsed | ✔️ | ⬜️ | ⬜️ | 🕝 |
+
+    </details>
 
 - ### [cairo_surface_t](https://www.cairographics.org/manual/cairo-cairo-surface-t.html) — Base class for surfaces
     ||||
     |:-:|:-:|:-:|
-    | Functions | 24/31 | ![](https://geps.dev/progress/77) |
+    | Functions | 31/31 | ![](https://geps.dev/progress/100) |
     | Types and Values | 4/4 | ![](https://geps.dev/progress/100) | 
 
     <details>
@@ -449,17 +474,17 @@
     | cairo_surface_status | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_surface_finish | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_surface_flush | ✔️ | ⬜️ | ⬜️ | ✔️ |
-    | cairo_surface_get_device | ❌ | ❌ | ❌ | ❌ |
+    | cairo_surface_get_device | ✔️ | ⬜️ | 🕝 | ✔️ |
     | cairo_surface_get_font_options | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_surface_get_content | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_surface_mark_dirty | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_surface_mark_dirty_rectangle | ✔️ | ⬜️ | ⬜️ | ✔️ |
-    | cairo_surface_set_device_offset | ❌ | ❌ | ❌ | ❌ |
-    | cairo_surface_get_device_offset | ❌ | ❌ | ❌ | ❌ |
-    | cairo_surface_get_device_scale | ❌ | ❌ | ❌ | ❌ |
-    | cairo_surface_set_device_scale | ❌ | ❌ | ❌ | ❌ |
-    | cairo_surface_set_fallback_resolution | ❌ | ❌ | ❌ | ❌ |
-    | cairo_surface_get_fallback_resolution | ❌ | ❌ | ❌ | ❌ |
+    | cairo_surface_set_device_offset | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_surface_get_device_offset | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_surface_get_device_scale | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_surface_set_device_scale | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_surface_set_fallback_resolution | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_surface_get_fallback_resolution | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_surface_get_type | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_surface_get_reference_count | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_surface_set_user_data | ✔️ | ✔️ | ⬜️ | ✔️ |
@@ -529,8 +554,19 @@
 - ### [Recording Surfaces](https://www.cairographics.org/manual/cairo-Recording-Surfaces.html) — Records all drawing operations
     ||||
     |:-:|:-:|:-:|
-    | Functions | 0/3 | ![](https://geps.dev/progress/0) |
+    | Functions | 3/3 | ![](https://geps.dev/progress/100) |
     | Types and Values | 0/1 | ![](https://geps.dev/progress/0) | 
+
+    <details>
+    <summary>Functions</summary> 
+
+    | Name | Exists | Errors | Safety | Doc |
+    |:-|:-:|:-:|:-:|:-:|
+    | cairo_recording_surface_create | ✔️ | ✔️ | ✔️ | ✔️ |
+    | cairo_recording_surface_ink_extents | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_recording_surface_get_extents | ✔️ | ⬜️ | ⬜️ | ✔️ |
+
+    </summary>
 
 - ### [Win32 Surfaces](https://www.cairographics.org/manual/cairo-Win32-Surfaces.html) — Microsoft Windows surface support
     ||||
@@ -586,8 +622,24 @@
 - ### [Script Surfaces](https://www.cairographics.org/manual/cairo-Script-Surfaces.html) — Rendering to replayable scripts
     ||||
     |:-:|:-:|:-:|
-    | Functions | 0/8 | ![](https://geps.dev/progress/0) |
-    | Types and Values | 0/2 | ![](https://geps.dev/progress/0) | 
+    | Functions | 8/8 | ![](https://geps.dev/progress/100) |
+    | Types and Values | 1/2 | ![](https://geps.dev/progress/50) | 
+
+    <details>
+    <summary>Functions</summary> 
+
+    | Name | Exists | Errors | Safety | Doc |
+    |:-|:-:|:-:|:-:|:-:|
+    | cairo_script_create | ✔️ | ✔️ | ✔️ | ✔️ |
+    | cairo_script_create_for_stream | ✔️ | ✔️ | ✔️ | ✔️ |
+    | cairo_script_from_recording_surface | ✔️ | ✔️ | ⬜️ | ✔️ |
+    | cairo_script_set_mode | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_script_get_mode | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_script_surface_create | ✔️ | ✔️ | ✔️ | ✔️ |
+    | cairo_script_surface_create_for_target | ✔️ | ✔️ | ✔️ | ✔️ |
+    | cairo_script_write_comment | ✔️ | ⬜️ | ⬜️ | ✔️ |
+
+    </details>
 
 ## [Utilities](https://www.cairographics.org/manual/cairo-support.html)
 
