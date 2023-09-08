@@ -11,8 +11,6 @@ const safety = @import("../safety.zig");
 
 const Antialias = cairo.Antialias;
 const CairoError = cairo.CairoError;
-const HintMetrics = cairo.HintMetrics;
-const HintStyle = cairo.HintStyle;
 const Status = cairo.Status;
 const SubpixelOrder = cairo.SubpixelOrder;
 
@@ -27,7 +25,44 @@ const SubpixelOrder = cairo.SubpixelOrder;
 /// `.hash()` should be used to copy, check for equality, merge, or compute a
 /// hash value of `cairo.FontOptions` objects.
 pub const FontOptions = opaque {
-    /// Allocates a new font options object with all options initialized to default values.
+    /// Specifies the type of hinting to do on font outlines. Hinting is the
+    /// process of fitting outlines to the pixel grid in order to improve the
+    /// appearance of the result. Since hinting outlines involves distorting
+    /// them, it also reduces the faithfulness to the original outline shapes.
+    /// Not all of the outline hinting styles are supported by all font
+    /// backends.
+    pub const HintStyle = enum(c_uint) {
+        /// Use the default hint style for font backend and target device
+        Default,
+        /// Do not hint outlines
+        None,
+        /// Hint outlines slightly to improve contrast while retaining good
+        /// fidelity to the original shapes
+        Slight,
+        /// Hint outlines with medium strength giving a compromise between
+        /// fidelity to the original shapes and contrast
+        Medium,
+        /// Hint outlines to maximize contrast
+        Full,
+    };
+
+    /// Specifies whether to hint font metrics; hinting font metrics means
+    /// quantizing them so that they are integer values in device space. Doing
+    /// this improves the consistency of letter and line spacing, however it
+    /// also means that text will be laid out differently at different zoom
+    /// factors.
+    pub const HintMetrics = enum(c_uint) {
+        /// Hint metrics in the default manner for the font backend and target
+        /// device
+        Default,
+        /// Do not hint font metrics
+        Off,
+        /// Hint font metrics
+        On,
+    };
+
+    /// Allocates a new font options object with all options initialized to
+    /// default values.
     ///
     /// **Returns**
     ///
@@ -95,7 +130,7 @@ pub const FontOptions = opaque {
     /// Merges non-default options from `other` into `self`, replacing existing
     /// values. This operation can be thought of as somewhat similar to
     /// compositing other onto options with the operation of
-    /// `cairo.Operator.Over`.
+    /// `cairo.Context.Operator.Over`.
     ///
     /// **Parameters**
     /// - `other`: another `cairo.FontOptions`
@@ -184,7 +219,7 @@ pub const FontOptions = opaque {
     /// Sets the hint style for font outlines for the font options object.
     /// This controls whether to fit font outlines to the pixel grid, and if
     /// so, whether to optimize for fidelity or contrast. See the documentation
-    /// for `cairo.HintStyle` for full details.
+    /// for `cairo.FontOptions.HintStyle` for full details.
     ///
     /// **Parameters**
     /// - `hint_style`: the new hint style
@@ -195,7 +230,7 @@ pub const FontOptions = opaque {
     }
 
     /// Gets the hint style for font outlines for the font options object. See
-    /// the documentation for `cairo.HintStyle` for full details.
+    /// the documentation for `cairo.FontOptions.HintStyle` for full details.
     ///
     /// **Returns**
     ///
@@ -208,7 +243,8 @@ pub const FontOptions = opaque {
 
     /// Sets the metrics hinting mode for the font options object. This
     /// controls whether metrics are quantized to integer values in device
-    /// units. See the documentation for `cairo.HintMetrics` for full details.
+    /// units. See the documentation for `cairo.FontOptions.HintMetrics` for
+    /// full details.
     ///
     ///
     /// **Parameters**
@@ -220,7 +256,7 @@ pub const FontOptions = opaque {
     }
 
     /// Gets the metrics hinting mode for the font options object. See the
-    /// documentation for `cairo.HintMetrics` for full details.
+    /// documentation for `cairo.FontOptions.HintMetrics` for full details.
     ///
     /// **Returns**
     ///
@@ -300,9 +336,9 @@ extern fn cairo_font_options_set_antialias(options: ?*FontOptions, antialias: An
 extern fn cairo_font_options_get_antialias(options: ?*const FontOptions) Antialias;
 extern fn cairo_font_options_set_subpixel_order(options: ?*FontOptions, subpixel_order: SubpixelOrder) void;
 extern fn cairo_font_options_get_subpixel_order(options: ?*const FontOptions) SubpixelOrder;
-extern fn cairo_font_options_set_hint_style(options: ?*FontOptions, hint_style: HintStyle) void;
-extern fn cairo_font_options_get_hint_style(options: ?*const FontOptions) HintStyle;
-extern fn cairo_font_options_set_hint_metrics(options: ?*FontOptions, hint_metrics: HintMetrics) void;
-extern fn cairo_font_options_get_hint_metrics(options: ?*const FontOptions) HintMetrics;
+extern fn cairo_font_options_set_hint_style(options: ?*FontOptions, hint_style: FontOptions.HintStyle) void;
+extern fn cairo_font_options_get_hint_style(options: ?*const FontOptions) FontOptions.HintStyle;
+extern fn cairo_font_options_set_hint_metrics(options: ?*FontOptions, hint_metrics: FontOptions.HintMetrics) void;
+extern fn cairo_font_options_get_hint_metrics(options: ?*const FontOptions) FontOptions.HintMetrics;
 extern fn cairo_font_options_set_variations(options: ?*FontOptions, variations: [*c]const u8) void;
 extern fn cairo_font_options_get_variations(options: ?*FontOptions) [*c]const u8;

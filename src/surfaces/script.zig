@@ -12,7 +12,6 @@ const CairoError = cairo.CairoError;
 const Content = cairo.Content;
 const Device = cairo.Device;
 const RecordingSurface = cairo.RecordingSurface;
-const ScriptMode = cairo.ScriptMode;
 const Status = cairo.Status;
 const Surface = cairo.Surface;
 const WriteFn = cairo.WriteFn;
@@ -24,6 +23,16 @@ const DeviceMixin = @import("../device.zig").Base;
 
 pub const ScriptDevice = opaque {
     pub usingnamespace DeviceMixin(@This());
+
+    /// A set of script output variants.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-mode-t)
+    pub const Mode = enum(c_uint) {
+        // the output will be in readable text (default).
+        Ascii,
+        /// the output will use byte codes.
+        Binary,
+    };
 
     /// Creates a output device for emitting the script, used when creating the
     /// individual surfaces.
@@ -96,7 +105,7 @@ pub const ScriptDevice = opaque {
     /// - `mode`: the new mode
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-set-mode)
-    pub fn setMode(self: *ScriptDevice, mode: ScriptMode) void {
+    pub fn setMode(self: *ScriptDevice, mode: ScriptDevice.Mode) void {
         cairo_script_set_mode(self, mode);
     }
 
@@ -107,7 +116,7 @@ pub const ScriptDevice = opaque {
     /// the current output mode of the script.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-get-mode)
-    pub fn getMode(self: *ScriptDevice) ScriptMode {
+    pub fn getMode(self: *ScriptDevice) ScriptDevice.Mode {
         return cairo_script_get_mode(self);
     }
 
@@ -190,8 +199,8 @@ pub const ScriptSurface = opaque {
 extern fn cairo_script_create(filename: [*c]const u8) ?*ScriptDevice;
 extern fn cairo_script_create_for_stream(write_func: WriteFn, closure: ?*anyopaque) ?*ScriptDevice;
 extern fn cairo_script_from_recording_surface(script: ?*ScriptDevice, recording_surface: ?*RecordingSurface) Status;
-extern fn cairo_script_set_mode(script: ?*ScriptDevice, mode: ScriptMode) void;
-extern fn cairo_script_get_mode(script: ?*ScriptDevice) ScriptMode;
+extern fn cairo_script_set_mode(script: ?*ScriptDevice, mode: ScriptDevice.Mode) void;
+extern fn cairo_script_get_mode(script: ?*ScriptDevice) ScriptDevice.Mode;
 extern fn cairo_script_surface_create(script: ?*ScriptDevice, content: Content, width: f64, height: f64) ?*ScriptSurface;
 extern fn cairo_script_surface_create_for_target(script: ?*ScriptDevice, target: ?*Surface) ?*ScriptSurface;
 extern fn cairo_script_write_comment(script: ?*ScriptDevice, comment: [*c]const u8, len: c_int) void;

@@ -47,7 +47,6 @@ const cairo = @import("cairo.zig");
 const safety = @import("safety.zig");
 
 const CairoError = cairo.CairoError;
-const DeviceType = cairo.DeviceType;
 const Status = cairo.Status;
 const UserDataKey = cairo.UserDataKey;
 const DestroyFn = cairo.DestroyFn;
@@ -129,14 +128,14 @@ pub fn Base(comptime Self: type) type {
         }
 
         /// This function returns the type of the device. See
-        /// `cairo.DeviceType` for available types.
+        /// `cairo.Device.Type` for available types.
         ///
         /// **Returns**
         ///
         /// the type of `device`.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-get-type)
-        pub fn getType(device: *Self) DeviceType {
+        pub fn getType(device: *Self) Device.Type {
             return cairo_device_get_type(device);
         }
 
@@ -233,6 +232,35 @@ pub fn Base(comptime Self: type) type {
 pub const Device = opaque {
     pub usingnamespace Base(@This());
 
+    /// `cairo.Device.Type` is used to describe the type of a given device. The
+    /// devices types are also known as "backends" within cairo.
+    ///
+    /// The device type can be queried with `cairo.Device.getType()`.
+    ///
+    /// The various `cairo.Device` functions can be used with devices of any
+    /// type, but some backends also provide type-specific functions that must
+    /// only be called with a device of the appropriate type. These functions
+    /// are methids of specific `cairo.Device` instances such as
+    /// `cairo.ScriptDevice.writeComment()`.
+    ///
+    /// The behavior of calling a type-specific function with a device of the
+    /// wrong type is undefined, that is — **DO NOT** cast pointers into
+    /// `cairo.Device` manually, use `.asDevice()` on a specific type and **DO
+    /// NOT** keep the result.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-type-t)
+    pub const Type = enum(c_int) {
+        Drm = 0,
+        Gl,
+        Script,
+        Xcb,
+        Xlib,
+        Xml,
+        Cogl,
+        Wn32,
+        Invalid = -1,
+    };
+
     // not sure what to do with these, they are undocumented, should consult
     // with cairomm or something
 
@@ -271,7 +299,7 @@ extern fn cairo_device_destroy(device: ?*anyopaque) void;
 extern fn cairo_device_status(device: ?*anyopaque) Status;
 extern fn cairo_device_finish(device: ?*anyopaque) void;
 extern fn cairo_device_flush(device: ?*anyopaque) void;
-extern fn cairo_device_get_type(device: ?*anyopaque) DeviceType;
+extern fn cairo_device_get_type(device: ?*anyopaque) Device.Type;
 extern fn cairo_device_get_reference_count(device: ?*anyopaque) c_uint;
 extern fn cairo_device_set_user_data(device: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
 extern fn cairo_device_get_user_data(device: ?*anyopaque, key: [*c]const UserDataKey) ?*anyopaque;

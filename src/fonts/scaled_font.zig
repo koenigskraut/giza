@@ -10,12 +10,10 @@ const CairoError = cairo.CairoError;
 const DestroyFn = cairo.DestroyFn;
 const FontFace = cairo.FontFace;
 const FontOptions = cairo.FontOptions;
-const FontType = cairo.FontType;
 const Glyph = cairo.Glyph;
 const Matrix = cairo.Matrix;
 const Status = cairo.Status;
 const TextCluster = cairo.TextCluster;
-const TextClusterFlags = cairo.TextClusterFlags;
 const UserDataKey = cairo.UserDataKey;
 
 /// A `cairo.ScaledFont` is a font scaled to a particular size and device
@@ -193,7 +191,7 @@ pub const ScaledFont = opaque {
         utf8: [:0]const u8,
         glyphs: *[]Glyph,
         clusters: *[]TextCluster,
-        cluster_flags: *TextClusterFlags,
+        cluster_flags: *TextCluster.Flags,
     ) CairoError!void {
         var glyph_ptr: [*c][*c]Glyph = @ptrCast(@alignCast(glyphs));
         var glyphs_num: c_int = @intCast(glyphs.len);
@@ -214,11 +212,6 @@ pub const ScaledFont = opaque {
         if (safety.tracing) {
             if (@intFromPtr(glyphs) != @intFromPtr(glyph_ptr)) try safety.markForLeakDetection(@returnAddress(), glyph_ptr.*);
         }
-
-        // x: f64, y: f64,
-        // utf8: [*c]const u8, utf8_len: c_int,
-        // glyphs: [*c][*c]Glyph, num_glyphs: [*c]c_int,
-        // clusters: [*c][*c]TextCluster, num_clusters: [*c]c_int, cluster_flags: [*c]TextClusterFlags
     }
 
     /// Gets the font face that this scaled font uses. This might be the font
@@ -279,15 +272,15 @@ pub const ScaledFont = opaque {
     }
 
     /// This function returns the type of the backend used to create a scaled
-    /// font. See `cairo.FontType` for available types. However, this function
-    /// never returns `cairo.FontType.Toy`.
+    /// font. See `cairo.FontFace.Type` for available types. However, this
+    /// function never returns `cairo.FontFace.Type.Toy`.
     ///
     /// **Returns**
     ///
     /// the type of `self`.
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-get-type)
-    pub fn getType(self: *ScaledFont) FontType {
+    pub fn getType(self: *ScaledFont) FontFace.Type {
         return cairo_scaled_font_get_type(self);
     }
 
@@ -412,13 +405,13 @@ extern fn cairo_scaled_font_status(scaled_font: ?*ScaledFont) Status;
 extern fn cairo_scaled_font_extents(scaled_font: ?*ScaledFont, extents: [*c]FontExtents) void;
 extern fn cairo_scaled_font_text_extents(scaled_font: ?*ScaledFont, utf8: [*c]const u8, extents: [*c]TextExtents) void;
 extern fn cairo_scaled_font_glyph_extents(scaled_font: ?*ScaledFont, glyphs: [*c]const Glyph, num_glyphs: c_int, extents: [*c]TextExtents) void;
-extern fn cairo_scaled_font_text_to_glyphs(scaled_font: ?*ScaledFont, x: f64, y: f64, utf8: [*c]const u8, utf8_len: c_int, glyphs: [*c][*c]Glyph, num_glyphs: [*c]c_int, clusters: [*c][*c]TextCluster, num_clusters: [*c]c_int, cluster_flags: [*c]TextClusterFlags) Status;
+extern fn cairo_scaled_font_text_to_glyphs(scaled_font: ?*ScaledFont, x: f64, y: f64, utf8: [*c]const u8, utf8_len: c_int, glyphs: [*c][*c]Glyph, num_glyphs: [*c]c_int, clusters: [*c][*c]TextCluster, num_clusters: [*c]c_int, cluster_flags: [*c]TextCluster.Flags) Status;
 extern fn cairo_scaled_font_get_font_face(scaled_font: ?*ScaledFont) ?*FontFace;
 extern fn cairo_scaled_font_get_font_options(scaled_font: ?*ScaledFont, options: ?*FontOptions) void;
 extern fn cairo_scaled_font_get_font_matrix(scaled_font: ?*ScaledFont, font_matrix: [*c]Matrix) void;
 extern fn cairo_scaled_font_get_ctm(scaled_font: ?*ScaledFont, ctm: [*c]Matrix) void;
 extern fn cairo_scaled_font_get_scale_matrix(scaled_font: ?*ScaledFont, scale_matrix: [*c]Matrix) void;
-extern fn cairo_scaled_font_get_type(scaled_font: ?*ScaledFont) FontType;
+extern fn cairo_scaled_font_get_type(scaled_font: ?*ScaledFont) FontFace.Type;
 extern fn cairo_scaled_font_get_reference_count(scaled_font: ?*ScaledFont) c_uint;
 extern fn cairo_scaled_font_set_user_data(scaled_font: ?*ScaledFont, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
 extern fn cairo_scaled_font_get_user_data(scaled_font: ?*ScaledFont, key: [*c]const UserDataKey) ?*anyopaque;

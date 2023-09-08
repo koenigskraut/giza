@@ -25,7 +25,7 @@ pub const SvgSurface = opaque {
     /// `filename`.
     ///
     /// The SVG surface backend recognizes the following MIME types
-    /// (`cairo.MimeType`) for the data attached to a surface (see
+    /// (`cairo.Surface.MimeType`) for the data attached to a surface (see
     /// `cairo.Surface.setMimeData()`) when it is used as a source pattern for
     /// drawing on this surface: `.Jpeg`, `.Png`, `.Uri` If any of them is
     /// specified, the SVG backend emits a href with the content of MIME data
@@ -36,11 +36,11 @@ pub const SvgSurface = opaque {
     /// present, the URI is emitted as is: assuring the correctness of URI is
     /// left to the client code.
     ///
-    /// If `cairo.MimeType.Uri` is not present, but `.Jpeg` or `.Png` is
-    /// specified, the corresponding data is Base64-encoded and emitted.
+    /// If `cairo.Surface.MimeType.Uri` is not present, but `.Jpeg` or `.Png`
+    /// is specified, the corresponding data is Base64-encoded and emitted.
     ///
-    /// If `cairo.MimeType.UniqueID` is present, all surfaces with the same
-    /// unique identifier will only be embedded once.
+    /// If `cairo.Surface.MimeType.UniqueID` is present, all surfaces with the
+    /// same unique identifier will only be embedded once.
     ///
     /// **Parameters**
     /// - `filename`: a filename for the SVG output (must be writable), `null`

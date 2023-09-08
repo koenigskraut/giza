@@ -43,10 +43,7 @@ const safety = @import("../safety.zig");
 const Content = cairo.Content;
 const CairoError = cairo.CairoError;
 const Device = cairo.Device;
-const MimeType = cairo.MimeType;
 const Status = cairo.Status;
-const SurfaceType = cairo.SurfaceType;
-const Format = cairo.Format;
 const ImageSurface = cairo.ImageSurface;
 const RectangleInt = cairo.RectangleInt;
 
@@ -79,6 +76,191 @@ const WriteFn = cairo.WriteFn;
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-t)
 pub const Surface = opaque {
     pub usingnamespace Base(Surface);
+
+    /// `cairo.Surface.Type` is used to describe the type of a given surface.
+    /// The surface types are also known as "backends" or "surface backends"
+    /// within cairo.
+    ///
+    /// The type of a surface is determined by the function used to create it,
+    /// which will generally be a struct method of specific type (though see
+    /// `surface.createSimilar()` as well).
+    ///
+    /// The surface type can be queried with `surface.getType()`. The behavior
+    /// of calling a type-specific function with a surface of the wrong type is
+    /// undefined.
+    ///
+    /// **Zig note:** you shouldn't be worried about that if you're not casting
+    /// surfaces manually, which you shouldn't
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-type-t)
+    pub const Type = enum(c_uint) {
+        pub usingnamespace cairo.FromToInt(@This());
+
+        /// The surface is of type image
+        Image,
+        /// The surface is of type pdf
+        PDF,
+        /// The surface is of type ps
+        PS,
+        /// The surface is of type xlib
+        XLib,
+        /// The surface is of type xcb
+        XCB,
+        /// The surface is of type glitz
+        Glitz,
+        /// The surface is of type quartz
+        Quartz,
+        /// The surface is of type win32
+        Win32,
+        /// The surface is of type beos
+        BeOS,
+        /// The surface is of type directfb
+        DirectFB,
+        /// The surface is of type svg
+        SVG,
+        /// The surface is of type os2
+        OS2,
+        /// The surface is a win32 printing surface
+        Win32Printing,
+        /// The surface is of type quartz_image
+        QuartzImage,
+        /// The surface is of type script
+        Script,
+        /// The surface is of type Qt
+        Qt,
+        /// The surface is of type recording
+        Recording,
+        /// The surface is a OpenVG surface
+        VG,
+        /// The surface is of type OpenGL
+        GL,
+        /// The surface is of type Direct Render Manager
+        DRM,
+        /// The surface is of type 'tee' (a multiplexing surface)
+        Tee, // ?
+        /// The surface is of type XML (for debugging)
+        XML,
+        /// The surface is of type Skia
+        Skia,
+        /// The surface is a subsurface created with
+        /// `surface.createForRectangle()`
+        Subsurface,
+        /// The surface is of type Cogl
+        Cogl,
+    };
+
+    /// `cairo.Surface.Format` is used to identify the memory format of image
+    /// data.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-format-t)
+    pub const Format = enum(c_int) {
+        pub usingnamespace cairo.FromToInt(@This());
+
+        /// no such format exists or is supported
+        INVALID = -1,
+        /// each pixel is a 32-bit quantity, with alpha in the upper8 bits,
+        /// then red, then green, then blue. The 32-bit quantities are stored
+        /// native-endian. Pre-multiplied alpha is used (That is, 50%
+        /// transparent red is 0x80800000, not 0x80ff0000)
+        ARGB32,
+        /// each pixel is a 32-bit quantity, with the upper 8 bits unused. Red,
+        /// Green, and Blue are stored in the remaining 24 bits in that order
+        RGB24,
+        /// each pixel is a 8-bit quantity holding an alpha value
+        A8,
+        /// each pixel is a 1-bit quantity holding an alpha value. Pixels are
+        /// packed together into 32-bit quantities. The ordering of the bits
+        /// matches the endianness of the platform. On a big-endian machine,
+        /// the first pixel is in the uppermost bit, on a little-endian machine
+        /// the first pixel is in the least-significant bit
+        A1,
+        /// each pixel is a 16-bit quantity with red in the upper 5 bits, then
+        /// green in the middle 6 bits, and blue in the lower 5 bits
+        RGB16_565,
+        /// like RGB24 but with 10bpc
+        RGB30,
+        _,
+
+        /// This function provides a stride value that will respect all
+        /// alignment requirements of the accelerated image-rendering code
+        /// within cairo.
+        ///
+        /// Typical usage will be of the form:
+        /// ```zig
+        /// const format = cairo.Surface.Format.ARGB32;
+        /// const stride = try format.strideForWidth(width);
+        /// const data = try allocator.alloc(u8, @as(usize, stride) * height);
+        /// const surface = try cairo.ImageSurface.createForData(data.ptr, format, width, height, stride);
+        /// defer surface.destroy();
+        /// ```
+        ///
+        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-format-stride-for-width)
+        pub fn strideForWidth(self: Format, width: c_int) !u18 {
+            // TODO: check example, rework it? work on createForData func?
+            const stride = switch (self) {
+                .ARGB32, .RGB24, .A8, .A1, .RGB16_565, .RGB30 => cairo_format_stride_for_width(self.toInt(), width),
+                else => return error.InvalidFormat,
+            };
+            if (stride == -1) return error.WidthTooLarge;
+            return @as(u18, @intCast(stride));
+        }
+
+        extern fn cairo_format_stride_for_width(format: Format.TagType, width: c_int) c_int;
+    };
+
+    pub const MimeType = enum {
+        /// Group 3 or Group 4 CCITT facsimile encoding (International
+        /// Telecommunication Union, Recommendations T.4 and T.6.)
+        CcittFax,
+        /// Decode parameters for Group 3 or Group 4 CCITT facsimile encoding.
+        /// See [CCITT Fax Images](https://www.cairographics.org/manual/cairo-PDF-Surfaces.html#ccitt).
+        CcittFaxParams,
+        /// Encapsulated PostScript file.
+        /// [Encapsulated PostScript File Format Specification](http://wwwimages.adobe.com/content/dam/Adobe/endevnet/postscript/pdfs/5002.EPSF_Spec.pdf)
+        Eps,
+        /// Embedding parameters Encapsulated PostScript data. See
+        /// [Embedding EPS files](https://www.cairographics.org/manual/cairo-PostScript-Surfaces.html#eps).
+        EpsParams,
+        /// Joint Bi-level Image Experts Group image coding standard (ISO/IEC
+        /// 11544).
+        Jbig2,
+        /// Joint Bi-level Image Experts Group image coding standard (ISO/IEC
+        /// 11544) global segment.
+        Jbig2Global,
+        /// An unique identifier shared by a JBIG2 global segment and all JBIG2
+        /// images that depend on the global segment.
+        Jbig2GlobalId,
+        /// The Joint Photographic Experts Group (JPEG) 2000 image coding standard
+        ///  (ISO/IEC 15444-1).
+        Jp2,
+        /// The Joint Photographic Experts Group (JPEG) image coding standard
+        /// (ISO/IEC 10918-1).
+        Jpeg,
+        /// The Portable Network Graphics image file format (ISO/IEC 15948).
+        Png,
+        /// URI for an image file (unofficial MIME type).
+        Uri,
+        /// Unique identifier for a surface (cairo specific MIME type). All
+        /// surfaces with the same unique identifier will only be embedded once.
+        UniqueId,
+
+        pub fn toString(self: MimeType) []const u8 {
+            return switch (self) {
+                .CcittFax => "image/g3fax",
+                .CcittFaxParams => "application/x-cairo.ccitt.params",
+                .Eps => "application/postscript",
+                .EpsParams => "application/x-cairo.eps.params",
+                .Jbig2 => "application/x-cairo.jbig2",
+                .Jbig2Global => "application/x-cairo.jbig2-global",
+                .Jbig2GlobalId => "application/x-cairo.jbig2-global-id",
+                .Jp2 => "image/jp2",
+                .Jpeg => "image/jpeg",
+                .Png => "image/png",
+                .Uri => "text/x-uri",
+                .UniqueId => "application/x-cairo.uuid",
+            };
+        }
+    };
 };
 
 /// Mixin object, used to inject methods common for all `Surface`s
@@ -163,7 +345,7 @@ pub fn Base(comptime Self: type) type {
         /// ```
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-create-similar-image)
-        pub fn createSimilarImage(surface: *Self, format: Format, width: c_int, height: c_int) CairoError!*ImageSurface {
+        pub fn createSimilarImage(surface: *Self, format: Surface.Format, width: c_int, height: c_int) CairoError!*ImageSurface {
             const image: *ImageSurface = @ptrCast(cairo_surface_create_similar_image(surface, format, width, height).?);
             try image.status().toErr();
             if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
@@ -450,10 +632,10 @@ pub fn Base(comptime Self: type) type {
         }
 
         /// This function returns the type of the backend used to create a
-        /// surface. See `cairo.SurfaceType` for available types.
+        /// surface. See `cairo.Surface.Type` for available types.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-type)
-        pub fn getType(surface: *Self) SurfaceType {
+        pub fn getType(surface: *Self) Surface.Type {
             return cairo_surface_get_type(surface);
         }
 
@@ -588,7 +770,7 @@ pub fn Base(comptime Self: type) type {
         /// Fails with `error{ OutOfMemory }` if a slot could not be allocated for the user data.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-mime-data)
-        pub fn setMimeData(surface: *Self, mimeType: MimeType, data: [*c]const u8, length: u64, destroyFn: DestroyFn, closure: ?*anyopaque) CairoError!void {
+        pub fn setMimeData(surface: *Self, mimeType: Surface.MimeType, data: [*c]const u8, length: u64, destroyFn: DestroyFn, closure: ?*anyopaque) CairoError!void {
             // TODO: data+length, consider slice?
             return cairo_surface_set_mime_data(surface, mimeType.toString().ptr, data, @intCast(length), destroyFn, closure).toErr();
         }
@@ -603,14 +785,14 @@ pub fn Base(comptime Self: type) type {
         /// - `length`: the length of the image data
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-mime-data)
-        pub fn getMimeData(surface: *Self, mimeType: MimeType, data: [*c][*c]const u8, length: *u64) void {
+        pub fn getMimeData(surface: *Self, mimeType: Surface.MimeType, data: [*c][*c]const u8, length: *u64) void {
             cairo_surface_get_mime_data(surface, mimeType.toString().ptr, data, @ptrCast(length));
         }
 
         /// Return whether `surface` supports `mimeType`
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-supports-mime-type)
-        pub fn supportsMimeType(surface: *Self, mimeType: MimeType) bool {
+        pub fn supportsMimeType(surface: *Self, mimeType: Surface.MimeType) bool {
             return cairo_surface_supports_mime_type(surface, mimeType.toString().ptr) != 0;
         }
 
@@ -714,7 +896,7 @@ pub fn Base(comptime Self: type) type {
 }
 
 extern fn cairo_surface_create_similar(other: ?*anyopaque, content: Content, width: c_int, height: c_int) ?*anyopaque;
-extern fn cairo_surface_create_similar_image(other: ?*anyopaque, format: Format, width: c_int, height: c_int) ?*anyopaque;
+extern fn cairo_surface_create_similar_image(other: ?*anyopaque, format: Surface.Format, width: c_int, height: c_int) ?*anyopaque;
 extern fn cairo_surface_create_for_rectangle(target: ?*anyopaque, x: f64, y: f64, width: f64, height: f64) ?*anyopaque;
 extern fn cairo_surface_reference(surface: ?*anyopaque) ?*anyopaque;
 extern fn cairo_surface_destroy(surface: ?*anyopaque) void;
@@ -732,7 +914,7 @@ extern fn cairo_surface_get_device_scale(surface: ?*anyopaque, x_scale: [*c]f64,
 extern fn cairo_surface_set_device_scale(surface: ?*anyopaque, x_scale: f64, y_scale: f64) void;
 extern fn cairo_surface_set_fallback_resolution(surface: ?*anyopaque, x_pixels_per_inch: f64, y_pixels_per_inch: f64) void;
 extern fn cairo_surface_get_fallback_resolution(surface: ?*anyopaque, x_pixels_per_inch: [*c]f64, y_pixels_per_inch: [*c]f64) void;
-extern fn cairo_surface_get_type(surface: ?*anyopaque) SurfaceType;
+extern fn cairo_surface_get_type(surface: ?*anyopaque) Surface.Type;
 extern fn cairo_surface_get_reference_count(surface: ?*anyopaque) c_uint;
 extern fn cairo_surface_set_user_data(surface: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
 extern fn cairo_surface_get_user_data(surface: ?*anyopaque, key: [*c]const UserDataKey) ?*anyopaque;

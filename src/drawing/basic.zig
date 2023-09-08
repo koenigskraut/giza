@@ -14,10 +14,10 @@ const Surface = surfaces.Surface;
 
 const Antialias = enums.Antialias;
 const Content = enums.Content;
-const FillRule = enums.FillRule;
-const LineCap = enums.LineCap;
-const LineJoin = enums.LineJoin;
-const Operator = enums.Operator;
+const FillRule = Context.FillRule;
+const LineCap = Context.LineCap;
+const LineJoin = Context.LineJoin;
+const Operator = Context.Operator;
 const Status = enums.Status;
 const CairoError = enums.CairoError;
 
@@ -400,7 +400,7 @@ pub const Mixin = struct {
     ///
     /// Each "on" segment will have caps applied as if the segment were a
     /// separate sub-path. In particular, it is valid to use an "on" length of
-    /// 0.0 with `cairo.LineCap.Round` or `cairo.LineCap.Square` in order to
+    /// 0.0 with `cairo.Context.LineCap` `.Round` or `.Square` in order to
     /// distributed dots or squares along a path.
     ///
     /// Note: The length values are in user-space units as evaluated at the
@@ -457,13 +457,13 @@ pub const Mixin = struct {
     /// Set the current fill rule within the cairo context. The fill rule is
     /// used to determine which regions are inside or outside a complex
     /// (potentially self-intersecting) path. The current fill rule affects
-    /// both `ctx.fill()` and `ctx.clip()`. See `cairo.FillRule` for details on
-    /// the semantics of each available fill rule.
+    /// both `ctx.fill()` and `ctx.clip()`. See `cairo.Context.FillRule` for
+    /// details on the semantics of each available fill rule.
     ///
-    /// The default fill rule is `cairo.FillRule.Winding`.
+    /// The default fill rule is `.Winding`.
     ///
     /// **Parameters**
-    /// - `fillRule`: a fill rule, specified as a `cairo.FillRule`
+    /// - `fillRule`: a fill rule, specified as a `cairo.Context.FillRule`
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-fill-rule)
     pub fn setFillRule(self: *Context, fillRule: FillRule) void {
@@ -482,15 +482,15 @@ pub const Mixin = struct {
     }
 
     /// Sets the current line cap style within the cairo context. See
-    /// `cairo.LineCap` for details about how the available line cap styles are
-    /// drawn.
+    /// `cairo.Context.LineCap` for details about how the available line cap
+    /// styles are drawn.
     ///
     /// As with the other stroke parameters, the current line cap style is
     /// examined by `ctx.stroke()`, `ctx.strokeExtents()`, and
     /// `ctx.strokeToPath()`, but does not have any effect during path
     /// construction.
     ///
-    /// The default line cap style is `cairo.LineCap.Butt`.
+    /// The default line cap style is `.Butt`.
     ///
     /// **Parameters**
     /// - `lineCap`: a line cap style
@@ -512,15 +512,15 @@ pub const Mixin = struct {
     }
 
     /// Sets the current line join style within the cairo context. See
-    /// `cairo.LineJoin` for details about how the available line join styles
-    /// are drawn.
+    /// `cairo.Context.LineJoin` for details about how the available line join
+    /// styles are drawn.
     ///
     /// As with the other stroke parameters, the current line join style is
     /// examined by `ctx.stroke()`, `ctx.strokeExtents()`, and
     /// `ctx.strokeToPath()`, but does not have any effect during path
     /// construction.
     ///
-    /// The default line join style is `cairo.LineJoin.Miter`.
+    /// The default line join style is `.Miter`.
     ///
     /// **Parameters**
     /// - `lineJoin`: a line join style
@@ -624,13 +624,13 @@ pub const Mixin = struct {
     }
 
     /// Sets the compositing operator to be used for all drawing operations.
-    /// See `cairo.Operator` for details on the semantics of each available
-    /// compositing operator.
+    /// See `cairo.Context.Operator` for details on the semantics of each
+    /// available compositing operator.
     ///
-    /// The default operator is `cairo.Operator.Over`.
+    /// The default operator is `.Over`.
     ///
     /// **Parameters**
-    /// - `op`: a compositing operator, specified as a `cairo.Operator`
+    /// - `op`: a compositing operator, specified as a `cairo.Context.Operator`
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-operator)
     pub fn setOperator(self: *Context, op: Operator) void {

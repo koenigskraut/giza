@@ -2,7 +2,7 @@
 //!
 //! Image surfaces provide the ability to render to memory buffers either
 //! allocated by cairo or by the calling code. The supported image formats are
-//! those defined in `cairo.Format`.
+//! those defined in `cairo.Surface.Format`.
 //!
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html)
 
@@ -17,7 +17,7 @@ const util = @import("../util.zig");
 const base = @import("base.zig");
 
 const Mixin = base.Base;
-const Format = enums.Format;
+const Format = cairo.Surface.Format;
 const ReadFn = util.ReadFn;
 const CairoError = enums.CairoError;
 
@@ -69,7 +69,7 @@ pub const ImageSurface = opaque {
     /// obtain a legal stride value is to call `format.strideForWidth()` on the
     /// desired `format` with maximum image width value, and then use the
     /// resulting stride value to allocate the data and to create the image
-    /// surface. See `cairo.Format.strideForWidth()` for example code.
+    /// surface. See `cairo.Surface.Format.strideForWidth()` for example code.
     ///
     /// **Parameters**
     /// - `data`: a pointer to a buffer supplied by the application in which to
@@ -87,8 +87,8 @@ pub const ImageSurface = opaque {
     ///
     /// **NOTE**: The caller owns the created surface and should call
     /// `surface.destroy()` when done with it. You can use idiomatic Zig
-    /// pattern with `defer`, see `cairo.Format.strideForWidth()` for example
-    /// code.
+    /// pattern with `defer`, see `cairo.Surface.Format.strideForWidth()` for
+    /// example code.
     ///
     /// See `cairo.Surface.setUserData()` for a means of attaching a
     /// destroy-notification fallback to the surface if necessary.

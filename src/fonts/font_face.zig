@@ -14,7 +14,6 @@ const cairo = @import("../cairo.zig");
 const safety = @import("../safety.zig");
 
 const CairoError = cairo.CairoError;
-const FontType = cairo.FontType;
 const Status = cairo.Status;
 const UserDataKey = cairo.UserDataKey;
 const DestroyFn = cairo.DestroyFn;
@@ -33,6 +32,67 @@ const DestroyFn = cairo.DestroyFn;
 ///
 /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-t)
 pub const FontFace = opaque {
+    /// `cairo.FontFace.Type` is used to describe the type of a given font face
+    /// or scaled font. The font types are also known as "font backends" within
+    /// cairo.
+    ///
+    /// The type of a font face is determined by the function used to create
+    /// it, which will generally be of the form `cairo_type_font_face_create`.
+    /// The font face type can be queried with `fontFace.getType()`.
+    ///
+    /// The various `cairo.FontFace` functions can be used with a font face of
+    /// any type.
+    ///
+    /// The type of a scaled font is determined by the type of the font face
+    /// passed to `cairo_scaled_font_create()`. The scaled font type can be
+    /// queried with `cairo_scaled_font_get_type()`.
+    ///
+    /// The various `cairo.ScaledFont` functions can be used with scaled fonts
+    /// of any type, but some font backends also provide type-specific
+    /// functions that must only be called with a scaled font of the
+    /// appropriate type. These functions have names that begin with
+    /// `cairo_type_scaled_font()` such as `cairo_ft_scaled_font_lock_face()`.
+    ///
+    /// The behavior of calling a type-specific function with a scaled font of
+    /// the wrong type is undefined.
+    ///
+    /// New entries may be added in future versions.
+    pub const Type = enum(c_uint) {
+        // TODO: fix desc
+        /// The font was created using cairo's toy font api
+        Toy,
+        /// The font is of type FreeType
+        Ft,
+        /// The font is of type Win32
+        Win32,
+        /// The font is of type Quartz
+        Quartz,
+        /// The font was create using cairo's user font api
+        User,
+    };
+
+    /// Specifies variants of a font face based on their slant.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-font-slant-t)
+    pub const FontSlant = enum(c_uint) {
+        /// Upright font style
+        Normal,
+        /// Italic font style
+        Italic,
+        /// Oblique font style
+        Oblique,
+    };
+
+    /// Specifies variants of a font face based on their weight.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-font-weight-t)
+    pub const FontWeight = enum(c_uint) {
+        /// Normal font weight
+        Normal,
+        /// Bold font weight
+        Bold,
+    };
+
     /// Increases the reference count on `self` by one. This prevents `self`
     /// from being destroyed until a matching call to `.destroy()` is made.
     ///
@@ -67,14 +127,14 @@ pub const FontFace = opaque {
     }
 
     /// This function returns the type of the backend used to create a font
-    /// face. See `cairo.FontType` for available types.
+    /// face. See `cairo.FontFace.Type` for available types.
     ///
     /// **Returns**
     ///
     /// the type of `self`.
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-get-type)
-    pub fn getType(self: *FontFace) FontType {
+    pub fn getType(self: *FontFace) FontFace.Type {
         return cairo_font_face_get_type(self);
     }
 
@@ -125,7 +185,7 @@ pub const FontFace = opaque {
 extern fn cairo_font_face_reference(font_face: ?*FontFace) ?*FontFace;
 extern fn cairo_font_face_destroy(font_face: ?*FontFace) void;
 extern fn cairo_font_face_status(font_face: ?*FontFace) Status;
-extern fn cairo_font_face_get_type(font_face: ?*FontFace) FontType;
+extern fn cairo_font_face_get_type(font_face: ?*FontFace) FontFace.Type;
 extern fn cairo_font_face_get_reference_count(font_face: ?*FontFace) c_uint;
 extern fn cairo_font_face_set_user_data(font_face: ?*FontFace, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
 extern fn cairo_font_face_get_user_data(font_face: ?*FontFace, key: [*c]const UserDataKey) ?*anyopaque;

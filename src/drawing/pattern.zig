@@ -19,9 +19,6 @@ const enums = @import("../enums.zig");
 const safety = @import("../safety.zig");
 
 const Content = enums.Content;
-const Extend = enums.Extend;
-const Filter = enums.Filter;
-const PatternType = enums.PatternType;
 const Status = enums.Status;
 const CairoError = enums.CairoError;
 const Surface = @import("../surface.zig").Surface;
@@ -41,30 +38,32 @@ fn Mixin(comptime Self: type) type {
             return @ptrCast(self);
         }
 
-        /// Sets the mode to be used for drawing outside the area of a pattern. See
-        /// `cairo.Extend` for details on the semantics of each extend strategy.
+        /// Sets the mode to be used for drawing outside the area of a pattern.
+        /// See `cairo.Pattern.Extend` for details on the semantics of each
+        /// extend strategy.
         ///
         /// The default extend mode is `.None` for surface patterns and `.Pad` for
         /// gradient patterns.
         ///
         /// **Parameters**
-        /// - `extend`: a `cairo.Extend` describing how the area outside of the
-        /// pattern will be drawn
+        /// - `extend`: a `cairo.Pattern.Extend` describing how the area
+        /// outside of the pattern will be drawn
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-set-extend)
-        pub fn setExtend(self: *Self, extend: Extend) void {
+        pub fn setExtend(self: *Self, extend: Pattern.Extend) void {
             cairo_pattern_set_extend(self, extend);
         }
 
-        /// Gets the current extend mode for a pattern. See `cairo.Extend` for
-        /// details on the semantics of each extend strategy.
+        /// Gets the current extend mode for a pattern. See
+        /// `cairo.Pattern.Extend` for details on the semantics of each extend
+        /// strategy.
         ///
         /// **Returns**
         ///
         /// the current extend strategy used for drawing the pattern.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-extend)
-        pub fn getExtend(self: *Self) Extend {
+        pub fn getExtend(self: *Self) Pattern.Extend {
             return cairo_pattern_get_extend(self);
         }
 
@@ -147,14 +146,15 @@ fn Mixin(comptime Self: type) type {
             return cairo_pattern_status(self);
         }
 
-        /// Get the pattern's type. See `cairo.PatternType` for available types.
+        /// Get the pattern's type. See `cairo.Pattern.Type` for available
+        /// types.
         ///
         /// **Returns**
         ///
         /// the type of `self`.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-type)
-        pub fn getType(self: *Self) PatternType {
+        pub fn getType(self: *Self) Pattern.Type {
             return cairo_pattern_get_type(self);
         }
 
@@ -232,6 +232,84 @@ fn Mixin(comptime Self: type) type {
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-t)
 pub const Pattern = opaque {
     pub usingnamespace Mixin(@This());
+
+    /// `cairo.Pattern.Type` is used to describe the type of a given pattern.
+    ///
+    /// The type of a pattern is determined by the function used to create it.
+    /// The `cairo.Pattern.createRGB()` and `cairo.Pattern.createRGBA()`
+    /// functions create SOLID patterns. The remaining cairo.Pattern.create
+    /// functions map to pattern types in obvious ways.
+    ///
+    /// The pattern type can be queried with `pattern.getType()`
+    ///
+    /// Most `cairo.Pattern` functions can be called with a pattern of any
+    /// type, (though trying to change the extend or filter for a solid pattern
+    /// will have no effect). A notable exception is
+    /// `pattern.addColorStopRGB()` and `pattern.addColorStopRGBA()` which must
+    /// only be called with gradient patterns (either `.Linear` or `.Radial`).
+    /// Otherwise the pattern will be shutdown and put into an error state.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-type-t)
+    pub const Type = enum(c_uint) {
+        // TODO: fix desc
+        /// The pattern is a solid (uniform) color. It may be opaque or
+        /// translucent.
+        Solid,
+        /// The pattern is a based on a surface (an image).
+        Surface,
+        /// The pattern is a linear gradient.
+        Linear,
+        /// The pattern is a radial gradient.
+        Radial,
+        /// The pattern is a mesh.
+        Mesh,
+        /// The pattern is a user pattern providing raster data.
+        RasterSource,
+    };
+
+    /// `cairo.Pattern.Extend` is used to describe how pattern color/alpha will be
+    /// determined for areas "outside" the pattern's natural area, (for example,
+    /// outside the surface bounds or outside the gradient geometry).
+    ///
+    /// Mesh patterns are not affected by the extend mode.
+    ///
+    /// The default extend mode is `.None` for surface patterns and `.Pad` for
+    /// gradient patterns.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-extend-t)
+    pub const Extend = enum(c_uint) {
+        /// pixels outside of the source pattern are fully transparent
+        None,
+        /// the pattern is tiled by repeating
+        Repeat,
+        /// the pattern is tiled by reflecting at the edges
+        Reflect,
+        /// pixels outside of the pattern copy the closest pixel from the source
+        Pad,
+    };
+
+    /// `cairo.Pattern.Filter` is used to indicate what filtering should be
+    /// applied when reading pixel values from patterns. See
+    /// `cairo.Pattern.setFilter()` for indicating the desired filter to be
+    /// used with a particular pattern.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-filter-t)
+    pub const Filter = enum(c_uint) {
+        /// A high-performance filter, with quality similar to `.Nearest`
+        Fast,
+        /// A reasonable-performance filter, with quality similar to `.Bilinear`
+        Good,
+        /// The highest-quality available, performance may not be suitable for
+        /// interactive use
+        Best,
+        /// Nearest-neighbor filtering
+        Nearest,
+        /// Linear interpolation in two dimensions
+        Bilinear,
+        /// This filter value is currently unimplemented, and should not be used in
+        /// current code
+        Gaussian,
+    };
 };
 
 pub const SolidPattern = opaque {
@@ -363,7 +441,7 @@ pub const SurfacePattern = opaque {
     }
 
     /// Sets the filter to be used for resizing when using this pattern. See
-    /// `cairo.Filter` for details on each filter.
+    /// `cairo.Pattern.Filter` for details on each filter.
     ///
     /// >Note that you might want to control filtering even when you do not
     /// have an explicit `cairo.Pattern` object, (for example when using
@@ -376,28 +454,28 @@ pub const SurfacePattern = opaque {
     /// ```
     ///
     /// **Parameters**
-    /// - `filter`: a `cairo.Filter` describing the filter to use for resizing
-    /// the pattern
+    /// - `filter`: a `cairo.Pattern.Filter` describing the filter to use for
+    /// resizing the pattern
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-set-filter)
-    pub fn setFilter(self: *SurfacePattern, filter: Filter) void {
+    pub fn setFilter(self: *SurfacePattern, filter: Pattern.Filter) void {
         cairo_pattern_set_filter(self, filter);
     }
 
-    /// Gets the current filter for a pattern. See `cairo.Filter` for details
-    /// on each filter.
+    /// Gets the current filter for a pattern. See `cairo.Pattern.Filter` for
+    /// details on each filter.
     ///
     /// **Returns**
     ///
     /// the current filter used for resizing the pattern.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-filter)
-    pub fn getFilter(self: *SurfacePattern) Filter {
+    pub fn getFilter(self: *SurfacePattern) Pattern.Filter {
         return cairo_pattern_get_filter(self);
     }
 };
 
-pub fn Gradient(comptime Self: type) type {
+fn Gradient(comptime Self: type) type {
     return struct {
         pub usingnamespace Mixin(Self);
 
@@ -1392,13 +1470,13 @@ extern fn cairo_mesh_pattern_get_corner_color_rgba(pattern: ?*MeshPattern, patch
 extern fn cairo_pattern_reference(pattern: ?*anyopaque) ?*anyopaque;
 extern fn cairo_pattern_destroy(pattern: ?*anyopaque) void;
 extern fn cairo_pattern_status(pattern: ?*anyopaque) Status;
-extern fn cairo_pattern_set_extend(pattern: ?*anyopaque, extend: Extend) void;
-extern fn cairo_pattern_get_extend(pattern: ?*anyopaque) Extend;
-extern fn cairo_pattern_set_filter(pattern: ?*anyopaque, filter: Filter) void;
-extern fn cairo_pattern_get_filter(pattern: ?*anyopaque) Filter;
+extern fn cairo_pattern_set_extend(pattern: ?*anyopaque, extend: Pattern.Extend) void;
+extern fn cairo_pattern_get_extend(pattern: ?*anyopaque) Pattern.Extend;
+extern fn cairo_pattern_set_filter(pattern: ?*anyopaque, filter: Pattern.Filter) void;
+extern fn cairo_pattern_get_filter(pattern: ?*anyopaque) Pattern.Filter;
 extern fn cairo_pattern_set_matrix(pattern: ?*anyopaque, matrix: [*c]const Matrix) void;
 extern fn cairo_pattern_get_matrix(pattern: ?*anyopaque, matrix: [*c]Matrix) void;
-extern fn cairo_pattern_get_type(pattern: ?*anyopaque) PatternType;
+extern fn cairo_pattern_get_type(pattern: ?*anyopaque) Pattern.Type;
 extern fn cairo_pattern_get_reference_count(pattern: ?*anyopaque) c_uint;
 extern fn cairo_pattern_set_user_data(pattern: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
 extern fn cairo_pattern_get_user_data(pattern: ?*anyopaque, key: [*c]const UserDataKey) ?*anyopaque;

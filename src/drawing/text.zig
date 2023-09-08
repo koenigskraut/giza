@@ -25,10 +25,7 @@ const CairoError = cairo.CairoError;
 
 const FontFace = cairo.FontFace;
 const FontOptions = cairo.FontOptions;
-const FontSlant = cairo.FontSlant;
-const FontWeight = cairo.FontWeight;
 const ScaledFont = cairo.ScaledFont;
-const TextClusterFlags = cairo.TextClusterFlags;
 
 const FontExtents = cairo.FontExtents;
 const TextExtents = cairo.TextExtents;
@@ -68,8 +65,8 @@ pub const Mixin = struct {
     /// If text is drawn without a call to `ctx.selectFontFace()`, (nor
     /// `ctx.setFontFace()` nor `ctx.setScaledFont()`), the default family is
     /// platform-specific, but is essentially "sans-serif". Default slant is
-    /// `cairo.FonSlant.Normal`, and default weight is
-    /// `cairo.FontWeight.Normal`.
+    /// `cairo.FontFace.FontSlant.Normal`, and default weight is
+    /// `cairo.FontFace.FontWeight.Normal`.
     ///
     /// This function is equivalent to a call to cairo_toy_font_face_create() followed by cairo_set_font_face().
     ///
@@ -79,7 +76,7 @@ pub const Mixin = struct {
     /// - `weight`: the weight for the font
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-select-font-face)
-    pub fn selectFontFace(self: *Context, family: [:0]const u8, slant: FontSlant, weight: FontWeight) void {
+    pub fn selectFontFace(self: *Context, family: [:0]const u8, slant: FontFace.FontSlant, weight: FontFace.FontWeight) void {
         // TODO fix desc
         cairo_select_font_face(self, family, slant, weight);
     }
@@ -272,7 +269,7 @@ pub const Mixin = struct {
     /// See `cairo.TextCluster` for constraints on valid clusters.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-show-text-glyphs)
-    pub fn showTextGlyphs(self: *Context, utf8: [:0]const u8, glyphs: []const Glyph, clusters: []const TextCluster, cluster_flags: TextClusterFlags) void {
+    pub fn showTextGlyphs(self: *Context, utf8: [:0]const u8, glyphs: []const Glyph, clusters: []const TextCluster, cluster_flags: TextCluster.Flags) void {
         cairo_show_text_glyphs(
             self,
             utf8,
@@ -418,6 +415,16 @@ pub const TextCluster = extern struct {
     /// the number of glyphs covered by cluster
     num_glyphs: c_int,
 
+    /// Specifies properties of a text cluster mapping.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-text-cluster-flags-t)
+    pub const Flags = enum(c_uint) {
+        None,
+        /// The clusters in the cluster array map to glyphs in the glyph array from
+        /// end to start.
+        Backward = 1,
+    };
+
     /// Allocates a slice of `cairo.TextCluster`'s. This function is only
     /// useful in implementations of cairo_user_scaled_font_text_to_glyphs_func_t
     /// where the user needs to allocate a slice of text clusters that cairo
@@ -447,7 +454,7 @@ pub const TextCluster = extern struct {
     }
 };
 
-extern fn cairo_select_font_face(cr: ?*Context, family: [*c]const u8, slant: FontSlant, weight: FontWeight) void;
+extern fn cairo_select_font_face(cr: ?*Context, family: [*c]const u8, slant: FontFace.FontSlant, weight: FontFace.FontWeight) void;
 extern fn cairo_set_font_size(cr: ?*Context, size: f64) void;
 extern fn cairo_set_font_matrix(cr: ?*Context, matrix: [*c]const Matrix) void;
 extern fn cairo_get_font_matrix(cr: ?*Context, matrix: [*c]Matrix) void;
@@ -459,11 +466,11 @@ extern fn cairo_set_scaled_font(cr: ?*Context, scaled_font: ?*const ScaledFont) 
 extern fn cairo_get_scaled_font(cr: ?*Context) ?*ScaledFont;
 extern fn cairo_show_text(cr: ?*Context, utf8: [*c]const u8) void;
 extern fn cairo_show_glyphs(cr: ?*Context, glyphs: [*c]const Glyph, num_glyphs: c_int) void;
-extern fn cairo_show_text_glyphs(cr: ?*Context, utf8: [*c]const u8, utf8_len: c_int, glyphs: [*c]const Glyph, num_glyphs: c_int, clusters: [*c]const TextCluster, num_clusters: c_int, cluster_flags: TextClusterFlags) void;
+extern fn cairo_show_text_glyphs(cr: ?*Context, utf8: [*c]const u8, utf8_len: c_int, glyphs: [*c]const Glyph, num_glyphs: c_int, clusters: [*c]const TextCluster, num_clusters: c_int, cluster_flags: TextCluster.Flags) void;
 extern fn cairo_font_extents(cr: ?*Context, extents: [*c]FontExtents) void;
 extern fn cairo_text_extents(cr: ?*Context, utf8: [*c]const u8, extents: [*c]TextExtents) void;
 extern fn cairo_glyph_extents(cr: ?*Context, glyphs: [*c]const Glyph, num_glyphs: c_int, extents: [*c]TextExtents) void;
-// extern fn cairo_toy_font_face_create(family: [*c]const u8, slant: FontSlant, weight: FontWeight) ?*cairo_font_face_t;
+// extern fn cairo_toy_font_face_create(family: [*c]const u8, slant: FontFace.FontSlant, weight: FontFace.FontWeight) ?*cairo_font_face_t;
 // extern fn cairo_toy_font_face_get_family(font_face: ?*cairo_font_face_t) [*c]const u8;
 // extern fn cairo_toy_font_face_get_slant(font_face: ?*cairo_font_face_t) cairo_font_slant_t;
 // extern fn cairo_toy_font_face_get_weight(font_face: ?*cairo_font_face_t) cairo_font_weight_t;

@@ -13,7 +13,6 @@ const safety = @import("../safety.zig");
 const Context = @import("../context.zig").Context;
 const RectangleInt = @import("../util.zig").RectangleInt;
 
-const RegionOverlap = enums.RegionOverlap;
 const Status = enums.Status;
 const CairoError = enums.CairoError;
 
@@ -27,6 +26,18 @@ const CairoError = enums.CairoError;
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-t)
 pub const Region = opaque {
+    /// Used as the return value for `cairo.Region.containsRectangle()`.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-overlap-t)
+    pub const Overlap = enum(c_uint) {
+        /// The contents are entirely inside the region
+        In,
+        /// The contents are entirely outside the region
+        Out,
+        /// The contents are partially inside and partially outside the region
+        Part,
+    };
+
     /// Allocates a new empty region object.
     ///
     /// **Returns**
@@ -219,12 +230,12 @@ pub const Region = opaque {
     ///
     /// **Returns**
     ///
-    /// `RegionOverlap.In` if `rectangle` is entirely inside `self`, `.Out` if
-    /// `rectangle` is entirely outside `self`, or `.Part` if `rectangle` is
-    /// partially inside and partially outside `self`.
+    /// `cairo.Region.Overlap.In` if `rectangle` is entirely inside `self`,
+    /// `.Out` if `rectangle` is entirely outside `self`, or `.Part` if
+    /// `rectangle` is partially inside and partially outside `self`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-contains-rectangle)
-    pub fn containsRectangle(self: *const Region, rectangle: *const RectangleInt) RegionOverlap {
+    pub fn containsRectangle(self: *const Region, rectangle: *const RectangleInt) Overlap {
         return cairo_region_contains_rectangle(self, rectangle);
     }
 
@@ -368,7 +379,7 @@ extern fn cairo_region_num_rectangles(region: ?*const Region) c_int;
 extern fn cairo_region_get_rectangle(region: ?*const Region, nth: c_int, rectangle: [*c]RectangleInt) void;
 extern fn cairo_region_is_empty(region: ?*const Region) c_int; // bool
 extern fn cairo_region_contains_point(region: ?*const Region, x: c_int, y: c_int) c_int; // bool
-extern fn cairo_region_contains_rectangle(region: ?*const Region, rectangle: [*c]const RectangleInt) RegionOverlap;
+extern fn cairo_region_contains_rectangle(region: ?*const Region, rectangle: [*c]const RectangleInt) Region.Overlap;
 extern fn cairo_region_equal(a: ?*const Region, b: ?*const Region) c_int; // bool
 extern fn cairo_region_translate(region: ?*Region, dx: c_int, dy: c_int) void;
 extern fn cairo_region_intersect(dst: ?*Region, other: ?*const Region) Status;

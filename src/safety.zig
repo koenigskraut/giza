@@ -21,7 +21,7 @@ var leakInfos: liT = undefined;
 var liEnd: usize = 0;
 
 var instructions: []usize = undefined;
-pub var leaks: std.AutoArrayHashMap(usize, LeakInfo) = undefined;
+var leaks: std.AutoArrayHashMap(usize, LeakInfo) = undefined;
 
 const LeaksWriter = union(enum) {
     FileWriter: std.fs.File.Writer,
@@ -58,8 +58,8 @@ const LeaksWriter = union(enum) {
     }
 };
 
-pub var leaksWriter: LeaksWriter = undefined;
-pub var ttyConfig: ?std.io.tty.Config = null;
+var leaksWriter: LeaksWriter = undefined;
+var ttyConfig: ?std.io.tty.Config = null;
 
 fn init() void {
     arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);

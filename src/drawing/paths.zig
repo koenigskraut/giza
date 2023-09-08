@@ -17,7 +17,6 @@ const Rectangle = context.Rectangle;
 const ExtentsRectangle = util.ExtentsRectangle;
 
 const CairoError = cairo.CairoError;
-const PathDataType = cairo.PathDataType;
 const Status = cairo.Status;
 
 pub const Mixin = struct {
@@ -434,9 +433,9 @@ pub const Mixin = struct {
     /// corresponding drawing operations.
     ///
     /// The result of `ctx.pathExtents()` is defined as equivalent to the
-    /// limit of `ctx.strokeExtents()` with `cairo.LineCap.Round` as the line
-    /// width approaches 0.0, (but never reaching the empty-rectangle returned
-    /// by `ctx.strokeExtents()` for a line width of 0.0).
+    /// limit of `ctx.strokeExtents()` with `cairo.Context.LineCap.Round` as
+    /// the line width approaches 0.0, (but never reaching the empty-rectangle
+    /// returned by `ctx.strokeExtents()` for a line width of 0.0).
     ///
     /// Specifically, this means that zero-area sub-paths such as
     /// `ctx.moveTo()`; `ctx.lineTo()` segments, (even degenerate cases where
@@ -462,8 +461,8 @@ pub const Mixin = struct {
 ///
 /// The `num_data` field gives the number of elements in the data array. This
 /// number is larger than the number of independent path portions (defined in
-/// PathDataType), since the data includes both headers and coordinates for
-/// each portion.
+/// cairo.PathData.Type), since the data includes both headers and coordinates
+/// for each portion.
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-t)
 pub const Path = extern struct {
@@ -510,34 +509,26 @@ pub const Path = extern struct {
 /// `ctx.moveTo()`, `ctx.lineTo()`, `ctx.curveTo()`, and `ctx.closePath()`.
 ///
 /// Here is sample code for iterating through a `Path`:
-/// // TODO
-/// ```
-/// int i;
-/// cairo_path_t *path;
-/// cairo_path_data_t *data;
+/// ```zig
+/// var i: usize = 0;
+/// var data: *cairo.PathData = undefined;
 ///
-/// path = cairo_copy_path (cr);
+/// const path = try context.copyPath();
+/// defer path.destroy();
 ///
-/// for (i=0; i < path->num_data; i += path->data[i].header.length) {
-///     data = &path->data[i];
-///     switch (data->header.type) {
-///     case CAIRO_PATH_MOVE_TO:
-///         do_move_to_things (data[1].point.x, data[1].point.y);
-///         break;
-///     case CAIRO_PATH_LINE_TO:
-///         do_line_to_things (data[1].point.x, data[1].point.y);
-///         break;
-///     case CAIRO_PATH_CURVE_TO:
-///         do_curve_to_things (data[1].point.x, data[1].point.y,
-///                             data[2].point.x, data[2].point.y,
-///                             data[3].point.x, data[3].point.y);
-///         break;
-///     case CAIRO_PATH_CLOSE_PATH:
-///         do_close_path_things ();
-///         break;
+/// while (i < path.num_data) : (i += @intCast(path.data[i].header.length)) {
+///     data = &path.data[i];
+///     switch (data.header.h_type) {
+///         .MoveTo => doMoveToThigs(data[1].point.x, data[1].point.y),
+///         .LineTo => doLineToThigs(data[1].point.x, data[1].point.y),
+///         .CurveTo => doCurveToThigs(
+///             data[1].point.x, data[1].point.y,
+///             data[2].point.x, data[2].point.y,
+///             data[3].point.x, data[3].point.y,
+///         ),
+///         .ClosePath => doClosePathThings(),
 ///     }
 /// }
-/// cairo_path_destroy (path);
 /// ```
 /// **NOTE:** As of cairo 1.4, cairo does not mind if there are more elements
 /// in a portion of the path than needed. Such elements can be used by users of
@@ -548,9 +539,25 @@ pub const Path = extern struct {
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-data-t)
 pub const PathData = extern union {
-    // TODO: fix C code
-    header: extern struct { h_type: PathDataType, length: c_int },
+    // TODO: examine code
+    header: extern struct { h_type: PathData.Type, length: c_int },
     point: extern struct { x: f64, y: f64 },
+
+    /// `cairo.PathData.Type` is used to describe the type of one portion of a
+    /// path when represented as a `cairo.Path`. See `cairo.PathData` for
+    /// details.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-data-type-t)
+    pub const Type = enum(c_uint) {
+        /// A move-to operation
+        MoveTo,
+        /// A line-to operation
+        LineTo,
+        /// A curve-to operation
+        CurveTo,
+        /// A close-path operation
+        ClosePath,
+    };
 };
 
 extern fn cairo_copy_path(cr: ?*Context) [*c]Path;
