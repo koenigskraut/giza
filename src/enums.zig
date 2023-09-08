@@ -1,7 +1,6 @@
 const util = @import("util.zig");
 
 const Error = @import("std").builtin.Type.Error;
-const FromToInt = util.FromToInt;
 
 /// Specifies the type of antialiasing to do when rendering text or shapes.
 ///
@@ -52,8 +51,6 @@ pub const Antialias = enum(c_uint) {
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-content-t)
 pub const Content = enum(c_uint) {
-    pub usingnamespace util.FromToInt(@This());
-
     /// The surface will hold color content only
     Color = 4096,
     /// The surface will hold alpha content only
@@ -135,8 +132,6 @@ pub const CairoError = error{
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Error-handling.html#cairo-status-t)
 pub const Status = enum(c_uint) {
-    pub usingnamespace FromToInt(@This());
-
     /// no error has occurred
     Success = 0,
 

@@ -148,8 +148,6 @@ pub const SvgSurface = opaque {
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-unit-t)
 pub const SvgUnit = enum(c_uint) {
-    pub usingnamespace util.FromToInt(SvgUnit);
-
     /// User unit, a value in the current coordinate system. If used in the
     /// root element for the initial coordinate systems it corresponds to
     /// pixels.
@@ -191,8 +189,6 @@ pub fn getSvgVersions() []const SvgVersion {
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-version-t)
 pub const SvgVersion = enum(c_uint) {
-    pub usingnamespace util.FromToInt(SvgVersion);
-
     @"1.1",
     @"1.2",
 

@@ -94,8 +94,6 @@ pub const Surface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-type-t)
     pub const Type = enum(c_uint) {
-        pub usingnamespace cairo.FromToInt(@This());
-
         /// The surface is of type image
         Image,
         /// The surface is of type pdf
@@ -154,8 +152,6 @@ pub const Surface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-format-t)
     pub const Format = enum(c_int) {
-        pub usingnamespace cairo.FromToInt(@This());
-
         /// no such format exists or is supported
         INVALID = -1,
         /// each pixel is a 32-bit quantity, with alpha in the upper8 bits,
@@ -198,14 +194,12 @@ pub const Surface = opaque {
         pub fn strideForWidth(self: Format, width: c_int) !u18 {
             // TODO: check example, rework it? work on createForData func?
             const stride = switch (self) {
-                .ARGB32, .RGB24, .A8, .A1, .RGB16_565, .RGB30 => cairo_format_stride_for_width(self.toInt(), width),
+                .ARGB32, .RGB24, .A8, .A1, .RGB16_565, .RGB30 => cairo_format_stride_for_width(@intFromEnum(self), width),
                 else => return error.InvalidFormat,
             };
             if (stride == -1) return error.WidthTooLarge;
             return @as(u18, @intCast(stride));
         }
-
-        extern fn cairo_format_stride_for_width(format: Format.TagType, width: c_int) c_int;
     };
 
     pub const MimeType = enum {
@@ -895,6 +889,7 @@ pub fn Base(comptime Self: type) type {
     };
 }
 
+extern fn cairo_format_stride_for_width(format: Surface.Format, width: c_int) c_int;
 extern fn cairo_surface_create_similar(other: ?*anyopaque, content: Content, width: c_int, height: c_int) ?*anyopaque;
 extern fn cairo_surface_create_similar_image(other: ?*anyopaque, format: Surface.Format, width: c_int, height: c_int) ?*anyopaque;
 extern fn cairo_surface_create_for_rectangle(target: ?*anyopaque, x: f64, y: f64, width: f64, height: f64) ?*anyopaque;

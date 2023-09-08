@@ -248,7 +248,8 @@ pub const RectangleInt = extern struct {
     }
 };
 
-pub fn FromToInt(comptime Self: type) type {
+// examine later
+fn FromToInt(comptime Self: type) type {
     return struct {
         pub const TagType = @typeInfo(Self).Enum.tag_type;
 
