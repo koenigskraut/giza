@@ -241,7 +241,7 @@ pub const Device = opaque {
     /// type, but some backends also provide type-specific functions that must
     /// only be called with a device of the appropriate type. These functions
     /// are methids of specific `cairo.Device` instances such as
-    /// `cairo.ScriptDevice.writeComment()`.
+    /// `cairo.Script.writeComment()`.
     ///
     /// The behavior of calling a type-specific function with a device of the
     /// wrong type is undefined, that is — **DO NOT** cast pointers into

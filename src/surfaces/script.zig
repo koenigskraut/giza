@@ -21,7 +21,8 @@ const base = @import("base.zig");
 const SurfaceMixin = base.Base;
 const DeviceMixin = @import("../device.zig").Base;
 
-pub const ScriptDevice = opaque {
+/// An instance of `cairo.Device`
+pub const Script = opaque {
     pub usingnamespace DeviceMixin(@This());
 
     /// A set of script output variants.
@@ -48,12 +49,12 @@ pub const ScriptDevice = opaque {
     /// `device.destroy()` when done with it. You can use idiomatic Zig pattern
     /// with `defer`:
     /// ```zig
-    /// const device = try cairo.ScriptDevice.create("script.txt");
+    /// const device = try cairo.Script.create("script.txt");
     /// defer device.destroy();
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-create)
-    pub fn create(filename: [:0]const u8) CairoError!*ScriptDevice {
+    pub fn create(filename: [:0]const u8) CairoError!*Script {
         const device = cairo_script_create(filename).?;
         try device.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), device);
@@ -76,12 +77,12 @@ pub const ScriptDevice = opaque {
     /// with `defer`:
     /// ```zig
     /// var file = try std.fs.cwd().createFile("script.txt");
-    /// const device = try cairo.ScriptDevice.createForStream(&file);
+    /// const device = try cairo.Script.createForStream(&file);
     /// defer device.destroy();
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-create-for-stream)
-    pub fn createForStream(writer: anytype) CairoError!*ScriptDevice {
+    pub fn createForStream(writer: anytype) CairoError!*Script {
         const writeFn = util.createWriteFn(writer);
         const device = cairo_script_create_for_stream(writeFn, writer).?;
         try device.status().toErr();
@@ -95,7 +96,7 @@ pub const ScriptDevice = opaque {
     /// - `recording_surface`: the recording surface to replay
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-from-recording-surface)
-    pub fn fromRecordingSurface(self: *ScriptDevice, recording_surface: *RecordingSurface) CairoError!void {
+    pub fn fromRecordingSurface(self: *Script, recording_surface: *RecordingSurface) CairoError!void {
         return cairo_script_from_recording_surface(self, recording_surface).toErr();
     }
 
@@ -105,7 +106,7 @@ pub const ScriptDevice = opaque {
     /// - `mode`: the new mode
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-set-mode)
-    pub fn setMode(self: *ScriptDevice, mode: ScriptDevice.Mode) void {
+    pub fn setMode(self: *Script, mode: Script.Mode) void {
         cairo_script_set_mode(self, mode);
     }
 
@@ -116,7 +117,7 @@ pub const ScriptDevice = opaque {
     /// the current output mode of the script.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-get-mode)
-    pub fn getMode(self: *ScriptDevice) ScriptDevice.Mode {
+    pub fn getMode(self: *Script) Script.Mode {
         return cairo_script_get_mode(self);
     }
 
@@ -126,7 +127,7 @@ pub const ScriptDevice = opaque {
     /// - `comment`: the string to emit
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-write-comment)
-    pub fn writeComment(self: *ScriptDevice, comment: []const u8) void {
+    pub fn writeComment(self: *Script, comment: []const u8) void {
         cairo_script_write_comment(self, comment.ptr, @intCast(comment.len));
     }
 };
@@ -151,14 +152,14 @@ pub const ScriptSurface = opaque {
     /// `surface.destroy()` when done with it. You can use idiomatic Zig
     /// pattern with `defer`:
     /// ```zig
-    /// const device = try cairo.ScriptDevice.create("script.txt");
+    /// const device = try cairo.Script.create("script.txt");
     /// defer device.destroy();
     /// const surface = try cairo.ScriptSurface.create(device, .ColorAlpha, 100, 100);
     /// defer surface.destroy();
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-surface-create)
-    pub fn create(script: *ScriptDevice, content: Content, width: f64, height: f64) CairoError!*ScriptSurface {
+    pub fn create(script: *Script, content: Content, width: f64, height: f64) CairoError!*ScriptSurface {
         const surface = cairo_script_surface_create(script, content, width, height).?;
         try surface.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), surface);
@@ -179,7 +180,7 @@ pub const ScriptSurface = opaque {
     /// `surface.destroy()` when done with it. You can use idiomatic Zig
     /// pattern with `defer`:
     /// ```zig
-    /// const device = try cairo.ScriptDevice.create("script.txt");
+    /// const device = try cairo.Script.create("script.txt");
     /// defer device.destroy();
     /// const image = try cairo.ImageSurface.create(.ARGB32, 100, 100);
     /// defer image.destroy();
@@ -188,7 +189,7 @@ pub const ScriptSurface = opaque {
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-surface-create-for-target)
-    pub fn createForTarget(script: *ScriptDevice, target: *Surface) CairoError!*ScriptSurface {
+    pub fn createForTarget(script: *Script, target: *Surface) CairoError!*ScriptSurface {
         const surface = cairo_script_surface_create_for_target(script, target).?;
         try surface.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), surface);
@@ -196,11 +197,11 @@ pub const ScriptSurface = opaque {
     }
 };
 
-extern fn cairo_script_create(filename: [*c]const u8) ?*ScriptDevice;
-extern fn cairo_script_create_for_stream(write_func: WriteFn, closure: ?*anyopaque) ?*ScriptDevice;
-extern fn cairo_script_from_recording_surface(script: ?*ScriptDevice, recording_surface: ?*RecordingSurface) Status;
-extern fn cairo_script_set_mode(script: ?*ScriptDevice, mode: ScriptDevice.Mode) void;
-extern fn cairo_script_get_mode(script: ?*ScriptDevice) ScriptDevice.Mode;
-extern fn cairo_script_surface_create(script: ?*ScriptDevice, content: Content, width: f64, height: f64) ?*ScriptSurface;
-extern fn cairo_script_surface_create_for_target(script: ?*ScriptDevice, target: ?*Surface) ?*ScriptSurface;
-extern fn cairo_script_write_comment(script: ?*ScriptDevice, comment: [*c]const u8, len: c_int) void;
+extern fn cairo_script_create(filename: [*c]const u8) ?*Script;
+extern fn cairo_script_create_for_stream(write_func: WriteFn, closure: ?*anyopaque) ?*Script;
+extern fn cairo_script_from_recording_surface(script: ?*Script, recording_surface: ?*RecordingSurface) Status;
+extern fn cairo_script_set_mode(script: ?*Script, mode: Script.Mode) void;
+extern fn cairo_script_get_mode(script: ?*Script) Script.Mode;
+extern fn cairo_script_surface_create(script: ?*Script, content: Content, width: f64, height: f64) ?*ScriptSurface;
+extern fn cairo_script_surface_create_for_target(script: ?*Script, target: ?*Surface) ?*ScriptSurface;
+extern fn cairo_script_write_comment(script: ?*Script, comment: [*c]const u8, len: c_int) void;
