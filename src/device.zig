@@ -44,7 +44,8 @@
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html)
 
 const cairo = @import("cairo.zig");
-const safety = @import("safety.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
 const CairoError = cairo.CairoError;
 const Status = cairo.Status;
@@ -73,7 +74,7 @@ pub fn Base(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-reference)
         pub fn reference(device: *Self) *Self {
             if (safety.tracing) safety.reference(@returnAddress(), device);
-            return @ptrCast(cairo_device_reference(device).?);
+            return @ptrCast(c.cairo_device_reference(device).?);
         }
 
         /// Decreases the reference count on `device` by one. If the result is
@@ -85,7 +86,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-destroy)
         pub fn destroy(device: *Self) void {
-            cairo_device_destroy(device);
+            c.cairo_device_destroy(device);
             if (safety.tracing) safety.destroy(device);
         }
 
@@ -93,7 +94,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-status)
         pub fn status(device: *Self) Status {
-            return cairo_device_status(device);
+            return c.cairo_device_status(device);
         }
 
         /// This function finishes the device and drops all references to
@@ -111,7 +112,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-finish)
         pub fn finish(device: *Self) void {
-            cairo_device_finish(device);
+            c.cairo_device_finish(device);
         }
 
         /// Finish any pending operations for the device and also restore any
@@ -124,7 +125,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-flush)
         pub fn flush(device: *Self) void {
-            cairo_device_flush(device);
+            c.cairo_device_flush(device);
         }
 
         /// This function returns the type of the device. See
@@ -136,14 +137,14 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-get-type)
         pub fn getType(device: *Self) Device.Type {
-            return cairo_device_get_type(device);
+            return c.cairo_device_get_type(device);
         }
 
         /// Returns the current reference count of `device`.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-get-reference-count)
         pub fn getReferenceCount(device: *Self) usize {
-            return @intCast(cairo_device_get_reference_count(device));
+            return @intCast(c.cairo_device_get_reference_count(device));
         }
 
         /// Attach user data to `device`. To remove user data from a device,
@@ -163,7 +164,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-set-user-data)
         pub fn setUserData(device: *Self, key: *const UserDataKey, user_data: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
-            return cairo_device_set_user_data(device, key, user_data, destroyFn).toErr();
+            return c.cairo_device_set_user_data(device, key, user_data, destroyFn).toErr();
         }
 
         /// Return user data previously attached to device using the specified key.
@@ -180,7 +181,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-get-user-data)
         pub fn getUserData(device: *Self, key: *const UserDataKey) ?*anyopaque {
-            return cairo_device_get_user_data(device, key);
+            return c.cairo_device_get_user_data(device, key);
         }
 
         /// Acquires the device for the current thread. This function will block
@@ -205,7 +206,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-acquire)
         pub fn acquire(device: *Self) CairoError!void {
-            return cairo_device_acquire(device).toErr();
+            return c.cairo_device_acquire(device).toErr();
         }
 
         /// Releases a device previously acquired using `.acquire()`. See that
@@ -213,7 +214,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-release)
         pub fn release(device: *Self) void {
-            return cairo_device_release(device);
+            return c.cairo_device_release(device);
         }
     };
 }
@@ -266,50 +267,30 @@ pub const Device = opaque {
 
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-observer-elapsed)
     pub fn observerElapsed(self: *Device) f64 {
-        return cairo_device_observer_elapsed(self);
+        return c.cairo_device_observer_elapsed(self);
     }
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-observer-fill-elapsed)
     pub fn observerFillElapsed(self: *Device) f64 {
-        return cairo_device_observer_fill_elapsed(self);
+        return c.cairo_device_observer_fill_elapsed(self);
     }
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-observer-glyphs-elapsed)
     pub fn observerGlyphsElapsed(self: *Device) f64 {
-        return cairo_device_observer_glyphs_elapsed(self);
+        return c.cairo_device_observer_glyphs_elapsed(self);
     }
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-observer-mask-elapsed)
     pub fn observerMaskElapsed(self: *Device) f64 {
-        return cairo_device_observer_mask_elapsed(self);
+        return c.cairo_device_observer_mask_elapsed(self);
     }
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-observer-paint-elapsed)
     pub fn observerPaintElapsed(self: *Device) f64 {
-        return cairo_device_observer_paint_elapsed(self);
+        return c.cairo_device_observer_paint_elapsed(self);
     }
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-observer-print)
     pub fn observerPrint(self: *Device, write_func: WriteFn, closure: ?*anyopaque) CairoError!void {
-        return cairo_device_observer_print(self, write_func, closure).toErr();
+        return c.cairo_device_observer_print(self, write_func, closure).toErr();
     }
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html#cairo-device-observer-stroke-elapsed)
     pub fn observerStrokeElapsed(self: *Device) f64 {
-        return cairo_device_observer_stroke_elapsed(self);
+        return c.cairo_device_observer_stroke_elapsed(self);
     }
 };
-
-extern fn cairo_device_reference(device: ?*anyopaque) ?*anyopaque;
-extern fn cairo_device_destroy(device: ?*anyopaque) void;
-extern fn cairo_device_status(device: ?*anyopaque) Status;
-extern fn cairo_device_finish(device: ?*anyopaque) void;
-extern fn cairo_device_flush(device: ?*anyopaque) void;
-extern fn cairo_device_get_type(device: ?*anyopaque) Device.Type;
-extern fn cairo_device_get_reference_count(device: ?*anyopaque) c_uint;
-extern fn cairo_device_set_user_data(device: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
-extern fn cairo_device_get_user_data(device: ?*anyopaque, key: [*c]const UserDataKey) ?*anyopaque;
-extern fn cairo_device_acquire(device: ?*anyopaque) Status;
-extern fn cairo_device_release(device: ?*anyopaque) void;
-
-extern fn cairo_device_observer_elapsed(device: ?*Device) f64;
-extern fn cairo_device_observer_fill_elapsed(device: ?*Device) f64;
-extern fn cairo_device_observer_glyphs_elapsed(device: ?*Device) f64;
-extern fn cairo_device_observer_mask_elapsed(device: ?*Device) f64;
-extern fn cairo_device_observer_paint_elapsed(device: ?*Device) f64;
-extern fn cairo_device_observer_print(device: ?*Device, write_func: WriteFn, closure: ?*anyopaque) Status;
-extern fn cairo_device_observer_stroke_elapsed(device: ?*Device) f64;

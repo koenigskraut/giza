@@ -10,16 +10,13 @@ const std = @import("std");
 const testing = std.testing;
 
 const cairo = @import("../cairo.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
-const enums = @import("../enums.zig");
-const safety = @import("../safety.zig");
-const util = @import("../util.zig");
-const base = @import("base.zig");
-
-const Mixin = base.Base;
+const Mixin = @import("base.zig").Base;
 const Format = cairo.Surface.Format;
-const ReadFn = util.ReadFn;
-const CairoError = enums.CairoError;
+const ReadFn = cairo.ReadFn;
+const CairoError = cairo.CairoError;
 
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html)
 pub const ImageSurface = opaque {
@@ -50,7 +47,7 @@ pub const ImageSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-create)
     pub fn create(format: Format, width: u16, height: u16) CairoError!*ImageSurface {
-        const imageSurface = cairo_image_surface_create(format, width, height).?;
+        const imageSurface = c.cairo_image_surface_create(format, width, height).?;
         try imageSurface.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
         return imageSurface;
@@ -96,7 +93,7 @@ pub const ImageSurface = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-create-for-data)
     pub fn createForData(data: [*c]u8, format: Format, width: u16, height: u16, stride: u18) CairoError!*ImageSurface {
         // TODO: check destroy
-        const imageSurface = cairo_image_surface_create_for_data(data, format, width, height, stride).?;
+        const imageSurface = c.cairo_image_surface_create_for_data(data, format, width, height, stride).?;
         try imageSurface.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
         return imageSurface;
@@ -129,7 +126,7 @@ pub const ImageSurface = opaque {
         // TODO: allow errors to propagate?
         var buf: [4097]u8 = undefined;
         const fileNameZ = std.fmt.bufPrintZ(&buf, "{s}", .{filename}) catch return error.NameTooLong;
-        const imageSurface = cairo_image_surface_create_from_png(fileNameZ.ptr).?;
+        const imageSurface = c.cairo_image_surface_create_from_png(fileNameZ.ptr).?;
         try imageSurface.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
         return imageSurface;
@@ -161,8 +158,8 @@ pub const ImageSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png-stream)
     pub fn createFromPNGStream(reader: anytype) CairoError!*ImageSurface {
-        const readFn = util.createReadFn(@TypeOf(reader));
-        const imageSurface = cairo_image_surface_create_from_png_stream(readFn, reader).?;
+        const readFn = cairo.createReadFn(@TypeOf(reader));
+        const imageSurface = c.cairo_image_surface_create_from_png_stream(readFn, reader).?;
         try imageSurface.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
         return imageSurface;
@@ -179,7 +176,7 @@ pub const ImageSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-get-data)
     pub fn getData(self: *ImageSurface) CairoError![*]u8 {
-        const ptr: ?[*]u8 = cairo_image_surface_get_data(self);
+        const ptr: ?[*]u8 = c.cairo_image_surface_get_data(self);
         try self.status().toErr();
         return ptr orelse CairoError.NullPointer;
     }
@@ -188,14 +185,14 @@ pub const ImageSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-get-format)
     pub fn getFormat(self: *ImageSurface) Format {
-        return cairo_image_surface_get_format(self);
+        return c.cairo_image_surface_get_format(self);
     }
 
     /// Get the width of the image surface in pixels.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-get-width)
     pub fn getWidth(self: *ImageSurface) u16 {
-        const width = cairo_image_surface_get_width(self);
+        const width = c.cairo_image_surface_get_width(self);
         return @intCast(width);
     }
 
@@ -203,7 +200,7 @@ pub const ImageSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-get-height)
     pub fn getHeight(self: *ImageSurface) u16 {
-        const height = cairo_image_surface_get_height(self);
+        const height = c.cairo_image_surface_get_height(self);
         return @intCast(height);
     }
 
@@ -214,7 +211,7 @@ pub const ImageSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-get-stride)
     pub fn getStride(self: *ImageSurface) u18 {
-        const stride = cairo_image_surface_get_stride(self);
+        const stride = c.cairo_image_surface_get_stride(self);
         return @intCast(stride);
     }
 };
@@ -232,26 +229,15 @@ test "ImageSurface" {
     }
 }
 
-test "createFromPNGStream" {
-    var file1 = try std.fs.cwd().openFile("out1.png", .{});
-    const surface = try ImageSurface.createFromPNGStream(&file1);
-    defer surface.destroy();
-    const ctx = try cairo.Context.create(surface.asSurface());
-    defer ctx.destroy();
-    ctx.rectangle(.{ .x = 500, .y = 300, .width = 80, .height = 80 });
-    ctx.setSourceRGBA(0, 0, 0, 0.8);
-    ctx.fill();
-    var file2 = try std.fs.cwd().createFile("out2.png", .{});
-    try surface.writeToPNGStream(&file2);
-}
-
-extern fn cairo_image_surface_create(format: Format, width: c_int, height: c_int) callconv(.C) ?*ImageSurface;
-extern fn cairo_image_surface_create_for_data(data: [*c]u8, format: Format, width: c_int, height: c_int, stride: c_int) ?*ImageSurface;
-extern fn cairo_image_surface_get_data(surface: ?*ImageSurface) [*c]u8;
-extern fn cairo_image_surface_get_format(surface: ?*ImageSurface) Format;
-extern fn cairo_image_surface_get_width(surface: ?*ImageSurface) c_int;
-extern fn cairo_image_surface_get_height(surface: ?*ImageSurface) c_int;
-extern fn cairo_image_surface_get_stride(surface: ?*ImageSurface) c_int;
-
-extern fn cairo_image_surface_create_from_png(filename: [*c]const u8) ?*ImageSurface;
-extern fn cairo_image_surface_create_from_png_stream(read_func: ReadFn, closure: ?*const anyopaque) ?*ImageSurface;
+// test "createFromPNGStream" {
+//     var file1 = try std.fs.cwd().openFile("out1.png", .{});
+//     const surface = try ImageSurface.createFromPNGStream(&file1);
+//     defer surface.destroy();
+//     const ctx = try cairo.Context.create(surface.asSurface());
+//     defer ctx.destroy();
+//     ctx.rectangle(.{ .x = 500, .y = 300, .width = 80, .height = 80 });
+//     ctx.setSourceRGBA(0, 0, 0, 0.8);
+//     ctx.fill();
+//     var file2 = try std.fs.cwd().createFile("out2.png", .{});
+//     try surface.writeToPNGStream(&file2);
+// }

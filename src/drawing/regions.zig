@@ -7,14 +7,16 @@
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html)
 
 const std = @import("std");
-const enums = @import("../enums.zig");
-const safety = @import("../safety.zig");
 
-const Context = @import("../context.zig").Context;
-const RectangleInt = @import("../util.zig").RectangleInt;
+const cairo = @import("../cairo.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
-const Status = enums.Status;
-const CairoError = enums.CairoError;
+const Context = cairo.Context;
+const RectangleInt = cairo.RectangleInt;
+
+const Status = cairo.Status;
+const CairoError = cairo.CairoError;
 
 /// A `cairo.Region` represents a set of integer-aligned rectangles.
 ///
@@ -54,7 +56,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-create)
     pub fn create() CairoError!*Region {
-        const region = cairo_region_create().?;
+        const region = c.cairo_region_create().?;
         try region.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), region);
         return region;
@@ -80,7 +82,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-create-rectangle)
     pub fn createRectangle(rectangle: *const RectangleInt) CairoError!*Region {
-        const region = cairo_region_create_rectangle(rectangle).?;
+        const region = c.cairo_region_create_rectangle(rectangle).?;
         try region.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), region);
         return region;
@@ -108,7 +110,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-create-rectangles)
     pub fn createRectangles(rects: []const RectangleInt) CairoError!*Region {
-        const region = cairo_region_create_rectangles(rects.ptr, @intCast(rects.len)).?;
+        const region = c.cairo_region_create_rectangles(rects.ptr, @intCast(rects.len)).?;
         try region.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), region);
         return region;
@@ -133,7 +135,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-copy)
     pub fn copy(self: *const Region) CairoError!*Region {
-        const region = cairo_region_copy(self).?;
+        const region = c.cairo_region_copy(self).?;
         try region.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), region);
         return region;
@@ -150,7 +152,7 @@ pub const Region = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-reference)
     pub fn reference(self: *Region) *Region {
         if (safety.tracing) safety.reference(@returnAddress(), self);
-        return cairo_region_reference(self).?;
+        return c.cairo_region_reference(self).?;
     }
 
     /// Destroys a `cairo.Region` object created with `Region.create()`,
@@ -158,7 +160,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-destroy)
     pub fn destroy(self: *Region) void {
-        cairo_region_destroy(self);
+        c.cairo_region_destroy(self);
         if (safety.tracing) safety.destroy(self);
     }
 
@@ -166,7 +168,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-status)
     pub inline fn status(self: *const Region) Status {
-        return cairo_region_status(self);
+        return c.cairo_region_status(self);
     }
 
     /// Gets the bounding rectangle of `self` region as a `cairo.RectangleInt`
@@ -174,7 +176,7 @@ pub const Region = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-get-extents)
     pub inline fn getExtents(self: *const Region) RectangleInt {
         var rect: RectangleInt = undefined;
-        cairo_region_get_extents(self, &rect);
+        c.cairo_region_get_extents(self, &rect);
         return rect;
     }
 
@@ -182,7 +184,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-num-rectangles)
     pub fn numRectangles(self: *const Region) usize {
-        return @intCast(cairo_region_num_rectangles(self));
+        return @intCast(c.cairo_region_num_rectangles(self));
     }
 
     /// Returns the `nth` rectangle from the `self` region
@@ -194,7 +196,7 @@ pub const Region = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-get-rectangle)
     pub inline fn getRectangle(self: *const Region, nth: usize) RectangleInt {
         var rect: RectangleInt = undefined;
-        cairo_region_get_rectangle(self, @intCast(nth), &rect);
+        c.cairo_region_get_rectangle(self, @intCast(nth), &rect);
         return rect;
     }
 
@@ -206,7 +208,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-is-empty)
     pub fn isEmpty(self: *const Region) bool {
-        return cairo_region_is_empty(self) != 0;
+        return c.cairo_region_is_empty(self) != 0;
     }
 
     /// Checks whether `(x, y)` is contained in region.
@@ -221,7 +223,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-contains-point)
     pub fn containsPoint(self: *const Region, x: i32, y: i32) bool {
-        const result = cairo_region_contains_point(self, @intCast(x), @intCast(y));
+        const result = c.cairo_region_contains_point(self, @intCast(x), @intCast(y));
         return result != 0;
     }
 
@@ -236,7 +238,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-contains-rectangle)
     pub fn containsRectangle(self: *const Region, rectangle: *const RectangleInt) Overlap {
-        return cairo_region_contains_rectangle(self, rectangle);
+        return c.cairo_region_contains_rectangle(self, rectangle);
     }
 
     /// Compares whether `self` region is equivalent to `other`.
@@ -247,7 +249,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-equal)
     pub fn equal(self: *const Region, other: *const Region) bool {
-        return cairo_region_equal(self, other) != 0;
+        return c.cairo_region_equal(self, other) != 0;
     }
 
     /// Translates `self` region by `(dx, dy)`.
@@ -258,7 +260,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-translate)
     pub fn translate(self: *Region, dx: i32, dy: i32) void {
-        cairo_region_translate(self, @intCast(dx), @intCast(dy));
+        c.cairo_region_translate(self, @intCast(dx), @intCast(dy));
     }
 
     /// Computes the intersection of `self` region with `other` and places the
@@ -271,7 +273,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-intersect)
     pub fn intersect(self: *Region, other: *const Region) CairoError!void {
-        try cairo_region_intersect(self, other).toErr();
+        try c.cairo_region_intersect(self, other).toErr();
     }
 
     /// Computes the intersection of `self` region with `rectangle` and places
@@ -284,7 +286,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-intersect-rectangle)
     pub fn intersectRectangle(self: *Region, rectangle: *const RectangleInt) CairoError!void {
-        try cairo_region_intersect_rectangle(self, rectangle).toErr();
+        try c.cairo_region_intersect_rectangle(self, rectangle).toErr();
     }
 
     /// Subtracts `other` from `self` region and places the result in `self`
@@ -296,7 +298,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-subtract)
     pub fn subtract(self: *Region, other: *const Region) CairoError!void {
-        try cairo_region_subtract(self, other).toErr();
+        try c.cairo_region_subtract(self, other).toErr();
     }
 
     /// Subtracts `rectangle` from `self` region and places the result in
@@ -309,7 +311,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-subtract-rectangle)
     pub fn subtractRectangle(self: *Region, rectangle: *const RectangleInt) CairoError!void {
-        try cairo_region_subtract_rectangle(self, rectangle).toErr();
+        try c.cairo_region_subtract_rectangle(self, rectangle).toErr();
     }
 
     /// Computes the union of `self` region with `other` and places the result
@@ -322,7 +324,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-union)
     pub fn unionSimple(self: *Region, other: *const Region) CairoError!void {
-        try cairo_region_union(self, other).toErr();
+        try c.cairo_region_union(self, other).toErr();
     }
 
     /// Computes the union of `self` region with `rectangle` and places the
@@ -335,7 +337,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-union-rectangle)
     pub fn unionRectangle(self: *Region, rectangle: *const RectangleInt) CairoError!void {
-        try cairo_region_union_rectangle(self, rectangle).toErr();
+        try c.cairo_region_union_rectangle(self, rectangle).toErr();
     }
 
     /// Computes the exclusive difference of `self` region with `other` and
@@ -349,7 +351,7 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-xor)
     pub fn xor(self: *Region, other: *const Region) CairoError!void {
-        try cairo_region_xor(self, other).toErr();
+        try c.cairo_region_xor(self, other).toErr();
     }
 
     /// Computes the exclusive difference of `self` region with `rectangle` and
@@ -363,30 +365,6 @@ pub const Region = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Regions.html#cairo-region-xor-rectangle)
     pub fn xorRectangle(self: *Region, rectangle: *const RectangleInt) CairoError!void {
-        try cairo_region_xor_rectangle(self, rectangle).toErr();
+        try c.cairo_region_xor_rectangle(self, rectangle).toErr();
     }
 };
-
-extern fn cairo_region_create() ?*Region;
-extern fn cairo_region_create_rectangle(rectangle: [*c]const RectangleInt) ?*Region;
-extern fn cairo_region_create_rectangles(rects: [*c]const RectangleInt, count: c_int) ?*Region;
-extern fn cairo_region_copy(original: ?*const Region) ?*Region;
-extern fn cairo_region_reference(region: ?*Region) ?*Region;
-extern fn cairo_region_destroy(region: ?*Region) void;
-extern fn cairo_region_status(region: ?*const Region) Status;
-extern fn cairo_region_get_extents(region: ?*const Region, extents: [*c]RectangleInt) void;
-extern fn cairo_region_num_rectangles(region: ?*const Region) c_int;
-extern fn cairo_region_get_rectangle(region: ?*const Region, nth: c_int, rectangle: [*c]RectangleInt) void;
-extern fn cairo_region_is_empty(region: ?*const Region) c_int; // bool
-extern fn cairo_region_contains_point(region: ?*const Region, x: c_int, y: c_int) c_int; // bool
-extern fn cairo_region_contains_rectangle(region: ?*const Region, rectangle: [*c]const RectangleInt) Region.Overlap;
-extern fn cairo_region_equal(a: ?*const Region, b: ?*const Region) c_int; // bool
-extern fn cairo_region_translate(region: ?*Region, dx: c_int, dy: c_int) void;
-extern fn cairo_region_intersect(dst: ?*Region, other: ?*const Region) Status;
-extern fn cairo_region_intersect_rectangle(dst: ?*Region, rectangle: [*c]const RectangleInt) Status;
-extern fn cairo_region_subtract(dst: ?*Region, other: ?*const Region) Status;
-extern fn cairo_region_subtract_rectangle(dst: ?*Region, rectangle: [*c]const RectangleInt) Status;
-extern fn cairo_region_union(dst: ?*Region, other: ?*const Region) Status;
-extern fn cairo_region_union_rectangle(dst: ?*Region, rectangle: [*c]const RectangleInt) Status;
-extern fn cairo_region_xor(dst: ?*Region, other: ?*const Region) Status;
-extern fn cairo_region_xor_rectangle(dst: ?*Region, rectangle: [*c]const RectangleInt) Status;

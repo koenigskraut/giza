@@ -1,7 +1,3 @@
-const util = @import("util.zig");
-
-const Error = @import("std").builtin.Type.Error;
-
 /// Specifies the type of antialiasing to do when rendering text or shapes.
 ///
 /// As it is not necessarily clear from the above what advantages a particular

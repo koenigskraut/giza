@@ -7,15 +7,15 @@
 
 const std = @import("std");
 const testing = std.testing;
-const util = @import("../util.zig");
-const safety = @import("../safety.zig");
 
-const base = @import("base.zig");
+const cairo = @import("../cairo.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
-const Mixin = base.Base;
-const Status = @import("../enums.zig").Status;
-const CairoError = @import("../enums.zig").CairoError;
-const WriteFn = util.WriteFn;
+const Mixin = @import("base.zig").Base;
+const Status = cairo.Status;
+const CairoError = cairo.CairoError;
+const WriteFn = cairo.WriteFn;
 
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html)
 pub const SvgSurface = opaque {
@@ -65,7 +65,7 @@ pub const SvgSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-surface-create)
     pub fn create(filename: [:0]const u8, width: f64, height: f64) CairoError!*SvgSurface {
-        const svg = cairo_svg_surface_create(filename.ptr, width, height).?;
+        const svg = c.cairo_svg_surface_create(filename.ptr, width, height).?;
         try svg.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), svg);
         return svg;
@@ -88,8 +88,8 @@ pub const SvgSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-surface-create-for-stream)
     pub fn createForStream(writer: anytype, width: f64, height: f64) CairoError!*SvgSurface {
-        const writeFn = util.createWriteFn(@TypeOf(writer));
-        const svg = cairo_svg_surface_create_for_stream(writeFn, writer, width, height) orelse return error.SvgSurfaceNull;
+        const writeFn = cairo.createWriteFn(@TypeOf(writer));
+        const svg = c.cairo_svg_surface_create_for_stream(writeFn, writer, width, height) orelse return error.SvgSurfaceNull;
         try svg.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), svg);
         return svg;
@@ -103,7 +103,7 @@ pub const SvgSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-surface-get-document-unit)
     pub fn getDocumentUnit(self: *SvgSurface) SvgUnit {
-        return cairo_svg_surface_get_document_unit(self);
+        return c.cairo_svg_surface_get_document_unit(self);
     }
 
     /// Use the specified unit for the width and height of the generated SVG
@@ -126,7 +126,7 @@ pub const SvgSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-surface-set-document-unit)
     pub fn setDocumentUnit(self: *SvgSurface, unit: SvgUnit) void {
-        cairo_svg_surface_set_document_unit(self, unit);
+        c.cairo_svg_surface_set_document_unit(self, unit);
     }
 
     /// Restricts the generated SVG file to `version`. See
@@ -139,7 +139,7 @@ pub const SvgSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-surface-restrict-to-version)
     pub fn restrictToVersion(self: *SvgSurface, version: SvgVersion) void {
-        cairo_svg_surface_restrict_to_version(self, version);
+        c.cairo_svg_surface_restrict_to_version(self, version);
     }
 };
 
@@ -179,7 +179,7 @@ pub const SvgUnit = enum(c_uint) {
 pub fn getSvgVersions() []const SvgVersion {
     var ptr: [*c]SvgVersion = undefined;
     var numVersions: c_int = undefined;
-    cairo_svg_get_versions(@ptrCast(&ptr), &numVersions);
+    c.cairo_svg_get_versions(@ptrCast(&ptr), &numVersions);
     return ptr[0..@as(usize, @intCast(numVersions))];
     // TODO
 }
@@ -201,7 +201,7 @@ pub const SvgVersion = enum(c_uint) {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-version-to-string)
     pub fn versionToString(self: SvgVersion) []const u8 {
-        const str = cairo_svg_version_to_string(self);
+        const str = c.cairo_svg_version_to_string(self);
         return std.mem.span(str);
     }
 };
@@ -212,11 +212,3 @@ test "versions" {
     try testing.expectEqualStrings("SVG 1.1", SvgVersion.versionToString(.@"1.1"));
     try testing.expectEqualStrings("SVG 1.2", SvgVersion.versionToString(.@"1.2"));
 }
-
-extern fn cairo_svg_surface_create(filename: [*c]const u8, width_in_points: f64, height_in_points: f64) ?*SvgSurface;
-extern fn cairo_svg_surface_create_for_stream(write_func: WriteFn, closure: ?*const anyopaque, width_in_points: f64, height_in_points: f64) ?*SvgSurface;
-extern fn cairo_svg_surface_get_document_unit(surface: ?*SvgSurface) SvgUnit;
-extern fn cairo_svg_surface_set_document_unit(surface: ?*SvgSurface, SvgUnit) void;
-extern fn cairo_svg_surface_restrict_to_version(surface: ?*SvgSurface, version: SvgVersion) void;
-extern fn cairo_svg_get_versions(versions: [*c][*c]const SvgVersion, num_versions: [*c]c_int) void;
-extern fn cairo_svg_version_to_string(version: SvgVersion) [*c]const u8;

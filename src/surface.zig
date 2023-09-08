@@ -1,9 +1,8 @@
-const base = @import("surfaces/base.zig");
-const image = @import("surfaces/image.zig");
 const svg = @import("surfaces/svg.zig");
+const script = @import("surfaces/script.zig");
 
-pub const ImageSurface = image.ImageSurface;
-pub const SvgSurface = svg.SvgSurface;
+pub const ImageSurface = @import("surfaces/image.zig").ImageSurface;
 pub const RecordingSurface = @import("surfaces/recording.zig").RecordingSurface;
-pub const Surface = base.Surface;
-pub usingnamespace @import("surfaces/script.zig");
+pub const Surface = @import("surfaces/base.zig").Surface;
+pub usingnamespace svg;
+pub usingnamespace script;

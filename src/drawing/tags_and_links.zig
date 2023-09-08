@@ -67,6 +67,7 @@
 //! additional documentation is at https://www.cairographics.org/manual/cairo-Tags-and-Links.html
 
 const cairo = @import("../cairo.zig");
+const c = cairo.c;
 const Context = cairo.Context;
 
 /// Marks the beginning of the `tagName` structure. Call `ctx.tagEnd()` with
@@ -96,7 +97,7 @@ const Context = cairo.Context;
 ///
 /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-Tags-and-Links.html#cairo-tag-begin)
 pub fn tagBegin(self: *Context, tagName: [:0]const u8, attributes: ?[:0]const u8) void {
-    cairo_tag_begin(self, tagName, attributes orelse null);
+    c.cairo_tag_begin(self, tagName, attributes orelse null);
 }
 
 /// Marks the end of the `tagName` structure.
@@ -111,11 +112,8 @@ pub fn tagBegin(self: *Context, tagName: [:0]const u8, attributes: ?[:0]const u8
 ///
 /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-Tags-and-Links.html#cairo-tag-end)
 pub fn tagEnd(self: *Context, tagName: [:0]const u8) void {
-    cairo_tag_end(self, tagName);
+    c.cairo_tag_end(self, tagName);
 }
 
 pub const TagDest = "cairo.dest";
 pub const TagLink = "Link";
-
-extern fn cairo_tag_begin(cr: ?*Context, tag_name: [*c]const u8, attributes: [*c]const u8) void;
-extern fn cairo_tag_end(cr: ?*Context, tag_name: [*c]const u8) void;

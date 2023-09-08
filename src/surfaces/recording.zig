@@ -1,7 +1,8 @@
 //! Recording Surfaces — Records all drawing operations
 
 const cairo = @import("../cairo.zig");
-const safety = @import("../safety.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
 const Mixin = @import("base.zig").Base;
 
@@ -71,7 +72,7 @@ pub const RecordingSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Recording-Surfaces.html#cairo-recording-surface-create)
     pub fn create(content: Content, extents: ?*const Rectangle) CairoError!*RecordingSurface {
-        const surface = cairo_recording_surface_create(content, extents orelse null).?;
+        const surface = c.cairo_recording_surface_create(content, extents orelse null).?;
         try surface.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), surface);
         return surface;
@@ -90,7 +91,7 @@ pub const RecordingSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Recording-Surfaces.html#cairo-recording-surface-ink-extents)
     pub fn inkExtents(self: *RecordingSurface, x0: *f64, y0: *f64, width: *f64, height: *f64) void {
-        cairo_recording_surface_ink_extents(self, x0, y0, width, height);
+        c.cairo_recording_surface_ink_extents(self, x0, y0, width, height);
     }
 
     /// Get the extents of the recording-surface.
@@ -105,10 +106,6 @@ pub const RecordingSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Recording-Surfaces.html#cairo-recording-surface-get-extents)
     pub fn getExtents(self: *RecordingSurface, extents: *Rectangle) bool {
-        return cairo_recording_surface_get_extents(self, extents) != 0;
+        return c.cairo_recording_surface_get_extents(self, extents) != 0;
     }
 };
-
-extern fn cairo_recording_surface_create(content: Content, extents: [*c]const Rectangle) ?*RecordingSurface;
-extern fn cairo_recording_surface_ink_extents(surface: ?*RecordingSurface, x0: [*c]f64, y0: [*c]f64, width: [*c]f64, height: [*c]f64) void;
-extern fn cairo_recording_surface_get_extents(surface: ?*RecordingSurface, extents: [*c]Rectangle) c_int; // bool

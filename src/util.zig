@@ -1,7 +1,9 @@
 const std = @import("std");
 const testing = std.testing;
 
-const Status = @import("enums.zig").Status;
+const cairo = @import("cairo.zig");
+const c = cairo.c;
+const Status = cairo.Status;
 
 /// A Transformation matrix.
 ///
@@ -52,7 +54,7 @@ pub const Matrix = extern struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init)
     pub fn init(xx: f64, yx: f64, xy: f64, yy: f64, x0: f64, y0: f64) Matrix {
         var m: Matrix = undefined;
-        cairo_matrix_init(&m, xx, yx, xy, yy, x0, y0);
+        c.cairo_matrix_init(&m, xx, yx, xy, yy, x0, y0);
         return m;
     }
 
@@ -61,7 +63,7 @@ pub const Matrix = extern struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init-identity)
     pub fn identity() Matrix {
         var m: Matrix = undefined;
-        cairo_matrix_init_identity(&m);
+        c.cairo_matrix_init_identity(&m);
         return m;
     }
 
@@ -75,7 +77,7 @@ pub const Matrix = extern struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init-translate)
     pub fn translation(tx: f64, ty: f64) Matrix {
         var m: Matrix = undefined;
-        cairo_matrix_init_translate(&m, tx, ty);
+        c.cairo_matrix_init_translate(&m, tx, ty);
         return m;
     }
 
@@ -89,7 +91,7 @@ pub const Matrix = extern struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init-scale)
     pub fn scaling(sx: f64, sy: f64) Matrix {
         var m: Matrix = undefined;
-        cairo_matrix_init_scale(&m, sx, sy);
+        c.cairo_matrix_init_scale(&m, sx, sy);
         return m;
     }
 
@@ -105,7 +107,7 @@ pub const Matrix = extern struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-init-rotate)
     pub fn rotation(radians: f64) Matrix {
         var m: Matrix = undefined;
-        cairo_matrix_init_rotate(&m, radians);
+        c.cairo_matrix_init_rotate(&m, radians);
         return m;
     }
 
@@ -120,7 +122,7 @@ pub const Matrix = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-translate)
     pub fn translate(self: *Matrix, tx: f64, ty: f64) void {
-        cairo_matrix_translate(self, tx, ty);
+        c.cairo_matrix_translate(self, tx, ty);
     }
 
     /// Applies scaling by `sx`, `sy` to the transformation in `matrix`. The
@@ -134,7 +136,7 @@ pub const Matrix = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-scale)
     pub fn scale(self: *Matrix, sx: f64, sy: f64) void {
-        cairo_matrix_scale(self, sx, sy);
+        c.cairo_matrix_scale(self, sx, sy);
     }
 
     /// Applies rotation by `radians` to the transformation in `matrix`. The
@@ -149,7 +151,7 @@ pub const Matrix = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-rotate)
     pub fn rotate(self: *Matrix, radians: f64) void {
-        cairo_matrix_rotate(self, radians);
+        c.cairo_matrix_rotate(self, radians);
     }
 
     /// Changes `matrix` to be the inverse of its original value. Not all
@@ -162,7 +164,7 @@ pub const Matrix = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-invert)
     pub fn invert(self: *Matrix) Status {
-        return cairo_matrix_invert(self);
+        return c.cairo_matrix_invert(self);
     }
 
     /// Multiplies the affine transformations in `a` and `b` together and
@@ -179,7 +181,7 @@ pub const Matrix = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-multiply)
     pub fn multiply(self: *Matrix, a: *const Matrix, b: *const Matrix) void {
-        cairo_matrix_multiply(self, a, b);
+        c.cairo_matrix_multiply(self, a, b);
     }
 
     /// Transforms the distance vector (`dx`, `dy`) by `self` matrix. This is
@@ -201,7 +203,7 @@ pub const Matrix = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-transform-distance)
     pub fn transformDistance(self: *const Matrix, dx: *f64, dy: *f64) void {
-        cairo_matrix_transform_distance(self, dx, dy);
+        c.cairo_matrix_transform_distance(self, dx, dy);
     }
 
     /// Transforms the point (`x`, `y`) by `self` matrix.
@@ -212,7 +214,7 @@ pub const Matrix = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-matrix-t.html#cairo-matrix-transform-point)
     pub fn transformPoint(self: *const Matrix, x: *f64, y: *f64) void {
-        cairo_matrix_transform_point(self, x, y);
+        c.cairo_matrix_transform_point(self, x, y);
     }
 };
 
@@ -279,22 +281,6 @@ pub const ExtentsRectangle = struct {
     /// bottom
     y2: f64,
 };
-
-pub inline fn trimmedTypeName(comptime T: type) []const u8 {
-    comptime {
-        var typeName: []const u8 = @typeName(T);
-        const startPtr = std.mem.lastIndexOf(u8, typeName, "*") orelse 0;
-        typeName = typeName[startPtr + 1 ..];
-        const startType = std.mem.lastIndexOf(u8, typeName, ".") orelse 0;
-        return typeName[startType + 1 ..];
-    }
-}
-
-test "trimmedTypeName" {
-    const E = enum {};
-    const T = *E;
-    try testing.expectEqualStrings("E", trimmedTypeName(T));
-}
 
 /// `cairo.ReadFn` is the type of function which is called when a backend needs
 /// to read data from an input stream. It is passed the closure which was
@@ -390,16 +376,3 @@ test "WriteFn" {
 /// element is destroyed. It is passed the pointer to the data element and
 /// should free any memory and resources allocated for it.
 pub const DestroyFn = ?*const fn (?*anyopaque) callconv(.C) void;
-
-extern fn cairo_matrix_init(matrix: [*c]Matrix, xx: f64, yx: f64, xy: f64, yy: f64, x0: f64, y0: f64) void;
-extern fn cairo_matrix_init_identity(matrix: [*c]Matrix) void;
-extern fn cairo_matrix_init_translate(matrix: [*c]Matrix, tx: f64, ty: f64) void;
-extern fn cairo_matrix_init_scale(matrix: [*c]Matrix, sx: f64, sy: f64) void;
-extern fn cairo_matrix_init_rotate(matrix: [*c]Matrix, radians: f64) void;
-extern fn cairo_matrix_translate(matrix: [*c]Matrix, tx: f64, ty: f64) void;
-extern fn cairo_matrix_scale(matrix: [*c]Matrix, sx: f64, sy: f64) void;
-extern fn cairo_matrix_rotate(matrix: [*c]Matrix, radians: f64) void;
-extern fn cairo_matrix_invert(matrix: [*c]Matrix) Status;
-extern fn cairo_matrix_multiply(result: [*c]Matrix, a: [*c]const Matrix, b: [*c]const Matrix) void;
-extern fn cairo_matrix_transform_distance(matrix: [*c]const Matrix, dx: [*c]f64, dy: [*c]f64) void;
-extern fn cairo_matrix_transform_point(matrix: [*c]const Matrix, x: [*c]f64, y: [*c]f64) void;

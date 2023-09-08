@@ -2,9 +2,8 @@ const std = @import("std");
 const testing = std.testing;
 
 const cairo = @import("cairo.zig");
-const safety = @import("safety.zig");
-
-const text = @import("drawing/text.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
 const Status = cairo.Status;
 
@@ -162,9 +161,6 @@ pub const Context = opaque {
     };
 };
 
-pub const Glyph = text.Glyph;
-pub const TextCluster = text.TextCluster;
-
 /// A data structure for holding a rectangle.
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-rectangle-t)
@@ -201,7 +197,7 @@ pub const RectangleList = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-rectangle-list-destroy)
     pub fn destroy(self: *RectangleList) void {
-        cairo_rectangle_list_destroy(self);
+        c.cairo_rectangle_list_destroy(self);
         if (safety.tracing) safety.destroy(self);
     }
 
@@ -233,5 +229,3 @@ test "RectangleList" {
     try testing.expectEqual(expectRect, rects.rectangles[0]);
     try testing.expectEqualSlices(Rectangle, &.{expectRect}, rects.asSlice());
 }
-
-extern fn cairo_rectangle_list_destroy(rectangle_list: [*c]RectangleList) void;

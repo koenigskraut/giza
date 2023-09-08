@@ -38,7 +38,8 @@
 const std = @import("std");
 
 const cairo = @import("../cairo.zig");
-const safety = @import("../safety.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
 const Content = cairo.Content;
 const CairoError = cairo.CairoError;
@@ -194,7 +195,7 @@ pub const Surface = opaque {
         pub fn strideForWidth(self: Format, width: c_int) !u18 {
             // TODO: check example, rework it? work on createForData func?
             const stride = switch (self) {
-                .ARGB32, .RGB24, .A8, .A1, .RGB16_565, .RGB30 => cairo_format_stride_for_width(self, width),
+                .ARGB32, .RGB24, .A8, .A1, .RGB16_565, .RGB30 => c.cairo_format_stride_for_width(self, width),
                 else => return error.InvalidFormat,
             };
             if (stride == -1) return error.WidthTooLarge;
@@ -303,7 +304,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-create-similar)
         pub fn createSimilar(surface: *Self, content: Content, width: c_int, height: c_int) CairoError!*Self {
-            const s: *Self = @ptrCast(cairo_surface_create_similar(surface, content, width, height).?);
+            const s: *Self = @ptrCast(c.cairo_surface_create_similar(surface, content, width, height).?);
             try s.status().toErr();
             if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), s);
             return s;
@@ -340,7 +341,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-create-similar-image)
         pub fn createSimilarImage(surface: *Self, format: Surface.Format, width: c_int, height: c_int) CairoError!*ImageSurface {
-            const image: *ImageSurface = @ptrCast(cairo_surface_create_similar_image(surface, format, width, height).?);
+            const image: *ImageSurface = @ptrCast(c.cairo_surface_create_similar_image(surface, format, width, height).?);
             try image.status().toErr();
             if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
             return image;
@@ -384,7 +385,7 @@ pub fn Base(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-create-for-rectangle)
         pub fn createForRectangle(surface: *Self, x: f64, y: f64, width: f64, height: f64) CairoError!*Self {
             // TODO: safety
-            const s: *Self = @ptrCast(cairo_surface_create_for_rectangle(surface, x, y, width, height).?);
+            const s: *Self = @ptrCast(c.cairo_surface_create_for_rectangle(surface, x, y, width, height).?);
             try s.status().toErr();
             if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), s);
             return s;
@@ -400,7 +401,7 @@ pub fn Base(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-reference)
         pub fn reference(surface: *Self) *Self {
             if (safety.tracing) safety.reference(@returnAddress(), surface);
-            return @ptrCast(cairo_surface_reference(surface).?);
+            return @ptrCast(c.cairo_surface_reference(surface).?);
         }
 
         /// Decreases the reference count on `surface` by one. If the result
@@ -409,7 +410,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-destroy)
         pub fn destroy(surface: *Self) void {
-            cairo_surface_destroy(surface);
+            c.cairo_surface_destroy(surface);
             if (safety.tracing) safety.destroy(surface);
         }
 
@@ -417,7 +418,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-status)
         pub fn status(surface: *Self) Status {
-            return cairo_surface_status(surface);
+            return c.cairo_surface_status(surface);
         }
 
         /// This function finishes the surface and drops all references to
@@ -436,7 +437,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-finish)
         pub fn finish(surface: *Self) void {
-            cairo_surface_finish(surface);
+            c.cairo_surface_finish(surface);
         }
 
         /// Do any pending drawing for the surface and also restore any
@@ -448,7 +449,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-flush)
         pub fn flush(surface: *Self) void {
-            cairo_surface_flush(surface);
+            c.cairo_surface_flush(surface);
         }
 
         /// This function returns the device for a `surface`. See
@@ -460,7 +461,7 @@ pub fn Base(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-device)
         pub fn getDevice(surface: *Self) ?*Device {
             // TODO: safety checks?
-            return cairo_surface_get_device(surface);
+            return c.cairo_surface_get_device(surface);
         }
 
         /// Retrieves the default font rendering options for the surface. This
@@ -475,7 +476,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-font-options)
         pub fn getFontOptions(surface: *Self, options: *FontOptions) void {
-            cairo_surface_get_font_options(surface, options);
+            c.cairo_surface_get_font_options(surface, options);
         }
 
         /// This function returns the content type of `surface` which indicates
@@ -484,7 +485,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-content)
         pub fn getContent(surface: *Self) Content {
-            return cairo_surface_get_content(surface);
+            return c.cairo_surface_get_content(surface);
         }
 
         /// Tells cairo that drawing has been done to surface using means other
@@ -493,7 +494,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-mark-dirty)
         pub fn markDirty(surface: *Self) void {
-            cairo_surface_mark_dirty(surface);
+            c.cairo_surface_mark_dirty(surface);
         }
 
         /// Like `surface.markDirty()`, but drawing has been done only to the
@@ -510,7 +511,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-mark-dirty-rectangle)
         pub fn markDirtyRectangle(surface: *Self, rect: RectangleInt) void {
-            cairo_surface_mark_dirty_rectangle(surface, rect.x, rect.y, rect.width, rect.height);
+            c.cairo_surface_mark_dirty_rectangle(surface, rect.x, rect.y, rect.width, rect.height);
         }
 
         /// Sets an offset that is added to the device coordinates determined
@@ -531,7 +532,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-device-offset)
         pub fn setDeviceOffset(surface: *Self, x_offset: f64, y_offset: f64) void {
-            cairo_surface_set_device_offset(surface, x_offset, y_offset);
+            c.cairo_surface_set_device_offset(surface, x_offset, y_offset);
         }
 
         /// This function returns the previous device offset set by
@@ -543,7 +544,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-device-offset)
         pub fn getDeviceOffset(surface: *Self, x_offset: *f64, y_offset: *f64) void {
-            cairo_surface_get_device_offset(surface, x_offset, y_offset);
+            c.cairo_surface_get_device_offset(surface, x_offset, y_offset);
         }
 
         /// Sets a scale that is multiplied to the device coordinates
@@ -564,7 +565,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-device-scale)
         pub fn setDeviceScale(surface: *Self, x_scale: f64, y_scale: f64) void {
-            cairo_surface_set_device_scale(surface, x_scale, y_scale);
+            c.cairo_surface_set_device_scale(surface, x_scale, y_scale);
         }
 
         /// This function returns the previous device scale set by
@@ -576,7 +577,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-device-scale)
         pub fn getDeviceScale(surface: *Self, x_scale: *f64, y_scale: *f64) void {
-            cairo_surface_get_device_scale(surface, x_scale, y_scale);
+            c.cairo_surface_get_device_scale(surface, x_scale, y_scale);
         }
 
         /// Set the horizontal and vertical resolution for image fallbacks.
@@ -609,7 +610,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-fallback-resolution)
         pub fn setFallbackResolution(surface: *Self, x_pixels_per_inch: f64, y_pixels_per_inch: f64) void {
-            cairo_surface_set_fallback_resolution(surface, x_pixels_per_inch, y_pixels_per_inch);
+            c.cairo_surface_set_fallback_resolution(surface, x_pixels_per_inch, y_pixels_per_inch);
         }
 
         /// This function returns the previous fallback resolution set by
@@ -622,7 +623,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-fallback-resolution)
         pub fn getFallbackResolution(surface: *Self, x_pixels_per_inch: *f64, y_pixels_per_inch: *f64) void {
-            cairo_surface_get_fallback_resolution(surface, x_pixels_per_inch, y_pixels_per_inch);
+            c.cairo_surface_get_fallback_resolution(surface, x_pixels_per_inch, y_pixels_per_inch);
         }
 
         /// This function returns the type of the backend used to create a
@@ -630,14 +631,14 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-type)
         pub fn getType(surface: *Self) Surface.Type {
-            return cairo_surface_get_type(surface);
+            return c.cairo_surface_get_type(surface);
         }
 
         /// Returns the current reference count of `surface`.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-reference-count)
         pub fn getReferenceCount(surface: *Self) usize {
-            return @intCast(cairo_surface_get_reference_count(surface));
+            return @intCast(c.cairo_surface_get_reference_count(surface));
         }
 
         /// Attach user data to `surface`. To remove user data from a surface,
@@ -657,7 +658,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-user-data)
         pub fn setUserData(surface: *Self, key: *const UserDataKey, user_data: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
-            return cairo_surface_set_user_data(surface, key, user_data, destroyFn).toErr();
+            return c.cairo_surface_set_user_data(surface, key, user_data, destroyFn).toErr();
         }
 
         /// Return user data previously attached to surface using the specified
@@ -674,7 +675,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-user-data)
         pub fn getUserData(surface: *Self, key: *const UserDataKey) ?*anyopaque {
-            return cairo_surface_get_user_data(surface, key);
+            return c.cairo_surface_get_user_data(surface, key);
         }
 
         /// Emits the current page for backends that support multiple pages,
@@ -687,7 +688,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-copy-page)
         pub fn copyPage(surface: *Self) void {
-            cairo_surface_copy_page(surface);
+            c.cairo_surface_copy_page(surface);
         }
 
         /// Emits and clears the current page for backends that support
@@ -699,7 +700,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-show-page)
         pub fn showPage(surface: *Self) void {
-            cairo_surface_show_page(surface);
+            c.cairo_surface_show_page(surface);
         }
 
         /// Returns whether the surface supports sophisticated
@@ -720,7 +721,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-has-show-text-glyphs)
         pub fn hasShowTextGlyphs(surface: *Self) bool {
-            return cairo_surface_has_show_text_glyphs(surface) > 0;
+            return c.cairo_surface_has_show_text_glyphs(surface) > 0;
         }
 
         /// Attach an image in the format `mimeType` to `surface`. To remove
@@ -766,7 +767,7 @@ pub fn Base(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-set-mime-data)
         pub fn setMimeData(surface: *Self, mimeType: Surface.MimeType, data: [*c]const u8, length: u64, destroyFn: DestroyFn, closure: ?*anyopaque) CairoError!void {
             // TODO: data+length, consider slice?
-            return cairo_surface_set_mime_data(surface, mimeType.toString().ptr, data, @intCast(length), destroyFn, closure).toErr();
+            return c.cairo_surface_set_mime_data(surface, mimeType.toString().ptr, data, @intCast(length), destroyFn, closure).toErr();
         }
 
         /// Return mime data previously attached to `surface` using the
@@ -780,14 +781,14 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-get-mime-data)
         pub fn getMimeData(surface: *Self, mimeType: Surface.MimeType, data: [*c][*c]const u8, length: *u64) void {
-            cairo_surface_get_mime_data(surface, mimeType.toString().ptr, data, @ptrCast(length));
+            c.cairo_surface_get_mime_data(surface, mimeType.toString().ptr, data, @ptrCast(length));
         }
 
         /// Return whether `surface` supports `mimeType`
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-supports-mime-type)
         pub fn supportsMimeType(surface: *Self, mimeType: Surface.MimeType) bool {
-            return cairo_surface_supports_mime_type(surface, mimeType.toString().ptr) != 0;
+            return c.cairo_surface_supports_mime_type(surface, mimeType.toString().ptr) != 0;
         }
 
         /// Returns an image surface that is the most efficient mechanism for
@@ -828,7 +829,7 @@ pub fn Base(comptime Self: type) type {
             // TODO: this is the only case where the user can screw up garbage
             // collection while using provided .destroy() function. Should we
             // cover this case in debug mode?
-            const image = cairo_surface_map_to_image(surface, extents).?;
+            const image = c.cairo_surface_map_to_image(surface, extents).?;
             try image.status().toErr();
             if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
             return image;
@@ -847,7 +848,7 @@ pub fn Base(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-unmap-image)
         pub fn unmapImage(surface: *Self, image: *ImageSurface) void {
-            cairo_surface_unmap_image(surface, image);
+            c.cairo_surface_unmap_image(surface, image);
             if (safety.tracing) safety.destroy(image);
         }
 
@@ -867,7 +868,7 @@ pub fn Base(comptime Self: type) type {
         pub fn writeToPNG(surface: *Self, filename: []const u8) (CairoError || error{NameTooLong})!void {
             var buf: [4097]u8 = undefined;
             const fileNameZ = std.fmt.bufPrintZ(&buf, "{s}", .{filename}) catch return error.NameTooLong;
-            return cairo_surface_write_to_png(surface, fileNameZ.ptr).toErr();
+            return c.cairo_surface_write_to_png(surface, fileNameZ.ptr).toErr();
         }
 
         /// Writes the image surface to the `writer` stream.
@@ -884,42 +885,7 @@ pub fn Base(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png-stream)
         pub fn writeToPNGStream(surface: *Self, writer: anytype) CairoError!void {
             const writeFn = cairo.createWriteFn(@TypeOf(writer));
-            return cairo_surface_write_to_png_stream(surface, writeFn, writer).toErr();
+            return c.cairo_surface_write_to_png_stream(surface, writeFn, writer).toErr();
         }
     };
 }
-
-extern fn cairo_format_stride_for_width(format: Surface.Format, width: c_int) c_int;
-extern fn cairo_surface_create_similar(other: ?*anyopaque, content: Content, width: c_int, height: c_int) ?*anyopaque;
-extern fn cairo_surface_create_similar_image(other: ?*anyopaque, format: Surface.Format, width: c_int, height: c_int) ?*anyopaque;
-extern fn cairo_surface_create_for_rectangle(target: ?*anyopaque, x: f64, y: f64, width: f64, height: f64) ?*anyopaque;
-extern fn cairo_surface_reference(surface: ?*anyopaque) ?*anyopaque;
-extern fn cairo_surface_destroy(surface: ?*anyopaque) void;
-extern fn cairo_surface_status(surface: ?*anyopaque) Status;
-extern fn cairo_surface_finish(surface: ?*anyopaque) void;
-extern fn cairo_surface_flush(surface: ?*anyopaque) void;
-extern fn cairo_surface_get_device(surface: ?*anyopaque) ?*Device;
-extern fn cairo_surface_get_font_options(surface: ?*anyopaque, options: ?*FontOptions) void;
-extern fn cairo_surface_get_content(surface: ?*anyopaque) Content;
-extern fn cairo_surface_mark_dirty(surface: ?*anyopaque) void;
-extern fn cairo_surface_mark_dirty_rectangle(surface: ?*anyopaque, x: c_int, y: c_int, width: c_int, height: c_int) void;
-extern fn cairo_surface_set_device_offset(surface: ?*anyopaque, x_offset: f64, y_offset: f64) void;
-extern fn cairo_surface_get_device_offset(surface: ?*anyopaque, x_offset: [*c]f64, y_offset: [*c]f64) void;
-extern fn cairo_surface_get_device_scale(surface: ?*anyopaque, x_scale: [*c]f64, y_scale: [*c]f64) void;
-extern fn cairo_surface_set_device_scale(surface: ?*anyopaque, x_scale: f64, y_scale: f64) void;
-extern fn cairo_surface_set_fallback_resolution(surface: ?*anyopaque, x_pixels_per_inch: f64, y_pixels_per_inch: f64) void;
-extern fn cairo_surface_get_fallback_resolution(surface: ?*anyopaque, x_pixels_per_inch: [*c]f64, y_pixels_per_inch: [*c]f64) void;
-extern fn cairo_surface_get_type(surface: ?*anyopaque) Surface.Type;
-extern fn cairo_surface_get_reference_count(surface: ?*anyopaque) c_uint;
-extern fn cairo_surface_set_user_data(surface: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
-extern fn cairo_surface_get_user_data(surface: ?*anyopaque, key: [*c]const UserDataKey) ?*anyopaque;
-extern fn cairo_surface_copy_page(surface: ?*anyopaque) void;
-extern fn cairo_surface_show_page(surface: ?*anyopaque) void;
-extern fn cairo_surface_has_show_text_glyphs(surface: ?*anyopaque) c_int;
-extern fn cairo_surface_set_mime_data(surface: ?*anyopaque, mime_type: [*c]const u8, data: [*c]const u8, length: c_ulong, destroy: DestroyFn, closure: ?*anyopaque) Status;
-extern fn cairo_surface_get_mime_data(surface: ?*anyopaque, mime_type: [*c]const u8, data: [*c][*c]const u8, length: [*c]c_ulong) void;
-extern fn cairo_surface_supports_mime_type(surface: ?*anyopaque, mime_type: [*c]const u8) c_int;
-extern fn cairo_surface_map_to_image(surface: ?*anyopaque, extents: [*c]const RectangleInt) ?*ImageSurface;
-extern fn cairo_surface_unmap_image(surface: ?*anyopaque, image: ?*ImageSurface) void;
-extern fn cairo_surface_write_to_png(surface: ?*anyopaque, filename: [*c]const u8) Status;
-extern fn cairo_surface_write_to_png_stream(surface: ?*anyopaque, write_func: WriteFn, closure: ?*anyopaque) Status;

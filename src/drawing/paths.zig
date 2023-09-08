@@ -6,15 +6,14 @@
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html)
 
 const cairo = @import("../cairo.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
-const util = @import("../util.zig");
+const Context = cairo.Context;
+const Rectangle = cairo.Rectangle;
+const ExtentsRectangle = cairo.ExtentsRectangle;
 const Glyph = cairo.Glyph;
-const context = @import("../context.zig");
-const safety = @import("../safety.zig");
-
-const Context = context.Context;
-const Rectangle = context.Rectangle;
-const ExtentsRectangle = util.ExtentsRectangle;
+const Point = cairo.Point;
 
 const CairoError = cairo.CairoError;
 const Status = cairo.Status;
@@ -36,7 +35,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-copy-path)
     pub fn copyPath(self: *Context) CairoError!*Path {
-        var path: *Path = cairo_copy_path(self).?;
+        var path: *Path = c.cairo_copy_path(self).?;
         try path.status.toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), path);
         return path;
@@ -64,7 +63,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-copy-path-flat)
     pub fn copyPathFlat(self: *Context) CairoError!*Path {
-        var path: *Path = cairo_copy_path_flat(self).?;
+        var path: *Path = c.cairo_copy_path_flat(self).?;
         try path.status.toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), path);
         return path;
@@ -81,7 +80,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-append-path)
     pub fn appendPath(self: *Context, path: *const Path) void {
-        cairo_append_path(self, path);
+        c.cairo_append_path(self, path);
     }
 
     /// Returns whether a current point is defined on the current path.
@@ -93,7 +92,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-has-current-point)
     pub fn hasCurrentPoint(self: *Context) bool {
-        return cairo_has_current_point(self) > 0;
+        return c.cairo_has_current_point(self) > 0;
     }
 
     /// Gets the current point of the current path, which is conceptually the
@@ -119,10 +118,10 @@ pub const Mixin = struct {
     /// `ctx.fill()`, `ctx.stroke()`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-get-current-point)
-    pub fn getCurrentPoint(self: *Context) util.Point {
+    pub fn getCurrentPoint(self: *Context) Point {
         // TODO: check if undefined behaves well with C
-        var point: util.Point = undefined;
-        cairo_get_current_point(self, &point.x, &point.y);
+        var point: Point = undefined;
+        c.cairo_get_current_point(self, &point.x, &point.y);
         return point;
     }
 
@@ -131,7 +130,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-new-path)
     pub fn newPath(self: *Context) void {
-        cairo_new_path(self);
+        c.cairo_new_path(self);
     }
 
     /// Begin a new sub-path. Note that the existing path is not affected.
@@ -147,7 +146,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-new-sub-path)
     pub fn newSubPath(self: *Context) void {
-        cairo_new_sub_path(self);
+        c.cairo_new_sub_path(self);
     }
 
     /// Adds a line segment to the path from the current point to the beginning
@@ -173,7 +172,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-close-path)
     pub fn closePath(self: *Context) void {
-        cairo_close_path(self);
+        c.cairo_close_path(self);
     }
 
     /// Adds a circular arc of the given `radius` to the current path. The arc
@@ -221,7 +220,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-arc)
     pub fn arc(self: *Context, xc: f64, yc: f64, radius: f64, angle1: f64, angle2: f64) void {
-        cairo_arc(self, xc, yc, radius, angle1, angle2);
+        c.cairo_arc(self, xc, yc, radius, angle1, angle2);
     }
 
     /// Adds a circular arc of the given `radius` to the current path. The arc
@@ -242,7 +241,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-arc-negative)
     pub fn arcNegative(self: *Context, xc: f64, yc: f64, radius: f64, angle1: f64, angle2: f64) void {
-        cairo_arc_negative(self, xc, yc, radius, angle1, angle2);
+        c.cairo_arc_negative(self, xc, yc, radius, angle1, angle2);
     }
 
     /// Adds a cubic Bézier spline to the path from the current point to
@@ -263,7 +262,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-curve-to)
     pub fn curveTo(self: *Context, x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64) void {
-        cairo_curve_to(self, x1, y1, x2, y2, x3, y3);
+        c.cairo_curve_to(self, x1, y1, x2, y2, x3, y3);
     }
 
     /// Adds a line to the path from the current point to position `(x, y)` in
@@ -279,7 +278,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-line-to)
     pub fn lineTo(self: *Context, x: f64, y: f64) void {
-        cairo_line_to(self, x, y);
+        c.cairo_line_to(self, x, y);
     }
 
     /// Begin a new sub-path. After this call the current point will be
@@ -291,7 +290,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-move-to)
     pub fn moveTo(self: *Context, x: f64, y: f64) void {
-        cairo_move_to(self, x, y);
+        c.cairo_move_to(self, x, y);
     }
 
     /// Adds a closed sub-path rectangle of the given size to the current path
@@ -310,7 +309,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-rectangle)
     pub fn rectangle(self: *Context, rect: Rectangle) void {
-        cairo_rectangle(self, rect.x, rect.y, rect.width, rect.height);
+        c.cairo_rectangle(self, rect.x, rect.y, rect.width, rect.height);
     }
 
     /// Adds closed paths for the glyphs to the current path. The generated
@@ -322,7 +321,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-glyph-path)
     pub fn glyphPath(self: *Context, glyphs: []const Glyph) void {
-        cairo_glyph_path(self, glyphs.ptr, @intCast(glyphs.len));
+        c.cairo_glyph_path(self, glyphs.ptr, @intCast(glyphs.len));
     }
 
     /// Adds closed paths for text to the current path. The generated path if
@@ -348,7 +347,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-text-path)
     pub fn textPath(self: *Context, utf8: ?[:0]const u8) void {
-        cairo_text_path(self, utf8 orelse null);
+        c.cairo_text_path(self, utf8 orelse null);
     }
 
     /// Relative-coordinate version of `ctx.curveTo()`. All offsets are
@@ -380,7 +379,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-rel-curve-to)
     pub fn relCurveTo(self: *Context, dx1: f64, dy1: f64, dx2: f64, dy2: f64, dx3: f64, dy3: f64) void {
-        cairo_rel_curve_to(self, dx1, dy1, dx2, dy2, dx3, dy3);
+        c.cairo_rel_curve_to(self, dx1, dy1, dx2, dy2, dx3, dy3);
     }
 
     /// Relative-coordinate version of `ctx.lineTo()`. Adds a line to the path
@@ -401,7 +400,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-rel-line-to)
     pub fn relLineTo(self: *Context, dx: f64, dy: f64) void {
-        cairo_rel_line_to(self, dx, dy);
+        c.cairo_rel_line_to(self, dx, dy);
     }
 
     /// Begin a new sub-path. After this call the current point will offset by
@@ -420,7 +419,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-rel-move-to)
     pub fn relMoveTo(self: *Context, dx: f64, dy: f64) void {
-        cairo_rel_move_to(self, dx, dy);
+        c.cairo_rel_move_to(self, dx, dy);
     }
 
     /// Computes a bounding box in user-space coordinates covering the points
@@ -448,7 +447,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-extents)
     pub fn pathExtents(self: *Context, extents: *ExtentsRectangle) void {
-        cairo_path_extents(self, &extents.x1, &extents.y1, &extents.x2, &extents.y2);
+        c.cairo_path_extents(self, &extents.x1, &extents.y1, &extents.x2, &extents.y2);
     }
 };
 
@@ -483,7 +482,7 @@ pub const Path = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-destroy)
     pub fn destroy(self: *Path) void {
-        cairo_path_destroy(self);
+        c.cairo_path_destroy(self);
         if (safety.tracing) safety.destroy(self);
     }
 };
@@ -559,25 +558,3 @@ pub const PathData = extern union {
         ClosePath,
     };
 };
-
-extern fn cairo_copy_path(cr: ?*Context) [*c]Path;
-extern fn cairo_copy_path_flat(cr: ?*Context) [*c]Path;
-extern fn cairo_path_destroy(path: [*c]Path) void;
-extern fn cairo_append_path(cr: ?*Context, path: [*c]const Path) void;
-extern fn cairo_has_current_point(cr: ?*Context) c_int; // bool
-extern fn cairo_get_current_point(cr: ?*Context, x: [*c]f64, y: [*c]f64) void;
-extern fn cairo_new_path(cr: ?*Context) void;
-extern fn cairo_new_sub_path(cr: ?*Context) void;
-extern fn cairo_close_path(cr: ?*Context) void;
-extern fn cairo_arc(cr: ?*Context, xc: f64, yc: f64, radius: f64, angle1: f64, angle2: f64) void;
-extern fn cairo_arc_negative(cr: ?*Context, xc: f64, yc: f64, radius: f64, angle1: f64, angle2: f64) void;
-extern fn cairo_curve_to(cr: ?*Context, x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64) void;
-extern fn cairo_line_to(cr: ?*Context, x: f64, y: f64) void;
-extern fn cairo_move_to(cr: ?*Context, x: f64, y: f64) void;
-extern fn cairo_rectangle(cr: ?*Context, x: f64, y: f64, width: f64, height: f64) void;
-extern fn cairo_glyph_path(cr: ?*Context, glyphs: [*c]const Glyph, num_glyphs: c_int) void;
-extern fn cairo_text_path(cr: ?*Context, utf8: [*c]const u8) void;
-extern fn cairo_rel_curve_to(cr: ?*Context, dx1: f64, dy1: f64, dx2: f64, dy2: f64, dx3: f64, dy3: f64) void;
-extern fn cairo_rel_line_to(cr: ?*Context, dx: f64, dy: f64) void;
-extern fn cairo_rel_move_to(cr: ?*Context, dx: f64, dy: f64) void;
-extern fn cairo_path_extents(cr: ?*Context, x1: [*c]f64, y1: [*c]f64, x2: [*c]f64, y2: [*c]f64) void;

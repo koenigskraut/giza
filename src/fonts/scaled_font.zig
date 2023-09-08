@@ -4,7 +4,8 @@
 //! size and transformation and a certain set of font options.
 
 const cairo = @import("../cairo.zig");
-const safety = @import("../safety.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
 const CairoError = cairo.CairoError;
 const DestroyFn = cairo.DestroyFn;
@@ -61,7 +62,7 @@ pub const ScaledFont = opaque {
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-create)
     pub fn create(font_face: *FontFace, font_matrix: *const Matrix, ctm: *const Matrix, options: *const FontOptions) CairoError!*ScaledFont {
         // TODO: expand doc example? or not?
-        const scaled = cairo_scaled_font_create(font_face, font_matrix, ctm, options).?;
+        const scaled = c.cairo_scaled_font_create(font_face, font_matrix, ctm, options).?;
         try scaled.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), scaled);
         return scaled;
@@ -80,7 +81,7 @@ pub const ScaledFont = opaque {
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-reference)
     pub fn reference(self: *ScaledFont) *ScaledFont {
         if (safety.tracing) safety.reference(@returnAddress(), self);
-        return cairo_scaled_font_reference(self).?;
+        return c.cairo_scaled_font_reference(self).?;
     }
 
     /// Decreases the reference count on `self` by one. If the result is zero,
@@ -89,7 +90,7 @@ pub const ScaledFont = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-destroy)
     pub fn destroy(self: *ScaledFont) void {
-        cairo_scaled_font_destroy(self);
+        c.cairo_scaled_font_destroy(self);
         if (safety.tracing) safety.destroy(self);
     }
 
@@ -98,7 +99,7 @@ pub const ScaledFont = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-status)
     pub fn status(self: *ScaledFont) Status {
-        return cairo_scaled_font_status(self);
+        return c.cairo_scaled_font_status(self);
     }
 
     /// Gets the metrics for a `cairo.ScaledFont`.
@@ -110,7 +111,7 @@ pub const ScaledFont = opaque {
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-extents)
     pub fn fontExtents(self: *ScaledFont) FontExtents {
         var extents: FontExtents = undefined;
-        cairo_scaled_font_extents(self, &extents);
+        c.cairo_scaled_font_extents(self, &extents);
         return extents;
     }
 
@@ -139,7 +140,7 @@ pub const ScaledFont = opaque {
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-text-extents)
     pub fn textExtents(self: *ScaledFont, utf8: [:0]const u8) TextExtents {
         var text_extents: TextExtents = undefined;
-        cairo_scaled_font_text_extents(self, utf8, &text_extents);
+        c.cairo_scaled_font_text_extents(self, utf8, &text_extents);
         return text_extents;
     }
 
@@ -164,7 +165,7 @@ pub const ScaledFont = opaque {
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-glyph-extents)
     pub fn glyphExtents(self: *ScaledFont, glyphs: []const Glyph) TextExtents {
         var extents: TextExtents = undefined;
-        cairo_scaled_font_glyph_extents(self, glyphs.ptr, @intCast(glyphs.len), &extents);
+        c.cairo_scaled_font_glyph_extents(self, glyphs.ptr, @intCast(glyphs.len), &extents);
         return extents;
     }
 
@@ -181,7 +182,7 @@ pub const ScaledFont = opaque {
     /// `cairo.Glyph.free()`. This may happen even if the provided array was
     /// large enough.
     ///
-    /// If clusters is not NULL, num_clusters and cluster_flags should not be NULL, and cluster mapping will be computed. The semantics of how cluster array allocation works is similar to the glyph array. That is, if clusters initially points to a non-NULL value, that array is used as a cluster buffer, and num_clusters should point to the number of cluster entries available there. If the provided cluster array is too short for the conversion, a new cluster array is allocated using cairo_text_cluster_allocate() and placed in clusters . Upon return, num_clusters always contains the number of generated clusters. If the value clusters points at has changed after the call, the user is responsible for freeing the allocated cluster array using cairo_text_cluster_free(). This may happen even if the provided array was large enough
+    /// If clusters is not NULL, num_clusters and cluster_flags should not be NULL, and cluster mapping will be computed. The semantics of how cluster array allocation works is similar to the glyph array. That is, if clusters initially points to a non-NULL value, that array is used as a cluster buffer, and num_clusters should point to the number of cluster entries available there. If the provided cluster array is too short for the conversion, a new cluster array is allocated using c.cairo_text_cluster_allocate() and placed in clusters . Upon return, num_clusters always contains the number of generated clusters. If the value clusters points at has changed after the call, the user is responsible for freeing the allocated cluster array using c.cairo_text_cluster_free(). This may happen even if the provided array was large enough
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-text-to-glyphs)
     pub fn textToGlyphs(
@@ -197,7 +198,7 @@ pub const ScaledFont = opaque {
         var glyphs_num: c_int = @intCast(glyphs.len);
         var cluster_ptr: [*c][*c]TextCluster = @ptrCast(@alignCast(clusters));
         var clusters_num: c_int = @intCast(clusters.len);
-        try cairo_scaled_font_text_to_glyphs(
+        try c.cairo_scaled_font_text_to_glyphs(
             self,
             x,
             y,
@@ -226,7 +227,7 @@ pub const ScaledFont = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-get-font-face)
     pub fn getFontFace(self: *ScaledFont) *FontFace {
-        return cairo_scaled_font_get_font_face(self).?;
+        return c.cairo_scaled_font_get_font_face(self).?;
     }
 
     /// Stores the font options with which `self` was created into `options`
@@ -236,7 +237,7 @@ pub const ScaledFont = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-get-font-options)
     pub fn getFontOptions(self: *ScaledFont, options: *FontOptions) void {
-        cairo_scaled_font_get_font_options(self, options);
+        c.cairo_scaled_font_get_font_options(self, options);
     }
 
     /// Gets the font matrix with which `self` was created.
@@ -244,7 +245,7 @@ pub const ScaledFont = opaque {
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-get-font-matrix)
     pub fn getFontMatrix(self: *ScaledFont) Matrix {
         var m: Matrix = undefined;
-        cairo_scaled_font_get_font_matrix(self, &m);
+        c.cairo_scaled_font_get_font_matrix(self, &m);
         return m;
     }
 
@@ -256,7 +257,7 @@ pub const ScaledFont = opaque {
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-get-ctm)
     pub fn getCtm(self: *ScaledFont) Matrix {
         var ctm: Matrix = undefined;
-        cairo_scaled_font_get_ctm(self, &ctm);
+        c.cairo_scaled_font_get_ctm(self, &ctm);
         return ctm;
     }
 
@@ -267,7 +268,7 @@ pub const ScaledFont = opaque {
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-get-scale-matrix)
     pub fn getScaleMatrix(self: *ScaledFont) Matrix {
         var m: Matrix = undefined;
-        cairo_scaled_font_get_scale_matrix(self, &m);
+        c.cairo_scaled_font_get_scale_matrix(self, &m);
         return m;
     }
 
@@ -281,14 +282,14 @@ pub const ScaledFont = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-get-type)
     pub fn getType(self: *ScaledFont) FontFace.Type {
-        return cairo_scaled_font_get_type(self);
+        return c.cairo_scaled_font_get_type(self);
     }
 
     /// Returns the current reference count of `self`.
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-get-reference-count)
     pub fn getReferenceCount(self: *ScaledFont) usize {
-        return @intCast(cairo_scaled_font_get_reference_count(self));
+        return @intCast(c.cairo_scaled_font_get_reference_count(self));
     }
 
     /// Attach user data to `self`. To remove user data from a surface, call
@@ -308,7 +309,7 @@ pub const ScaledFont = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-set-user-data)
     pub fn setUserData(self: *ScaledFont, key: *const UserDataKey, user_data: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
-        try cairo_scaled_font_set_user_data(self, key, user_data, destroyFn).toErr();
+        try c.cairo_scaled_font_set_user_data(self, key, user_data, destroyFn).toErr();
     }
 
     /// Return user data previously attached to `self` using the specified key.
@@ -325,7 +326,7 @@ pub const ScaledFont = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-scaled-font-get-user-data)
     pub fn getUserData(self: *ScaledFont, key: *const UserDataKey) ?*anyopaque {
-        return cairo_scaled_font_get_user_data(self, key);
+        return c.cairo_scaled_font_get_user_data(self, key);
     }
 };
 
@@ -397,42 +398,3 @@ pub const TextExtents = extern struct {
     /// East-Asian languages.
     y_advance: f64,
 };
-
-extern fn cairo_scaled_font_create(font_face: ?*FontFace, font_matrix: [*c]const Matrix, ctm: [*c]const Matrix, options: ?*const FontOptions) ?*ScaledFont;
-extern fn cairo_scaled_font_reference(scaled_font: ?*ScaledFont) ?*ScaledFont;
-extern fn cairo_scaled_font_destroy(scaled_font: ?*ScaledFont) void;
-extern fn cairo_scaled_font_status(scaled_font: ?*ScaledFont) Status;
-extern fn cairo_scaled_font_extents(scaled_font: ?*ScaledFont, extents: [*c]FontExtents) void;
-extern fn cairo_scaled_font_text_extents(scaled_font: ?*ScaledFont, utf8: [*c]const u8, extents: [*c]TextExtents) void;
-extern fn cairo_scaled_font_glyph_extents(scaled_font: ?*ScaledFont, glyphs: [*c]const Glyph, num_glyphs: c_int, extents: [*c]TextExtents) void;
-extern fn cairo_scaled_font_text_to_glyphs(scaled_font: ?*ScaledFont, x: f64, y: f64, utf8: [*c]const u8, utf8_len: c_int, glyphs: [*c][*c]Glyph, num_glyphs: [*c]c_int, clusters: [*c][*c]TextCluster, num_clusters: [*c]c_int, cluster_flags: [*c]TextCluster.Flags) Status;
-extern fn cairo_scaled_font_get_font_face(scaled_font: ?*ScaledFont) ?*FontFace;
-extern fn cairo_scaled_font_get_font_options(scaled_font: ?*ScaledFont, options: ?*FontOptions) void;
-extern fn cairo_scaled_font_get_font_matrix(scaled_font: ?*ScaledFont, font_matrix: [*c]Matrix) void;
-extern fn cairo_scaled_font_get_ctm(scaled_font: ?*ScaledFont, ctm: [*c]Matrix) void;
-extern fn cairo_scaled_font_get_scale_matrix(scaled_font: ?*ScaledFont, scale_matrix: [*c]Matrix) void;
-extern fn cairo_scaled_font_get_type(scaled_font: ?*ScaledFont) FontFace.Type;
-extern fn cairo_scaled_font_get_reference_count(scaled_font: ?*ScaledFont) c_uint;
-extern fn cairo_scaled_font_set_user_data(scaled_font: ?*ScaledFont, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
-extern fn cairo_scaled_font_get_user_data(scaled_font: ?*ScaledFont, key: [*c]const UserDataKey) ?*anyopaque;
-
-const std = @import("std");
-
-test {
-    std.debug.print("scaled font\n", .{});
-    var kek = "abcd".*;
-    var kekSlice: []u8 = &kek;
-    var ptrToSlice: *[]u8 = &kekSlice;
-
-    var kek1 = "abcd".*;
-    var kekSlice1: []u8 = &kek1;
-    var ptrToSlice1: *[]u8 = &kekSlice1;
-
-    var ptr2_casted: [*c][*c]u8 = @ptrCast(@alignCast(ptrToSlice));
-    ptr2_casted = @ptrCast(@alignCast(ptrToSlice1));
-    // std.debug.print("{any}\n", .{ptr});
-    std.debug.print("{*} {any}\n", .{ ptrToSlice, @alignOf(@TypeOf(ptrToSlice)) });
-    std.debug.print("{*} {any}\n", .{ ptr2_casted, @alignOf(@TypeOf(ptr2_casted)) });
-
-    // std.debug.print("{any} {any}\n", .{ ptr2_true.*.*, ptr2_casted.*.* });
-}

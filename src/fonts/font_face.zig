@@ -10,8 +10,8 @@
 // TODO: fix desc
 
 const cairo = @import("../cairo.zig");
-
-const safety = @import("../safety.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
 const CairoError = cairo.CairoError;
 const Status = cairo.Status;
@@ -106,7 +106,7 @@ pub const FontFace = opaque {
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-reference)
     pub fn reference(self: *FontFace) *FontFace {
         if (safety.tracing) safety.reference(@returnAddress(), self);
-        return cairo_font_face_reference(self).?;
+        return c.cairo_font_face_reference(self).?;
     }
 
     /// Decreases the reference count on `self` by one. If the result is zero,
@@ -115,7 +115,7 @@ pub const FontFace = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-destroy)
     pub fn destroy(self: *FontFace) void {
-        cairo_font_face_destroy(self);
+        c.cairo_font_face_destroy(self);
         if (safety.tracing) safety.destroy(self);
     }
 
@@ -123,7 +123,7 @@ pub const FontFace = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-status)
     pub fn status(self: *FontFace) Status {
-        return cairo_font_face_status(self);
+        return c.cairo_font_face_status(self);
     }
 
     /// This function returns the type of the backend used to create a font
@@ -135,14 +135,14 @@ pub const FontFace = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-get-type)
     pub fn getType(self: *FontFace) FontFace.Type {
-        return cairo_font_face_get_type(self);
+        return c.cairo_font_face_get_type(self);
     }
 
     /// Returns the current reference count of `self`.
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-get-reference-count)
     pub fn getReferenceCount(self: *FontFace) usize {
-        return @intCast(cairo_font_face_get_reference_count(self));
+        return @intCast(c.cairo_font_face_get_reference_count(self));
     }
 
     /// Attach user data to `font_face`. To remove user data from a font face,
@@ -161,7 +161,7 @@ pub const FontFace = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-get-user-data)
     pub fn setUserData(self: *FontFace, key: *const UserDataKey, user_data: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
-        try cairo_font_face_set_user_data(self, key, user_data, destroyFn).toErr();
+        try c.cairo_font_face_set_user_data(self, key, user_data, destroyFn).toErr();
     }
 
     /// Return user data previously attached to `self` using the specified key.
@@ -178,14 +178,6 @@ pub const FontFace = opaque {
     ///
     /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-cairo-font-face-t.html#cairo-font-face-set-user-data)
     pub fn getUserData(self: *FontFace, key: *const UserDataKey) ?*anyopaque {
-        return cairo_font_face_get_user_data(self, key);
+        return c.cairo_font_face_get_user_data(self, key);
     }
 };
-
-extern fn cairo_font_face_reference(font_face: ?*FontFace) ?*FontFace;
-extern fn cairo_font_face_destroy(font_face: ?*FontFace) void;
-extern fn cairo_font_face_status(font_face: ?*FontFace) Status;
-extern fn cairo_font_face_get_type(font_face: ?*FontFace) FontFace.Type;
-extern fn cairo_font_face_get_reference_count(font_face: ?*FontFace) c_uint;
-extern fn cairo_font_face_set_user_data(font_face: ?*FontFace, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
-extern fn cairo_font_face_get_user_data(font_face: ?*FontFace, key: [*c]const UserDataKey) ?*anyopaque;

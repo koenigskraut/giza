@@ -6,8 +6,10 @@
 //! superior output on a particular display.
 
 const std = @import("std");
+
 const cairo = @import("../cairo.zig");
-const safety = @import("../safety.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
 const Antialias = cairo.Antialias;
 const CairoError = cairo.CairoError;
@@ -79,7 +81,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-create)
     pub fn create() CairoError!*FontOptions {
-        const font_options = cairo_font_options_create().?;
+        const font_options = c.cairo_font_options_create().?;
         try font_options.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), font_options);
         return font_options;
@@ -104,7 +106,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-copy)
     pub fn copy(self: *const FontOptions) CairoError!*FontOptions {
-        const font_options = cairo_font_options_copy(self).?;
+        const font_options = c.cairo_font_options_copy(self).?;
         try font_options.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), font_options);
         return font_options;
@@ -115,7 +117,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-destroy)
     pub fn destroy(self: *FontOptions) void {
-        cairo_font_options_destroy(self);
+        c.cairo_font_options_destroy(self);
         if (safety.tracing) safety.destroy(self);
     }
 
@@ -124,7 +126,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-status)
     pub fn status(self: *FontOptions) Status {
-        return cairo_font_options_status(self);
+        return c.cairo_font_options_status(self);
     }
 
     /// Merges non-default options from `other` into `self`, replacing existing
@@ -137,7 +139,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-merge)
     pub fn merge(self: *FontOptions, other: *const FontOptions) void {
-        cairo_font_options_merge(self, other);
+        c.cairo_font_options_merge(self, other);
     }
 
     /// Compute a hash for the font options object; this value will be useful
@@ -150,7 +152,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-hash)
     pub fn hash(self: *const FontOptions) u64 {
-        return @intCast(cairo_font_options_hash(self));
+        return @intCast(c.cairo_font_options_hash(self));
     }
 
     /// Compares two font options objects for equality.
@@ -165,7 +167,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-equal)
     pub fn equal(self: *const FontOptions, other: *const FontOptions) bool {
-        return cairo_font_options_equal(self, other) != 0;
+        return c.cairo_font_options_equal(self, other) != 0;
     }
 
     /// Sets the antialiasing mode for the font options object. This specifies
@@ -176,7 +178,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-set-antialias)
     pub fn setAntialias(self: *FontOptions, antialias: Antialias) void {
-        cairo_font_options_set_antialias(self, antialias);
+        c.cairo_font_options_set_antialias(self, antialias);
     }
 
     /// Gets the antialiasing mode for the font options object.
@@ -187,7 +189,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-get-antialias)
     pub fn getAntialias(self: *const FontOptions) Antialias {
-        return cairo_font_options_get_antialias(self);
+        return c.cairo_font_options_get_antialias(self);
     }
 
     /// Sets the subpixel order for the font options object. The subpixel order
@@ -201,7 +203,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-set-subpixel-order)
     pub fn setSubpixelOrder(self: *FontOptions, subpixel_order: SubpixelOrder) void {
-        cairo_font_options_set_subpixel_order(self, subpixel_order);
+        c.cairo_font_options_set_subpixel_order(self, subpixel_order);
     }
 
     /// Gets the subpixel order for the font options object. See the
@@ -213,7 +215,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-get-subpixel-order)
     pub fn getSubpixelOrder(self: *const FontOptions) SubpixelOrder {
-        return cairo_font_options_get_subpixel_order(self);
+        return c.cairo_font_options_get_subpixel_order(self);
     }
 
     /// Sets the hint style for font outlines for the font options object.
@@ -226,7 +228,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-set-hint-style)
     pub fn setHintStyle(self: *FontOptions, hint_style: HintStyle) void {
-        cairo_font_options_set_hint_style(self, hint_style);
+        c.cairo_font_options_set_hint_style(self, hint_style);
     }
 
     /// Gets the hint style for font outlines for the font options object. See
@@ -238,7 +240,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-get-hint-style)
     pub fn getHintStyle(self: *const FontOptions) HintStyle {
-        return cairo_font_options_get_hint_style(self);
+        return c.cairo_font_options_get_hint_style(self);
     }
 
     /// Sets the metrics hinting mode for the font options object. This
@@ -252,7 +254,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-set-hint-metrics)
     pub fn setHintMetrics(self: *FontOptions, hint_metrics: HintMetrics) void {
-        cairo_font_options_set_hint_metrics(self, hint_metrics);
+        c.cairo_font_options_set_hint_metrics(self, hint_metrics);
     }
 
     /// Gets the metrics hinting mode for the font options object. See the
@@ -264,7 +266,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-get-hint-metrics)
     pub fn getHintMetrics(self: *const FontOptions) HintMetrics {
-        return cairo_font_options_get_hint_metrics(self);
+        return c.cairo_font_options_get_hint_metrics(self);
     }
 
     /// Gets the OpenType font variations for the font options object. See
@@ -280,7 +282,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-get-variations)
     pub fn getVariations(self: *FontOptions) []const u8 {
-        const variations: [*c]const u8 = cairo_font_options_get_variations(self) orelse "";
+        const variations: [*c]const u8 = c.cairo_font_options_get_variations(self) orelse "";
         return std.mem.span(variations);
     }
 
@@ -303,7 +305,7 @@ pub const FontOptions = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-font-options-t.html#cairo-font-options-set-variations)
     pub fn setVariations(self: *FontOptions, variations: ?[:0]const u8) void {
-        cairo_font_options_set_variations(self, variations orelse null);
+        c.cairo_font_options_set_variations(self, variations orelse null);
     }
 };
 
@@ -324,21 +326,3 @@ test "FontOptions" {
     font_options.setVariations(variations);
     try expectEqualStrings(variations, font_options.getVariations());
 }
-
-extern fn cairo_font_options_create() ?*FontOptions;
-extern fn cairo_font_options_copy(original: ?*const FontOptions) ?*FontOptions;
-extern fn cairo_font_options_destroy(options: ?*FontOptions) void;
-extern fn cairo_font_options_status(options: ?*FontOptions) Status;
-extern fn cairo_font_options_merge(options: ?*FontOptions, other: ?*const FontOptions) void;
-extern fn cairo_font_options_equal(options: ?*const FontOptions, other: ?*const FontOptions) c_int; // bool
-extern fn cairo_font_options_hash(options: ?*const FontOptions) c_ulong;
-extern fn cairo_font_options_set_antialias(options: ?*FontOptions, antialias: Antialias) void;
-extern fn cairo_font_options_get_antialias(options: ?*const FontOptions) Antialias;
-extern fn cairo_font_options_set_subpixel_order(options: ?*FontOptions, subpixel_order: SubpixelOrder) void;
-extern fn cairo_font_options_get_subpixel_order(options: ?*const FontOptions) SubpixelOrder;
-extern fn cairo_font_options_set_hint_style(options: ?*FontOptions, hint_style: FontOptions.HintStyle) void;
-extern fn cairo_font_options_get_hint_style(options: ?*const FontOptions) FontOptions.HintStyle;
-extern fn cairo_font_options_set_hint_metrics(options: ?*FontOptions, hint_metrics: FontOptions.HintMetrics) void;
-extern fn cairo_font_options_get_hint_metrics(options: ?*const FontOptions) FontOptions.HintMetrics;
-extern fn cairo_font_options_set_variations(options: ?*FontOptions, variations: [*c]const u8) void;
-extern fn cairo_font_options_get_variations(options: ?*FontOptions) [*c]const u8;

@@ -1,19 +1,28 @@
 const std = @import("std");
 
+pub const safety = @import("safety.zig");
 pub usingnamespace @import("enums.zig");
+pub usingnamespace @import("util.zig");
 
 pub usingnamespace @import("surface.zig");
 pub const Device = @import("device.zig").Device;
 
 pub usingnamespace @import("context.zig");
 pub usingnamespace @import("drawing/pattern.zig");
-pub usingnamespace @import("util.zig");
-pub usingnamespace @import("safety.zig");
+const path = @import("drawing/paths.zig");
+pub const Path = path.Path;
+pub const PathData = path.PathData;
+pub const Region = @import("drawing/regions.zig").Region;
 
+const text = @import("drawing/text.zig");
+pub const Glyph = text.Glyph;
+pub const TextCluster = text.TextCluster;
 pub usingnamespace @import("fonts/font_face.zig");
 pub usingnamespace @import("fonts/font_options.zig");
 pub usingnamespace @import("fonts/scaled_font.zig");
 
-comptime {
+pub const c = @import("c.zig");
+
+test {
     std.testing.refAllDeclsRecursive(@This());
 }

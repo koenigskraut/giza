@@ -7,12 +7,11 @@
 //!
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html)
 
-// const enums = @import("../enums.zig");
-const util = @import("../util.zig");
-const context = @import("../context.zig");
+const cairo = @import("../cairo.zig");
+const c = cairo.c;
 
-const Context = context.Context;
-const Matrix = util.Matrix;
+const Context = cairo.Context;
+const Matrix = cairo.Matrix;
 
 pub const Mixin = struct {
     /// Modifies the current transformation matrix (CTM) by translating the
@@ -27,7 +26,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-translate)
     pub fn translate(self: *Context, tx: f64, ty: f64) void {
-        cairo_translate(self, tx, ty);
+        c.cairo_translate(self, tx, ty);
     }
 
     /// Modifies the current transformation matrix (CTM) by scaling the X and Y
@@ -40,7 +39,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-scale)
     pub fn scale(self: *Context, sx: f64, sy: f64) void {
-        cairo_scale(self, sx, sy);
+        c.cairo_scale(self, sx, sy);
     }
 
     /// Modifies the current transformation matrix (CTM) by rotating the
@@ -55,7 +54,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-rotate)
     pub fn rotate(self: *Context, angle: f64) void {
-        cairo_rotate(self, angle);
+        c.cairo_rotate(self, angle);
     }
 
     /// Modifies the current transformation `matrix` (CTM) by applying matrix
@@ -67,7 +66,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-transform)
     pub fn transform(self: *Context, matrix: *const Matrix) void {
-        cairo_transform(self, matrix);
+        c.cairo_transform(self, matrix);
     }
 
     /// Modifies the current transformation matrix (CTM) by setting it equal to
@@ -78,7 +77,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-set-matrix)
     pub fn setMatrix(self: *Context, matrix: *const Matrix) void {
-        cairo_set_matrix(self, matrix);
+        c.cairo_set_matrix(self, matrix);
     }
 
     /// Stores the current transformation matrix (CTM) into `matrix`.
@@ -88,7 +87,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-get-matrix)
     pub fn getMatrix(self: *Context, matrix: *Matrix) void {
-        cairo_get_matrix(self, matrix);
+        c.cairo_get_matrix(self, matrix);
     }
 
     /// Resets the current transformation matrix (CTM) by setting it equal to
@@ -98,7 +97,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-identity-matrix)
     pub fn identityMatrix(self: *Context) void {
-        cairo_identity_matrix(self);
+        c.cairo_identity_matrix(self);
     }
 
     /// Transform a coordinate from user space to device space by multiplying
@@ -110,7 +109,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-user-to-device)
     pub fn userToDevice(self: *Context, x: *f64, y: *f64) void {
-        cairo_user_to_device(self, x, y);
+        c.cairo_user_to_device(self, x, y);
     }
 
     /// Transform a distance vector from user space to device space. This
@@ -123,7 +122,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-user-to-device-distance)
     pub fn userToDeviceDistance(self: *Context, dx: *f64, dy: *f64) void {
-        cairo_user_to_device_distance(self, dx, dy);
+        c.cairo_user_to_device_distance(self, dx, dy);
     }
 
     /// Transform a coordinate from device space to user space by multiplying
@@ -136,7 +135,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-device-to-user)
     pub fn deviceToUser(self: *Context, x: *f64, y: *f64) void {
-        cairo_device_to_user(self, x, y);
+        c.cairo_device_to_user(self, x, y);
     }
 
     /// Transform a distance vector from device space to user space. This
@@ -150,18 +149,6 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html#cairo-device-to-user-distance)
     pub fn deviceToUserDistance(self: *Context, dx: *f64, dy: *f64) void {
-        cairo_device_to_user_distance(self, dx, dy);
+        c.cairo_device_to_user_distance(self, dx, dy);
     }
 };
-
-extern fn cairo_translate(cr: ?*Context, tx: f64, ty: f64) void;
-extern fn cairo_scale(cr: ?*Context, sx: f64, sy: f64) void;
-extern fn cairo_rotate(cr: ?*Context, angle: f64) void;
-extern fn cairo_transform(cr: ?*Context, matrix: [*c]const Matrix) void;
-extern fn cairo_set_matrix(cr: ?*Context, matrix: [*c]const Matrix) void;
-extern fn cairo_get_matrix(cr: ?*Context, matrix: [*c]Matrix) void;
-extern fn cairo_identity_matrix(cr: ?*Context) void;
-extern fn cairo_user_to_device(cr: ?*Context, x: [*c]f64, y: [*c]f64) void;
-extern fn cairo_user_to_device_distance(cr: ?*Context, dx: [*c]f64, dy: [*c]f64) void;
-extern fn cairo_device_to_user(cr: ?*Context, x: [*c]f64, y: [*c]f64) void;
-extern fn cairo_device_to_user_distance(cr: ?*Context, dx: [*c]f64, dy: [*c]f64) void;

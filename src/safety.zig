@@ -1,8 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-const util = @import("util.zig");
-
 var arena: ?std.heap.ArenaAllocator = undefined;
 pub const tracing = builtin.mode == .Debug;
 
@@ -82,7 +80,7 @@ pub fn markForLeakDetection(address: usize, ptr: anytype) !void {
     var leakInfo: LeakInfo = undefined;
     leakInfo.count = 1;
     leakInfo.st.instruction_addresses = instructions[ibEnd..];
-    leakInfo.typeName = util.trimmedTypeName(@TypeOf(ptr));
+    leakInfo.typeName = trimmedTypeName(@TypeOf(ptr));
     leakInfo.ptr = ptr;
 
     std.debug.captureStackTrace(address, &(leakInfo.st));
@@ -140,6 +138,22 @@ pub export fn detectLeaks() void {
         };
         writer.print("\n", .{}) catch unreachable;
     }
+}
+
+pub inline fn trimmedTypeName(comptime T: type) []const u8 {
+    comptime {
+        var typeName: []const u8 = @typeName(T);
+        const startPtr = std.mem.lastIndexOf(u8, typeName, "*") orelse 0;
+        typeName = typeName[startPtr + 1 ..];
+        const startType = std.mem.lastIndexOf(u8, typeName, ".") orelse 0;
+        return typeName[startType + 1 ..];
+    }
+}
+
+test "trimmedTypeName" {
+    const E = enum {};
+    const T = *E;
+    try std.testing.expectEqualStrings("E", trimmedTypeName(T));
 }
 
 extern fn atexit(?*const fn () callconv(.C) void) c_int;

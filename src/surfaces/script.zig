@@ -5,8 +5,8 @@
 //! under the util/cairo-script directory, or with cairo-perf-trace.
 
 const cairo = @import("../cairo.zig");
-const safety = @import("../safety.zig");
-const util = @import("../util.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
 const CairoError = cairo.CairoError;
 const Content = cairo.Content;
@@ -16,9 +16,7 @@ const Status = cairo.Status;
 const Surface = cairo.Surface;
 const WriteFn = cairo.WriteFn;
 
-const base = @import("base.zig");
-
-const SurfaceMixin = base.Base;
+const SurfaceMixin = @import("base.zig").Base;
 const DeviceMixin = @import("../device.zig").Base;
 
 /// An instance of `cairo.Device`
@@ -55,7 +53,7 @@ pub const Script = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-create)
     pub fn create(filename: [:0]const u8) CairoError!*Script {
-        const device = cairo_script_create(filename).?;
+        const device = c.cairo_script_create(filename).?;
         try device.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), device);
         return device;
@@ -83,8 +81,8 @@ pub const Script = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-create-for-stream)
     pub fn createForStream(writer: anytype) CairoError!*Script {
-        const writeFn = util.createWriteFn(writer);
-        const device = cairo_script_create_for_stream(writeFn, writer).?;
+        const writeFn = cairo.createWriteFn(writer);
+        const device = c.cairo_script_create_for_stream(writeFn, writer).?;
         try device.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), device);
         return device;
@@ -97,7 +95,7 @@ pub const Script = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-from-recording-surface)
     pub fn fromRecordingSurface(self: *Script, recording_surface: *RecordingSurface) CairoError!void {
-        return cairo_script_from_recording_surface(self, recording_surface).toErr();
+        return c.cairo_script_from_recording_surface(self, recording_surface).toErr();
     }
 
     /// Change the output mode of the script.
@@ -107,7 +105,7 @@ pub const Script = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-set-mode)
     pub fn setMode(self: *Script, mode: Script.Mode) void {
-        cairo_script_set_mode(self, mode);
+        c.cairo_script_set_mode(self, mode);
     }
 
     /// Queries the script for its current output mode.
@@ -118,7 +116,7 @@ pub const Script = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-get-mode)
     pub fn getMode(self: *Script) Script.Mode {
-        return cairo_script_get_mode(self);
+        return c.cairo_script_get_mode(self);
     }
 
     /// Emit a string verbatim into the script.
@@ -128,7 +126,7 @@ pub const Script = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-write-comment)
     pub fn writeComment(self: *Script, comment: []const u8) void {
-        cairo_script_write_comment(self, comment.ptr, @intCast(comment.len));
+        c.cairo_script_write_comment(self, comment.ptr, @intCast(comment.len));
     }
 };
 
@@ -160,7 +158,7 @@ pub const ScriptSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-surface-create)
     pub fn create(script: *Script, content: Content, width: f64, height: f64) CairoError!*ScriptSurface {
-        const surface = cairo_script_surface_create(script, content, width, height).?;
+        const surface = c.cairo_script_surface_create(script, content, width, height).?;
         try surface.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), surface);
         return surface;
@@ -190,18 +188,9 @@ pub const ScriptSurface = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Script-Surfaces.html#cairo-script-surface-create-for-target)
     pub fn createForTarget(script: *Script, target: *Surface) CairoError!*ScriptSurface {
-        const surface = cairo_script_surface_create_for_target(script, target).?;
+        const surface = c.cairo_script_surface_create_for_target(script, target).?;
         try surface.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), surface);
         return surface;
     }
 };
-
-extern fn cairo_script_create(filename: [*c]const u8) ?*Script;
-extern fn cairo_script_create_for_stream(write_func: WriteFn, closure: ?*anyopaque) ?*Script;
-extern fn cairo_script_from_recording_surface(script: ?*Script, recording_surface: ?*RecordingSurface) Status;
-extern fn cairo_script_set_mode(script: ?*Script, mode: Script.Mode) void;
-extern fn cairo_script_get_mode(script: ?*Script) Script.Mode;
-extern fn cairo_script_surface_create(script: ?*Script, content: Content, width: f64, height: f64) ?*ScriptSurface;
-extern fn cairo_script_surface_create_for_target(script: ?*Script, target: ?*Surface) ?*ScriptSurface;
-extern fn cairo_script_write_comment(script: ?*Script, comment: [*c]const u8, len: c_int) void;

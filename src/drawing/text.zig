@@ -18,8 +18,10 @@
 //! layout and rendering library. Pango is available from http://www.pango.org/
 
 const std = @import("std");
+
 const cairo = @import("../cairo.zig");
-const safety = @import("../safety.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
 const CairoError = cairo.CairoError;
 
@@ -52,7 +54,7 @@ pub const Mixin = struct {
     /// name "`cairo`:monospace" will use the monospace version of the internal
     /// font family.
     ///
-    /// For "real" font selection, see the font-backend-specific font_face_create functions for the font backend you are using. (For example, if you are using the freetype-based cairo-ft font backend, see cairo_ft_font_face_create_for_ft_face() or cairo_ft_font_face_create_for_pattern().) The resulting font face could then be used with cairo_scaled_font_create() and cairo_set_scaled_font().
+    /// For "real" font selection, see the font-backend-specific font_face_create functions for the font backend you are using. (For example, if you are using the freetype-based cairo-ft font backend, see c.cairo_ft_font_face_create_for_ft_face() or c.cairo_ft_font_face_create_for_pattern().) The resulting font face could then be used with c.cairo_scaled_font_create() and c.cairo_set_scaled_font().
     ///
     /// Similarly, when using the "real" font support, you can call directly
     /// into the underlying font system, (such as fontconfig or freetype), for
@@ -68,7 +70,7 @@ pub const Mixin = struct {
     /// `cairo.FontFace.FontSlant.Normal`, and default weight is
     /// `cairo.FontFace.FontWeight.Normal`.
     ///
-    /// This function is equivalent to a call to cairo_toy_font_face_create() followed by cairo_set_font_face().
+    /// This function is equivalent to a call to c.cairo_toy_font_face_create() followed by c.cairo_set_font_face().
     ///
     /// **Parameters**
     /// - `family`: a font family name, encoded in UTF-8
@@ -78,7 +80,7 @@ pub const Mixin = struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-select-font-face)
     pub fn selectFontFace(self: *Context, family: [:0]const u8, slant: FontFace.FontSlant, weight: FontFace.FontWeight) void {
         // TODO fix desc
-        cairo_select_font_face(self, family, slant, weight);
+        c.cairo_select_font_face(self, family, slant, weight);
     }
 
     /// Sets the current font matrix to a scale by a factor of `size`,
@@ -96,7 +98,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-set-font-size)
     pub fn setFontSize(self: *Context, size: f64) void {
-        cairo_set_font_size(self, size);
+        c.cairo_set_font_size(self, size);
     }
 
     /// Sets the current font matrix to `matrix`. The font matrix gives a
@@ -111,7 +113,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-set-font-matrix)
     pub fn setFontMatrix(self: *Context, matrix: *const Matrix) void {
-        cairo_set_font_matrix(self, matrix);
+        c.cairo_set_font_matrix(self, matrix);
     }
 
     /// Gets the current font matrix. See `ctx.setFontMatrix()`.
@@ -119,7 +121,7 @@ pub const Mixin = struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-get-font-matrix)
     pub fn getFontMatrix(self: *Context) Matrix {
         var m: Matrix = undefined;
-        cairo_get_font_matrix(self, &m);
+        c.cairo_get_font_matrix(self, &m);
         return m;
     }
 
@@ -134,7 +136,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-set-font-options)
     pub fn setFontOptions(self: *Context, options: *const FontOptions) void {
-        cairo_set_font_options(self, options);
+        c.cairo_set_font_options(self, options);
     }
 
     /// Retrieves font rendering options set via
@@ -148,7 +150,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-get-font-options)
     pub fn getFontOptions(self: *Context, options: *FontOptions) void {
-        cairo_get_font_options(self, options);
+        c.cairo_get_font_options(self, options);
     }
 
     /// Replaces the current `cairo.FontFace` object in the `self` with
@@ -161,7 +163,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-set-font-face)
     pub fn setFontFace(self: *Context, font_face: ?*FontFace) void {
-        cairo_set_font_face(self, font_face);
+        c.cairo_set_font_face(self, font_face);
     }
 
     /// Gets the current font face for a `cairo.Context`.
@@ -174,7 +176,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-get-font-face)
     pub fn getFontFace(self: *Context) CairoError!*FontFace {
-        const font_face = cairo_get_font_face(self).?;
+        const font_face = c.cairo_get_font_face(self).?;
         try font_face.status().toErr();
         return font_face;
     }
@@ -190,7 +192,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-set-scaled-font)
     pub fn setScaledFont(self: *Context, scaled_font: *const ScaledFont) void {
-        cairo_set_scaled_font(self, scaled_font);
+        c.cairo_set_scaled_font(self, scaled_font);
     }
 
     /// Gets the current scaled font for a `cairo.Context`.
@@ -203,7 +205,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-get-scaled-font)
     pub fn getScaledFont(self: *Context) CairoError!*ScaledFont {
-        const scaled_font = cairo_get_scaled_font(self).?;
+        const scaled_font = c.cairo_get_scaled_font(self).?;
         try scaled_font.status().toErr();
         return scaled_font;
     }
@@ -234,7 +236,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-show-text)
     pub fn showText(self: *Context, utf8: ?[:0]const u8) void {
-        cairo_show_text(self, utf8 orelse null);
+        c.cairo_show_text(self, utf8 orelse null);
     }
 
     /// A drawing operator that generates the shape from a slice of glyphs,
@@ -246,7 +248,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-show-glyphs)
     pub fn showGlyphs(self: *Context, glyphs: []const Glyph) void {
-        cairo_show_glyphs(self, glyphs.ptr, @intCast(glyphs.len));
+        c.cairo_show_glyphs(self, glyphs.ptr, @intCast(glyphs.len));
     }
 
     /// This operation has rendering effects similar to
@@ -270,7 +272,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-show-text-glyphs)
     pub fn showTextGlyphs(self: *Context, utf8: [:0]const u8, glyphs: []const Glyph, clusters: []const TextCluster, cluster_flags: TextCluster.Flags) void {
-        cairo_show_text_glyphs(
+        c.cairo_show_text_glyphs(
             self,
             utf8,
             @intCast(utf8.len),
@@ -287,7 +289,7 @@ pub const Mixin = struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-font-extents)
     pub fn fontExtents(self: *Context) FontExtents {
         var extents: FontExtents = undefined;
-        cairo_font_extents(self, &extents);
+        c.cairo_font_extents(self, &extents);
         return extents;
     }
 
@@ -314,7 +316,7 @@ pub const Mixin = struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-text-extents)
     pub fn textExtents(self: *Context, utf8: ?[:0]const u8) TextExtents {
         var extents: TextExtents = undefined;
-        cairo_text_extents(self, utf8 orelse null, &extents);
+        c.cairo_text_extents(self, utf8 orelse null, &extents);
         return extents;
     }
 
@@ -337,7 +339,7 @@ pub const Mixin = struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-glyph-extents)
     pub fn glyphExtents(self: *Context, glyphs: []const Glyph) TextExtents {
         var extents: TextExtents = undefined;
-        cairo_glyph_extents(self, glyphs.ptr, @intCast(glyphs.len), &extents);
+        c.cairo_glyph_extents(self, glyphs.ptr, @intCast(glyphs.len), &extents);
         return extents;
     }
 };
@@ -368,14 +370,14 @@ pub const Glyph = extern struct {
     y: f64,
 
     /// Allocates a slice of `cairo.Glyph`'s. This function is only useful in
-    /// implementations of cairo_user_scaled_font_text_to_glyphs_func_t where
+    /// implementations of c.cairo_user_scaled_font_text_to_glyphs_func_t where
     /// the user needs to allocate a slice of glyphs that cairo will free. For
     /// all other uses, user can use their own allocation method for glyphs.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-glyph-allocate)
     pub fn allocate(num_glyphs: usize) error{OutOfMemory}![]Glyph {
         // TODO: fix desc
-        const ptr: [*]Glyph = cairo_glyph_allocate(@intCast(num_glyphs)) orelse return error.OutOfMemory;
+        const ptr: [*]Glyph = c.cairo_glyph_allocate(@intCast(num_glyphs)) orelse return error.OutOfMemory;
         return ptr[0..num_glyphs];
     }
 
@@ -390,7 +392,7 @@ pub const Glyph = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-glyph-free)
     pub fn free(glyphs: []Glyph) void {
-        cairo_glyph_free(glyphs.ptr);
+        c.cairo_glyph_free(glyphs.ptr);
         if (safety.tracing) safety.destroy(glyphs.ptr);
     }
 };
@@ -426,7 +428,7 @@ pub const TextCluster = extern struct {
     };
 
     /// Allocates a slice of `cairo.TextCluster`'s. This function is only
-    /// useful in implementations of cairo_user_scaled_font_text_to_glyphs_func_t
+    /// useful in implementations of c.cairo_user_scaled_font_text_to_glyphs_func_t
     /// where the user needs to allocate a slice of text clusters that cairo
     /// will free. For all other uses, user can use their own allocation method
     /// for text clusters.
@@ -434,7 +436,7 @@ pub const TextCluster = extern struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-text-cluster-allocate)
     pub fn allocate(numClusters: usize) error{OutOfMemory}![]TextCluster {
         // TODO: fix desc
-        const clusters: [*]TextCluster = cairo_text_cluster_allocate(@intCast(numClusters)) orelse return error.OutOfMemory;
+        const clusters: [*]TextCluster = c.cairo_text_cluster_allocate(@intCast(numClusters)) orelse return error.OutOfMemory;
         return clusters[0..numClusters];
     }
 
@@ -449,35 +451,15 @@ pub const TextCluster = extern struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-text-cluster-free)
     pub fn free(clusters: []TextCluster) void {
-        cairo_text_cluster_free(clusters.ptr);
+        c.cairo_text_cluster_free(clusters.ptr);
         if (safety.tracing) safety.destroy(clusters.ptr);
     }
 };
 
-extern fn cairo_select_font_face(cr: ?*Context, family: [*c]const u8, slant: FontFace.FontSlant, weight: FontFace.FontWeight) void;
-extern fn cairo_set_font_size(cr: ?*Context, size: f64) void;
-extern fn cairo_set_font_matrix(cr: ?*Context, matrix: [*c]const Matrix) void;
-extern fn cairo_get_font_matrix(cr: ?*Context, matrix: [*c]Matrix) void;
-extern fn cairo_set_font_options(cr: ?*Context, options: ?*const FontOptions) void;
-extern fn cairo_get_font_options(cr: ?*Context, options: ?*FontOptions) void;
-extern fn cairo_set_font_face(cr: ?*Context, font_face: ?*FontFace) void;
-extern fn cairo_get_font_face(cr: ?*Context) ?*FontFace;
-extern fn cairo_set_scaled_font(cr: ?*Context, scaled_font: ?*const ScaledFont) void;
-extern fn cairo_get_scaled_font(cr: ?*Context) ?*ScaledFont;
-extern fn cairo_show_text(cr: ?*Context, utf8: [*c]const u8) void;
-extern fn cairo_show_glyphs(cr: ?*Context, glyphs: [*c]const Glyph, num_glyphs: c_int) void;
-extern fn cairo_show_text_glyphs(cr: ?*Context, utf8: [*c]const u8, utf8_len: c_int, glyphs: [*c]const Glyph, num_glyphs: c_int, clusters: [*c]const TextCluster, num_clusters: c_int, cluster_flags: TextCluster.Flags) void;
-extern fn cairo_font_extents(cr: ?*Context, extents: [*c]FontExtents) void;
-extern fn cairo_text_extents(cr: ?*Context, utf8: [*c]const u8, extents: [*c]TextExtents) void;
-extern fn cairo_glyph_extents(cr: ?*Context, glyphs: [*c]const Glyph, num_glyphs: c_int, extents: [*c]TextExtents) void;
-// extern fn cairo_toy_font_face_create(family: [*c]const u8, slant: FontFace.FontSlant, weight: FontFace.FontWeight) ?*cairo_font_face_t;
-// extern fn cairo_toy_font_face_get_family(font_face: ?*cairo_font_face_t) [*c]const u8;
-// extern fn cairo_toy_font_face_get_slant(font_face: ?*cairo_font_face_t) cairo_font_slant_t;
-// extern fn cairo_toy_font_face_get_weight(font_face: ?*cairo_font_face_t) cairo_font_weight_t;
-extern fn cairo_glyph_allocate(num_glyphs: c_int) [*c]Glyph;
-extern fn cairo_glyph_free(glyphs: [*c]Glyph) void;
-extern fn cairo_text_cluster_allocate(num_clusters: c_int) [*c]TextCluster;
-extern fn cairo_text_cluster_free(clusters: [*c]TextCluster) void;
+// // extern fn cairo_toy_font_face_create(family: [*c]const u8, slant: FontFace.FontSlant, weight: FontFace.FontWeight) ?*cairo_font_face_t;
+// // extern fn cairo_toy_font_face_get_family(font_face: ?*cairo_font_face_t) [*c]const u8;
+// // extern fn cairo_toy_font_face_get_slant(font_face: ?*cairo_font_face_t) cairo_font_slant_t;
+// // extern fn cairo_toy_font_face_get_weight(font_face: ?*cairo_font_face_t) cairo_font_weight_t;
 
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-create)
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-get-family)

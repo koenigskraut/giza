@@ -14,21 +14,22 @@ const std = @import("std");
 const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
 
-const util = @import("../util.zig");
-const enums = @import("../enums.zig");
-const safety = @import("../safety.zig");
+const cairo = @import("../cairo.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
-const Content = enums.Content;
-const Status = enums.Status;
-const CairoError = enums.CairoError;
-const Surface = @import("../surface.zig").Surface;
-const Path = @import("paths.zig").Path;
+const Content = cairo.Content;
+const Status = cairo.Status;
+const CairoError = cairo.CairoError;
 
-const RectangleInt = util.RectangleInt;
-const Matrix = util.Matrix;
-const UserDataKey = util.UserDataKey;
-const DestroyFn = util.DestroyFn;
-const Point = util.Point;
+const Surface = cairo.Surface;
+const Path = cairo.Path;
+
+const RectangleInt = cairo.RectangleInt;
+const Matrix = cairo.Matrix;
+const UserDataKey = cairo.UserDataKey;
+const DestroyFn = cairo.DestroyFn;
+const Point = cairo.Point;
 
 fn Mixin(comptime Self: type) type {
     return struct {
@@ -51,7 +52,7 @@ fn Mixin(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-set-extend)
         pub fn setExtend(self: *Self, extend: Pattern.Extend) void {
-            cairo_pattern_set_extend(self, extend);
+            c.cairo_pattern_set_extend(self, extend);
         }
 
         /// Gets the current extend mode for a pattern. See
@@ -64,7 +65,7 @@ fn Mixin(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-extend)
         pub fn getExtend(self: *Self) Pattern.Extend {
-            return cairo_pattern_get_extend(self);
+            return c.cairo_pattern_get_extend(self);
         }
 
         /// Sets the pattern's transformation matrix to `matrix`. This matrix is a
@@ -99,7 +100,7 @@ fn Mixin(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-set-matrix)
         pub fn setMatrix(self: *Self, matrix: *const Matrix) void {
             // TODO: check if undefined matrix cause problems
-            cairo_pattern_set_matrix(self, matrix);
+            c.cairo_pattern_set_matrix(self, matrix);
         }
 
         /// Stores the pattern's transformation matrix into `matrix`.
@@ -109,7 +110,7 @@ fn Mixin(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-matrix)
         pub fn getMatrix(self: *Self, matrix: *Matrix) void {
-            cairo_pattern_get_matrix(self, matrix);
+            c.cairo_pattern_get_matrix(self, matrix);
         }
 
         /// Increases the reference count on pattern by one. This prevents pattern
@@ -126,7 +127,7 @@ fn Mixin(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-reference)
         pub fn reference(self: *Self) *Self {
             if (safety.tracing) safety.reference(@returnAddress(), self);
-            return @ptrCast(cairo_pattern_reference(self).?);
+            return @ptrCast(c.cairo_pattern_reference(self).?);
         }
 
         /// Decreases the reference count on pattern by one. If the result is zero,
@@ -136,14 +137,14 @@ fn Mixin(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-destroy)
         pub fn destroy(self: *Self) void {
             if (safety.tracing) safety.destroy(self);
-            return cairo_pattern_destroy(self);
+            return c.cairo_pattern_destroy(self);
         }
 
         /// Checks whether an error has previously occurred for this pattern.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-status)
         pub fn status(self: *Self) Status {
-            return cairo_pattern_status(self);
+            return c.cairo_pattern_status(self);
         }
 
         /// Get the pattern's type. See `cairo.Pattern.Type` for available
@@ -155,7 +156,7 @@ fn Mixin(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-type)
         pub fn getType(self: *Self) Pattern.Type {
-            return cairo_pattern_get_type(self);
+            return c.cairo_pattern_get_type(self);
         }
 
         /// Returns the current reference count of `pattern`.
@@ -167,7 +168,7 @@ fn Mixin(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-reference-count)
         pub fn getReferenceCount(self: *Self) usize {
-            return @intCast(cairo_pattern_get_reference_count(self));
+            return @intCast(c.cairo_pattern_get_reference_count(self));
         }
 
         /// Attach user data to `pattern`. To remove user data from a surface, call
@@ -187,7 +188,7 @@ fn Mixin(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-set-user-data)
         pub fn setUserData(self: *Self, key: *const UserDataKey, userData: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
-            return cairo_pattern_set_user_data(self, key, userData, destroyFn).toErr();
+            return c.cairo_pattern_set_user_data(self, key, userData, destroyFn).toErr();
         }
 
         /// Return user data previously attached to `pattern` using the specified
@@ -204,7 +205,7 @@ fn Mixin(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-user-data)
         pub fn getUserData(self: *Self, key: *const UserDataKey) ?*anyopaque {
-            return cairo_pattern_get_user_data(self, key);
+            return c.cairo_pattern_get_user_data(self, key);
         }
     };
 }
@@ -339,7 +340,7 @@ pub const SolidPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-rgb)
     pub fn createRGB(red: f64, green: f64, blue: f64) CairoError!*SolidPattern {
-        const pattern = cairo_pattern_create_rgb(red, green, blue).?;
+        const pattern = c.cairo_pattern_create_rgb(red, green, blue).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -371,7 +372,7 @@ pub const SolidPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-rgba)
     pub fn createRGBA(red: f64, green: f64, blue: f64, alpha: f64) CairoError!*SolidPattern {
-        const pattern = cairo_pattern_create_rgba(red, green, blue, alpha).?;
+        const pattern = c.cairo_pattern_create_rgba(red, green, blue, alpha).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -391,7 +392,7 @@ pub const SolidPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-rgba)
     pub fn getRGBA(self: *SolidPattern, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
-        try cairo_pattern_get_rgba(self, red, green, blue, alpha).toErr();
+        try c.cairo_pattern_get_rgba(self, red, green, blue, alpha).toErr();
     }
 };
 
@@ -419,7 +420,7 @@ pub const SurfacePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-for-surface)
     pub fn createFor(surface: *Surface) CairoError!*SurfacePattern {
-        const pattern = cairo_pattern_create_for_surface(surface).?;
+        const pattern = c.cairo_pattern_create_for_surface(surface).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -436,7 +437,7 @@ pub const SurfacePattern = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-surface)
     pub fn getSurface(self: *SurfacePattern) CairoError!*Surface {
         var surface: ?*Surface = undefined;
-        try cairo_pattern_get_surface(self, &surface).toErr();
+        try c.cairo_pattern_get_surface(self, &surface).toErr();
         return surface.?;
     }
 
@@ -459,7 +460,7 @@ pub const SurfacePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-set-filter)
     pub fn setFilter(self: *SurfacePattern, filter: Pattern.Filter) void {
-        cairo_pattern_set_filter(self, filter);
+        c.cairo_pattern_set_filter(self, filter);
     }
 
     /// Gets the current filter for a pattern. See `cairo.Pattern.Filter` for
@@ -471,7 +472,7 @@ pub const SurfacePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-filter)
     pub fn getFilter(self: *SurfacePattern) Pattern.Filter {
-        return cairo_pattern_get_filter(self);
+        return c.cairo_pattern_get_filter(self);
     }
 };
 
@@ -507,7 +508,7 @@ fn Gradient(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-add-color-stop-rgb)
         pub fn addColorStopRGB(self: *Self, offset: f64, red: f64, green: f64, blue: f64) void {
-            cairo_pattern_add_color_stop_rgb(self, offset, red, green, blue);
+            c.cairo_pattern_add_color_stop_rgb(self, offset, red, green, blue);
         }
 
         /// Adds a translucent color stop to a gradient pattern. The offset
@@ -539,7 +540,7 @@ fn Gradient(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-add-color-stop-rgba)
         pub fn addColorStopRGBA(self: *Self, offset: f64, red: f64, green: f64, blue: f64, alpha: f64) void {
-            cairo_pattern_add_color_stop_rgba(self, offset, red, green, blue, alpha);
+            c.cairo_pattern_add_color_stop_rgba(self, offset, red, green, blue, alpha);
         }
 
         /// A convenience function that gets all color stops and offsets for
@@ -569,7 +570,7 @@ fn Gradient(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-color-stop-count)
         pub fn getColorStopCount(self: *Self) CairoError!usize {
             var count: c_int = undefined;
-            try cairo_pattern_get_color_stop_count(self, &count).toErr();
+            try c.cairo_pattern_get_color_stop_count(self, &count).toErr();
             return @intCast(count);
         }
 
@@ -593,7 +594,7 @@ fn Gradient(comptime Self: type) type {
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-color-stop-rgba)
         pub fn getColorStopRGBA(self: *Self, index: c_int, offset: ?*f64, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
-            try cairo_pattern_get_color_stop_rgba(self, index, offset, red, green, blue, alpha).toErr();
+            try c.cairo_pattern_get_color_stop_rgba(self, index, offset, red, green, blue, alpha).toErr();
         }
     };
 }
@@ -631,7 +632,7 @@ pub const LinearGradientPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-linear)
     pub fn create(x0: f64, y0: f64, x1: f64, y1: f64) CairoError!*LinearGradientPattern {
-        var pattern = cairo_pattern_create_linear(x0, y0, x1, y1).?;
+        var pattern = c.cairo_pattern_create_linear(x0, y0, x1, y1).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -653,7 +654,7 @@ pub const LinearGradientPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-linear-points)
     pub fn getLinearPoints(self: *LinearGradientPattern, x0: ?*f64, y0: ?*f64, x1: ?*f64, y1: ?*f64) CairoError!void {
-        try cairo_pattern_get_linear_points(self, x0, y0, x1, y1).toErr();
+        try c.cairo_pattern_get_linear_points(self, x0, y0, x1, y1).toErr();
     }
 };
 
@@ -693,7 +694,7 @@ pub const RadialGradientPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-radial)
     pub fn create(cx0: f64, cy0: f64, radius0: f64, cx1: f64, cy1: f64, radius1: f64) CairoError!*RadialGradientPattern {
-        var pattern = cairo_pattern_create_radial(cx0, cy0, radius0, cx1, cy1, radius1).?;
+        var pattern = c.cairo_pattern_create_radial(cx0, cy0, radius0, cx1, cy1, radius1).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -716,7 +717,7 @@ pub const RadialGradientPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-radial-circles)
     pub fn getRadialCircles(self: *RadialGradientPattern, x0: ?*f64, y0: ?*f64, r0: ?*f64, x1: ?*f64, y1: ?*f64, r1: ?*f64) CairoError!void {
-        try cairo_pattern_get_radial_circles(self, x0, y0, r0, x1, y1, r1).toErr();
+        try c.cairo_pattern_get_radial_circles(self, x0, y0, r0, x1, y1, r1).toErr();
     }
 };
 
@@ -840,7 +841,7 @@ pub const RadialGradientPattern = opaque {
 /// Note: The coordinates are always in pattern space. For a new pattern,
 /// pattern space is identical to user space, but the relationship between the
 /// spaces can be changed with `pattern.setMatrix()`.
-const MeshPattern = opaque {
+pub const MeshPattern = opaque {
     pub usingnamespace Mixin(@This());
 
     /// Create a new mesh pattern.
@@ -860,7 +861,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-mesh)
     pub fn create() CairoError!*MeshPattern {
-        var pattern = cairo_pattern_create_mesh().?;
+        var pattern = c.cairo_pattern_create_mesh().?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -884,7 +885,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-begin-patch)
     pub fn beginPatch(self: *MeshPattern) void {
-        cairo_mesh_pattern_begin_patch(self);
+        c.cairo_mesh_pattern_begin_patch(self);
     }
 
     // **Zig note**: you don't have to worry about that unless you cast pointers manually, which you **shouldn't**.
@@ -905,7 +906,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-end-patch)
     pub fn endPatch(self: *MeshPattern) void {
-        cairo_mesh_pattern_end_patch(self);
+        c.cairo_mesh_pattern_end_patch(self);
     }
 
     /// Define the first point of the current patch in a mesh pattern.
@@ -926,7 +927,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-move-to)
     pub fn moveTo(self: *MeshPattern, x: f64, y: f64) void {
-        cairo_mesh_pattern_move_to(self, x, y);
+        c.cairo_mesh_pattern_move_to(self, x, y);
     }
 
     /// Adds a line to the current patch from the current point to position
@@ -951,7 +952,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-line-to)
     pub fn lineTo(self: *MeshPattern, x: f64, y: f64) void {
-        cairo_mesh_pattern_line_to(self, x, y);
+        c.cairo_mesh_pattern_line_to(self, x, y);
     }
 
     /// Adds a cubic Bézier spline to the current patch from the current point
@@ -982,7 +983,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-curve-to)
     pub fn curveTo(self: *MeshPattern, x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64) void {
-        cairo_mesh_pattern_curve_to(self, x1, y1, x2, y2, x3, y3);
+        c.cairo_mesh_pattern_curve_to(self, x1, y1, x2, y2, x3, y3);
     }
 
     /// Set an internal control point of the current patch.
@@ -1003,7 +1004,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-set-control-point)
     pub fn setControlPoint(self: *MeshPattern, pointNum: c_uint, point: Point) void {
-        cairo_mesh_pattern_set_control_point(self, pointNum, point.x, point.y);
+        c.cairo_mesh_pattern_set_control_point(self, pointNum, point.x, point.y);
     }
 
     /// Sets the color of a corner of the current patch in a mesh pattern.
@@ -1031,7 +1032,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-set-corner-color-rgb)
     pub fn setCornerColorRGB(self: *MeshPattern, cornerNum: c_uint, red: f64, green: f64, blue: f64) void {
-        cairo_mesh_pattern_set_corner_color_rgb(self, cornerNum, red, green, blue);
+        c.cairo_mesh_pattern_set_corner_color_rgb(self, cornerNum, red, green, blue);
     }
 
     /// Sets the color of a corner of the current patch in a mesh pattern.
@@ -1060,7 +1061,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-set-corner-color-rgba)
     pub fn setCornerColorRGBA(self: *MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64, alpha: f64) void {
-        cairo_mesh_pattern_set_corner_color_rgba(self, corner_num, red, green, blue, alpha);
+        c.cairo_mesh_pattern_set_corner_color_rgba(self, corner_num, red, green, blue, alpha);
     }
 
     /// Gets the number of patches specified in the given mesh pattern.
@@ -1080,7 +1081,7 @@ const MeshPattern = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-get-patch-count)
     pub fn getPatchCount(self: *MeshPattern) CairoError!usize {
         var count: c_uint = undefined;
-        try cairo_mesh_pattern_get_patch_count(self, &count).toErr();
+        try c.cairo_mesh_pattern_get_patch_count(self, &count).toErr();
         return @intCast(count);
     }
 
@@ -1105,16 +1106,16 @@ const MeshPattern = opaque {
     pub fn getPath(self: *MeshPattern, patchNum: u32) *Path {
         // TODO: who ownes this? check with valgrind or smth, ChatGPT says:
         // Based on the available information, the ownership of the struct
-        // returned by the cairo_mesh_pattern_get_path function depends on
+        // returned by the c.cairo_mesh_pattern_get_path function depends on
         // whether the user has finished defining the patch or not:
         // 1. If the user has not finished defining the patch, the returned
         // struct is still owned by the library. The user should not destroy
         // it explicitly.
         // 2. If the user has finished defining the patch using
-        // cairo_mesh_pattern_end_patch, then the user becomes the owner of the
+        // c.cairo_mesh_pattern_end_patch, then the user becomes the owner of the
         // returned struct and is responsible for destroying it when it is no
         // longer needed.
-        return cairo_mesh_pattern_get_path(self, @intCast(patchNum)).?;
+        return c.cairo_mesh_pattern_get_path(self, @intCast(patchNum)).?;
     }
 
     /// Gets the control point `pointNum` of patch `patchNum` for a mesh
@@ -1143,7 +1144,7 @@ const MeshPattern = opaque {
     pub fn getControlPoint(self: *MeshPattern, patchNum: u32, pointNum: u32) CairoError!Point {
         // TODO: check if undefined is problematic here
         var point: Point = undefined;
-        try cairo_mesh_pattern_get_control_point(self, @intCast(patchNum), @intCast(pointNum), &point.x, &point.y).toErr();
+        try c.cairo_mesh_pattern_get_control_point(self, @intCast(patchNum), @intCast(pointNum), &point.x, &point.y).toErr();
         return point;
     }
 
@@ -1171,7 +1172,7 @@ const MeshPattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-get-corner-color-rgba)
     pub fn getCornerColorRGBA(self: *MeshPattern, patchNum: u32, cornerNum: u32, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
-        try cairo_mesh_pattern_get_corner_color_rgba(self, @intCast(patchNum), @intCast(cornerNum), red, green, blue, alpha).toErr();
+        try c.cairo_mesh_pattern_get_corner_color_rgba(self, @intCast(patchNum), @intCast(cornerNum), red, green, blue, alpha).toErr();
     }
 };
 
@@ -1221,7 +1222,7 @@ pub const RasterSourcePattern = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-pattern-create-raster-source)
     pub fn create(userData: ?*anyopaque, content: Content, width: c_int, height: c_int) CairoError!*Pattern {
         // TODO: fix doc example
-        const pattern = cairo_pattern_create_raster_source(userData, content, width, height).?;
+        const pattern = c.cairo_pattern_create_raster_source(userData, content, width, height).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -1234,7 +1235,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-callback-data)
     pub fn setCallbackData(self: *RasterSourcePattern, data: ?*anyopaque) void {
-        cairo_raster_source_pattern_set_callback_data(self, data);
+        c.cairo_raster_source_pattern_set_callback_data(self, data);
     }
 
     /// Queries the current user data.
@@ -1245,7 +1246,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-callback-data)
     pub fn getCallbackData(self: *RasterSourcePattern) ?*anyopaque {
-        return cairo_raster_source_pattern_get_callback_data(self);
+        return c.cairo_raster_source_pattern_get_callback_data(self);
     }
 
     /// Specifies the callbacks used to generate the image surface for a
@@ -1267,7 +1268,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-acquire)
     pub fn setAcquire(self: *RasterSourcePattern, acquire: RasterSourcePattern.AcquireFn, release: RasterSourcePattern.ReleaseFn) void {
-        cairo_raster_source_pattern_set_acquire(self, acquire, release);
+        c.cairo_raster_source_pattern_set_acquire(self, acquire, release);
     }
 
     /// Queries the current acquire and release callbacks.
@@ -1278,7 +1279,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-acquire)
     pub fn getAcquire(self: *RasterSourcePattern, acquire: *RasterSourcePattern.AcquireFn, release: *RasterSourcePattern.ReleaseFn) void {
-        cairo_raster_source_pattern_get_acquire(self, acquire, release);
+        c.cairo_raster_source_pattern_get_acquire(self, acquire, release);
     }
 
     /// Sets the callback that will be used whenever a snapshot is taken of the
@@ -1290,7 +1291,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-snapshot)
     pub fn setSnapshot(self: *RasterSourcePattern, snapshot: RasterSourcePattern.SnapshotFn) void {
-        cairo_raster_source_pattern_set_snapshot(self, snapshot);
+        c.cairo_raster_source_pattern_set_snapshot(self, snapshot);
     }
 
     /// Queries the current snapshot callback.
@@ -1301,7 +1302,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-snapshot)
     pub fn getSnapshot(self: *RasterSourcePattern) RasterSourcePattern.SnapshotFn {
-        return cairo_raster_source_pattern_get_snapshot(self);
+        return c.cairo_raster_source_pattern_get_snapshot(self);
     }
 
     /// Updates the copy callback which is used whenever a temporary copy of
@@ -1312,7 +1313,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-copy)
     pub fn setCopy(self: *RasterSourcePattern, copy: RasterSourcePattern.CopyFn) void {
-        cairo_raster_source_pattern_set_copy(self, copy);
+        c.cairo_raster_source_pattern_set_copy(self, copy);
     }
 
     /// Queries the current copy callback.
@@ -1323,7 +1324,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-copy)
     pub fn getCopy(self: *RasterSourcePattern) RasterSourcePattern.CopyFn {
-        return cairo_raster_source_pattern_get_copy(self);
+        return c.cairo_raster_source_pattern_get_copy(self);
     }
 
     /// Updates the finish callback which is used whenever a pattern (or a copy
@@ -1334,7 +1335,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-set-finish)
     pub fn setFinish(self: *RasterSourcePattern, finish: RasterSourcePattern.FinishFn) void {
-        cairo_raster_source_pattern_set_finish(self, finish);
+        c.cairo_raster_source_pattern_set_finish(self, finish);
     }
 
     /// Queries the current finish callback.
@@ -1345,7 +1346,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-pattern-get-finish)
     pub fn getFinish(self: *RasterSourcePattern) RasterSourcePattern.FinishFn {
-        return cairo_raster_source_pattern_get_finish(self);
+        return c.cairo_raster_source_pattern_get_finish(self);
     }
 
     /// `cairo.RasterSourcePattern.AcquireFn` is the type of function which is
@@ -1440,54 +1441,3 @@ pub const ColorStop = struct {
     blue: f64,
     alpha: f64,
 };
-
-extern fn cairo_pattern_add_color_stop_rgb(pattern: ?*anyopaque, offset: f64, red: f64, green: f64, blue: f64) void;
-extern fn cairo_pattern_add_color_stop_rgba(pattern: ?*anyopaque, offset: f64, red: f64, green: f64, blue: f64, alpha: f64) void;
-extern fn cairo_pattern_get_color_stop_count(pattern: ?*anyopaque, count: [*c]c_int) Status;
-extern fn cairo_pattern_get_color_stop_rgba(pattern: ?*anyopaque, index: c_int, offset: [*c]f64, red: [*c]f64, green: [*c]f64, blue: [*c]f64, alpha: [*c]f64) Status;
-extern fn cairo_pattern_create_rgb(red: f64, green: f64, blue: f64) ?*SolidPattern;
-extern fn cairo_pattern_create_rgba(red: f64, green: f64, blue: f64, alpha: f64) ?*SolidPattern;
-extern fn cairo_pattern_get_rgba(pattern: ?*SolidPattern, red: [*c]f64, green: [*c]f64, blue: [*c]f64, alpha: [*c]f64) Status;
-extern fn cairo_pattern_create_for_surface(surface: ?*Surface) ?*SurfacePattern;
-extern fn cairo_pattern_get_surface(pattern: ?*SurfacePattern, surface: [*c]?*Surface) Status;
-extern fn cairo_pattern_create_linear(x0: f64, y0: f64, x1: f64, y1: f64) ?*LinearGradientPattern;
-extern fn cairo_pattern_get_linear_points(pattern: ?*LinearGradientPattern, x0: [*c]f64, y0: [*c]f64, x1: [*c]f64, y1: [*c]f64) Status;
-extern fn cairo_pattern_create_radial(cx0: f64, cy0: f64, radius0: f64, cx1: f64, cy1: f64, radius1: f64) ?*RadialGradientPattern;
-extern fn cairo_pattern_get_radial_circles(pattern: ?*RadialGradientPattern, x0: [*c]f64, y0: [*c]f64, r0: [*c]f64, x1: [*c]f64, y1: [*c]f64, r1: [*c]f64) Status;
-extern fn cairo_pattern_create_mesh() ?*MeshPattern;
-extern fn cairo_mesh_pattern_begin_patch(pattern: ?*MeshPattern) void;
-extern fn cairo_mesh_pattern_end_patch(pattern: ?*MeshPattern) void;
-extern fn cairo_mesh_pattern_move_to(pattern: ?*MeshPattern, x: f64, y: f64) void;
-extern fn cairo_mesh_pattern_line_to(pattern: ?*MeshPattern, x: f64, y: f64) void;
-extern fn cairo_mesh_pattern_curve_to(pattern: ?*MeshPattern, x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64) void;
-extern fn cairo_mesh_pattern_set_control_point(pattern: ?*MeshPattern, point_num: c_uint, x: f64, y: f64) void;
-extern fn cairo_mesh_pattern_set_corner_color_rgb(pattern: ?*MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64) void;
-extern fn cairo_mesh_pattern_set_corner_color_rgba(pattern: ?*MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64, alpha: f64) void;
-extern fn cairo_mesh_pattern_get_patch_count(pattern: ?*MeshPattern, count: [*c]c_uint) Status;
-extern fn cairo_mesh_pattern_get_path(pattern: ?*MeshPattern, patch_num: c_uint) [*c]Path;
-extern fn cairo_mesh_pattern_get_control_point(pattern: ?*MeshPattern, patch_num: c_uint, point_num: c_uint, x: [*c]f64, y: [*c]f64) Status;
-extern fn cairo_mesh_pattern_get_corner_color_rgba(pattern: ?*MeshPattern, patch_num: c_uint, corner_num: c_uint, red: [*c]f64, green: [*c]f64, blue: [*c]f64, alpha: [*c]f64) Status;
-extern fn cairo_pattern_reference(pattern: ?*anyopaque) ?*anyopaque;
-extern fn cairo_pattern_destroy(pattern: ?*anyopaque) void;
-extern fn cairo_pattern_status(pattern: ?*anyopaque) Status;
-extern fn cairo_pattern_set_extend(pattern: ?*anyopaque, extend: Pattern.Extend) void;
-extern fn cairo_pattern_get_extend(pattern: ?*anyopaque) Pattern.Extend;
-extern fn cairo_pattern_set_filter(pattern: ?*anyopaque, filter: Pattern.Filter) void;
-extern fn cairo_pattern_get_filter(pattern: ?*anyopaque) Pattern.Filter;
-extern fn cairo_pattern_set_matrix(pattern: ?*anyopaque, matrix: [*c]const Matrix) void;
-extern fn cairo_pattern_get_matrix(pattern: ?*anyopaque, matrix: [*c]Matrix) void;
-extern fn cairo_pattern_get_type(pattern: ?*anyopaque) Pattern.Type;
-extern fn cairo_pattern_get_reference_count(pattern: ?*anyopaque) c_uint;
-extern fn cairo_pattern_set_user_data(pattern: ?*anyopaque, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
-extern fn cairo_pattern_get_user_data(pattern: ?*anyopaque, key: [*c]const UserDataKey) ?*anyopaque;
-extern fn cairo_pattern_create_raster_source(user_data: ?*anyopaque, content: Content, width: c_int, height: c_int) ?*Pattern;
-extern fn cairo_raster_source_pattern_set_callback_data(pattern: ?*RasterSourcePattern, data: ?*anyopaque) void;
-extern fn cairo_raster_source_pattern_get_callback_data(pattern: ?*RasterSourcePattern) ?*anyopaque;
-extern fn cairo_raster_source_pattern_set_acquire(pattern: ?*RasterSourcePattern, acquire: RasterSourcePattern.AcquireFn, release: RasterSourcePattern.ReleaseFn) void;
-extern fn cairo_raster_source_pattern_get_acquire(pattern: ?*RasterSourcePattern, acquire: [*c]RasterSourcePattern.AcquireFn, release: [*c]RasterSourcePattern.ReleaseFn) void;
-extern fn cairo_raster_source_pattern_set_snapshot(pattern: ?*RasterSourcePattern, snapshot: RasterSourcePattern.SnapshotFn) void;
-extern fn cairo_raster_source_pattern_get_snapshot(pattern: ?*RasterSourcePattern) RasterSourcePattern.SnapshotFn;
-extern fn cairo_raster_source_pattern_set_copy(pattern: ?*RasterSourcePattern, copy: RasterSourcePattern.CopyFn) void;
-extern fn cairo_raster_source_pattern_get_copy(pattern: ?*RasterSourcePattern) RasterSourcePattern.CopyFn;
-extern fn cairo_raster_source_pattern_set_finish(pattern: ?*RasterSourcePattern, finish: RasterSourcePattern.FinishFn) void;
-extern fn cairo_raster_source_pattern_get_finish(pattern: ?*RasterSourcePattern) RasterSourcePattern.FinishFn;

@@ -1,33 +1,30 @@
 const std = @import("std");
 
-const safety = @import("../safety.zig");
-const surfaces = @import("../surface.zig");
-const enums = @import("../enums.zig");
-const patterns = @import("pattern.zig");
-const context = @import("../context.zig");
-const util = @import("../util.zig");
+const cairo = @import("../cairo.zig");
+const safety = cairo.safety;
+const c = cairo.c;
 
-const Context = context.Context;
-const RectangleList = context.RectangleList;
+const Context = cairo.Context;
+const RectangleList = cairo.RectangleList;
 
-const Surface = surfaces.Surface;
+const Surface = cairo.Surface;
 
-const Antialias = enums.Antialias;
-const Content = enums.Content;
+const Antialias = cairo.Antialias;
+const Content = cairo.Content;
 const FillRule = Context.FillRule;
 const LineCap = Context.LineCap;
 const LineJoin = Context.LineJoin;
 const Operator = Context.Operator;
-const Status = enums.Status;
-const CairoError = enums.CairoError;
+const Status = cairo.Status;
+const CairoError = cairo.CairoError;
 
-const Pattern = patterns.Pattern;
-const SurfacePattern = patterns.SurfacePattern;
+const Pattern = cairo.Pattern;
+const SurfacePattern = cairo.SurfacePattern;
 
-const UserDataKey = util.UserDataKey;
-const DestroyFn = util.DestroyFn;
-const Point = util.Point;
-const ExtentsRectangle = util.ExtentsRectangle;
+const UserDataKey = cairo.UserDataKey;
+const DestroyFn = cairo.DestroyFn;
+const Point = cairo.Point;
+const ExtentsRectangle = cairo.ExtentsRectangle;
 
 pub const Mixin = struct {
     /// Creates a new `cairo.Context` with all graphics state parameters set to
@@ -57,7 +54,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-create)
     pub fn create(target: *Surface) CairoError!*Context {
-        const ctx = cairo_create(target).?;
+        const ctx = c.cairo_create(target).?;
         try ctx.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), ctx);
         return ctx;
@@ -76,7 +73,7 @@ pub const Mixin = struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-reference)
     pub fn reference(self: *Context) *Context {
         if (safety.tracing) safety.reference(@returnAddress(), self);
-        return cairo_reference(self).?;
+        return c.cairo_reference(self).?;
     }
 
     /// Decreases the reference count on context by one. If the result is zero,
@@ -85,7 +82,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-destroy)
     pub fn destroy(self: *Context) void {
-        cairo_destroy(self);
+        c.cairo_destroy(self);
         if (safety.tracing) safety.destroy(self);
     }
 
@@ -93,7 +90,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-status)
     pub fn status(self: *Context) Status {
-        return cairo_status(self);
+        return c.cairo_status(self);
     }
 
     /// Makes a copy of the current state of `self` and saves it on an internal
@@ -109,7 +106,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-save)
     pub fn save(self: *Context) void {
-        cairo_save(self);
+        c.cairo_save(self);
     }
 
     /// Restores `self` to the state saved by a preceding call to `ctx.save()`
@@ -117,7 +114,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-restore)
     pub fn restore(self: *Context) void {
-        cairo_restore(self);
+        c.cairo_restore(self);
     }
 
     /// Gets the target surface for the cairo context as passed to
@@ -131,7 +128,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-target)
     pub fn getTarget(self: *Context) CairoError!*Surface {
-        var target = cairo_get_target(self).?;
+        var target = c.cairo_get_target(self).?;
         try target.status().toErr();
         return target;
     }
@@ -174,7 +171,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-push-group)
     pub fn pushGroup(self: *Context) void {
-        cairo_push_group(self);
+        c.cairo_push_group(self);
     }
 
     /// Temporarily redirects drawing to an intermediate surface known as a
@@ -194,7 +191,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-push-group-with-content)
     pub fn pushGroupWithContent(self: *Context, content: Content) void {
-        cairo_push_group_with_content(self, content);
+        c.cairo_push_group_with_content(self, content);
     }
 
     /// Terminates the redirection begun by a call to `ctx.pushGroup()` or
@@ -220,7 +217,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-pop-group)
     pub fn popGroup(self: *Context) *SurfacePattern {
-        const pattern = cairo_pop_group(self).?;
+        const pattern = c.cairo_pop_group(self).?;
         if (safety.tracing) safety.markForLeakDetection(@returnAddress(), pattern) catch |e| std.debug.panic("{any}", .{e});
         return pattern;
     }
@@ -245,7 +242,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-pop-group-to-source)
     pub fn popGroupToSource(self: *Context) void {
-        cairo_pop_group_to_source(self);
+        c.cairo_pop_group_to_source(self);
     }
 
     /// Gets the current destination surface for the context. This is either
@@ -261,7 +258,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-group-target)
     pub fn getGroupTarget(self: *Context) CairoError!*Surface {
-        const surface = cairo_get_group_target(self).?;
+        const surface = c.cairo_get_group_target(self).?;
         try surface.status().toErr();
         return surface;
     }
@@ -283,7 +280,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-source-rgb)
     pub fn setSourceRGB(self: *Context, red: f64, green: f64, blue: f64) void {
-        cairo_set_source_rgb(self, red, green, blue);
+        c.cairo_set_source_rgb(self, red, green, blue);
     }
 
     /// Sets the source pattern within `self` to a translucent color. This
@@ -305,7 +302,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-source-rgba)
     pub fn setSourceRGBA(self: *Context, red: f64, green: f64, blue: f64, alpha: f64) void {
-        cairo_set_source_rgba(self, red, green, blue, alpha);
+        c.cairo_set_source_rgba(self, red, green, blue, alpha);
     }
 
     /// Sets the source pattern within `self` to `source`. This pattern will
@@ -313,7 +310,7 @@ pub const Mixin = struct {
     /// pattern is set.
     ///
     /// Note: The pattern's transformation matrix will be locked to the user
-    /// space in effect at the time of cairo_set_source(). This means that
+    /// space in effect at the time of c.cairo_set_source(). This means that
     /// further modifications of the current transformation matrix will not
     /// affect the source pattern. See `cairo.Pattern.setMatrix()`.
     ///
@@ -327,7 +324,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-source)
     pub fn setSource(self: *Context, source: *Pattern) void {
-        cairo_set_source(self, source);
+        c.cairo_set_source(self, source);
     }
 
     /// This is a convenience function for creating a pattern from `surface`
@@ -348,7 +345,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-source-surface)
     pub fn setSourceSurface(self: *Context, surface: *Surface, x: f64, y: f64) void {
-        cairo_set_source_surface(self, surface, x, y);
+        c.cairo_set_source_surface(self, surface, x, y);
     }
 
     /// Gets the current source pattern for `self`.
@@ -360,7 +357,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-source)
     pub fn getSource(self: *Context) *Pattern {
-        return cairo_get_source(self).?;
+        return c.cairo_get_source(self).?;
     }
 
     /// Set the antialiasing mode of the rasterizer used for drawing shapes.
@@ -369,7 +366,7 @@ pub const Mixin = struct {
     /// `.Subpixel` when drawing shapes.
     ///
     /// Note that this option does not affect text rendering, instead see
-    /// cairo_font_options_set_antialias().
+    /// c.cairo_font_options_set_antialias().
     ///
     /// **Parameters**
     /// - `antialias`: the new antialiasing mode
@@ -377,7 +374,7 @@ pub const Mixin = struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-antialias)
     pub fn setAntialias(self: *Context, antialias: Antialias) void {
         // TODO: fix desc
-        cairo_set_antialias(self, antialias);
+        c.cairo_set_antialias(self, antialias);
     }
 
     /// Gets the current shape antialiasing mode, as set by
@@ -389,7 +386,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-antialias)
     pub fn getAntialias(self: *Context) Antialias {
-        return cairo_get_antialias(self);
+        return c.cairo_get_antialias(self);
     }
 
     /// Sets the dash pattern to be used by `ctx.stroke()`. A dash pattern is
@@ -424,7 +421,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-dash)
     pub fn setDash(self: *Context, dashes: []const f64, offset: f64) void {
-        cairo_set_dash(self, dashes.ptr, @intCast(dashes.len), offset);
+        c.cairo_set_dash(self, dashes.ptr, @intCast(dashes.len), offset);
     }
 
     /// This function returns the length of the dash array in `self` (0 if
@@ -438,7 +435,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-dash-count)
     pub fn getDashCount(self: *Context) usize {
-        return @intCast(cairo_get_dash_count(self));
+        return @intCast(c.cairo_get_dash_count(self));
     }
 
     /// Gets the current dash array. If not `null`, dashes should be big enough
@@ -451,7 +448,7 @@ pub const Mixin = struct {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-dash)
     pub fn getDash(self: *Context, dashes: ?[*]f64, offset: ?*f64) void {
         // TODO: think about return values
-        cairo_get_dash(self, dashes, offset);
+        c.cairo_get_dash(self, dashes, offset);
     }
 
     /// Set the current fill rule within the cairo context. The fill rule is
@@ -467,7 +464,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-fill-rule)
     pub fn setFillRule(self: *Context, fillRule: FillRule) void {
-        cairo_set_fill_rule(self, fillRule);
+        c.cairo_set_fill_rule(self, fillRule);
     }
 
     /// Gets the current fill rule, as set by `ctx.setFillRule()`.
@@ -478,7 +475,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-fill-rule)
     pub fn getFillRule(self: *Context) FillRule {
-        return cairo_get_fill_rule(self);
+        return c.cairo_get_fill_rule(self);
     }
 
     /// Sets the current line cap style within the cairo context. See
@@ -497,7 +494,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-line-cap)
     pub fn setLineCap(self: *Context, lineCap: LineCap) void {
-        cairo_set_line_cap(self, lineCap);
+        c.cairo_set_line_cap(self, lineCap);
     }
 
     /// Gets the current line cap style, as set by `ctx.setLineCap()`.
@@ -508,7 +505,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-line-cap)
     pub fn getLineCap(self: *Context) LineCap {
-        return cairo_get_line_cap(self);
+        return c.cairo_get_line_cap(self);
     }
 
     /// Sets the current line join style within the cairo context. See
@@ -527,7 +524,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-line-join)
     pub fn setLineJoin(self: *Context, lineJoin: LineJoin) void {
-        cairo_set_line_join(self, lineJoin);
+        c.cairo_set_line_join(self, lineJoin);
     }
 
     /// Gets the current line join style, as set by `ctx.setLineJoin()`.
@@ -538,7 +535,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-line-join)
     pub fn getLineJoin(self: *Context) LineJoin {
-        return cairo_get_line_join(self);
+        return c.cairo_get_line_join(self);
     }
 
     /// Sets the current line width within the cairo context. The line width
@@ -566,7 +563,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-line-width)
     pub fn setLineWidth(self: *Context, lineWidth: f64) void {
-        cairo_set_line_width(self, lineWidth);
+        c.cairo_set_line_width(self, lineWidth);
     }
 
     /// This function returns the current line width value exactly as set by
@@ -580,7 +577,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-line-width)
     pub fn getLineWidth(self: *Context) f64 {
-        return cairo_get_line_width(self);
+        return c.cairo_get_line_width(self);
     }
 
     /// Sets the current miter limit within the cairo context.
@@ -609,7 +606,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-miter-limit)
     pub fn setMiterLimit(self: *Context, limit: f64) void {
-        cairo_set_miter_limit(self, limit);
+        c.cairo_set_miter_limit(self, limit);
     }
 
     /// Gets the current miter limit, as set by `ctx.setMiterLimit()`.
@@ -620,7 +617,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-miter-limit)
     pub fn getMiterLimit(self: *Context) f64 {
-        return cairo_get_miter_limit(self);
+        return c.cairo_get_miter_limit(self);
     }
 
     /// Sets the compositing operator to be used for all drawing operations.
@@ -634,7 +631,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-operator)
     pub fn setOperator(self: *Context, op: Operator) void {
-        cairo_set_operator(self, op);
+        c.cairo_set_operator(self, op);
     }
 
     /// Gets the current compositing operator for a cairo context.
@@ -645,7 +642,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-operator)
     pub fn getOperator(self: *Context) Operator {
-        return cairo_get_operator(self);
+        return c.cairo_get_operator(self);
     }
 
     /// Sets the tolerance used when converting paths into trapezoids. Curved
@@ -663,7 +660,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-tolerance)
     pub fn setTolerance(self: *Context, tolerance: f64) void {
-        cairo_set_tolerance(self, tolerance);
+        c.cairo_set_tolerance(self, tolerance);
     }
 
     /// Gets the current tolerance value, as set by `ctx.setTolerance()`.
@@ -674,7 +671,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-tolerance)
     pub fn getTolerance(self: *Context) f64 {
-        return cairo_get_tolerance(self);
+        return c.cairo_get_tolerance(self);
     }
 
     /// Establishes a new clip region by intersecting the current clip region
@@ -696,7 +693,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-clip)
     pub fn clip(self: *Context) void {
-        cairo_clip(self);
+        c.cairo_clip(self);
     }
 
     /// Establishes a new clip region by intersecting the current clip region
@@ -719,7 +716,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-clip-preserve)
     pub fn clipPreserve(self: *Context) void {
-        cairo_clip_preserve(self);
+        c.cairo_clip_preserve(self);
     }
 
     /// Computes a bounding box in user coordinates covering the area inside
@@ -730,7 +727,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-clip-extents)
     pub fn clipExtents(self: *Context, extents: *ExtentsRectangle) void {
-        cairo_clip_extents(self, &extents.x1, &extents.y1, &extents.x2, &extents.y2);
+        c.cairo_clip_extents(self, &extents.x1, &extents.y1, &extents.x2, &extents.y2);
     }
 
     /// Tests whether the given point is inside the area that would be visible
@@ -748,7 +745,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-in-clip)
     pub fn inClip(self: *Context, point: Point) bool {
-        return cairo_in_clip(self, point.x, point.y) != 0;
+        return c.cairo_in_clip(self, point.x, point.y) != 0;
     }
 
     /// Reset the current clip region to its original, unrestricted state. That
@@ -765,7 +762,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-reset-clip)
     pub fn resetClip(self: *Context) void {
-        cairo_reset_clip(self);
+        c.cairo_reset_clip(self);
     }
 
     /// Gets the current clip region as a list of rectangles in user
@@ -783,7 +780,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-copy-clip-rectangle-list)
     pub fn copyClipRectangleList(self: *Context) CairoError!*RectangleList {
-        const list: *RectangleList = cairo_copy_clip_rectangle_list(self).?;
+        const list: *RectangleList = c.cairo_copy_clip_rectangle_list(self).?;
         try list.status.toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), list);
         return list;
@@ -796,7 +793,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-fill)
     pub fn fill(self: *Context) void {
-        cairo_fill(self);
+        c.cairo_fill(self);
     }
 
     /// A drawing operator that fills the current path according to the current
@@ -808,7 +805,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-fill-preserve)
     pub fn fillPreserve(self: *Context) void {
-        cairo_fill_preserve(self);
+        c.cairo_fill_preserve(self);
     }
 
     /// Computes a bounding box in user coordinates covering the area that
@@ -834,7 +831,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-fill-extents)
     pub fn fillExtents(self: *Context, extents: *ExtentsRectangle) void {
-        cairo_fill_extents(self, &extents.x1, &extents.y1, &extents.x2, &extents.y2);
+        c.cairo_fill_extents(self, &extents.x1, &extents.y1, &extents.x2, &extents.y2);
     }
 
     /// Tests whether the given point is inside the area that would be affected
@@ -853,7 +850,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-in-fill)
     pub fn inFill(self: *Context, point: Point) bool {
-        return cairo_in_fill(self, point.x, point.y) != 0;
+        return c.cairo_in_fill(self, point.x, point.y) != 0;
     }
 
     /// A drawing operator that paints the current source using the alpha
@@ -865,7 +862,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-mask)
     pub fn mask(self: *Context, pattern: *Pattern) void {
-        cairo_mask(self, pattern);
+        c.cairo_mask(self, pattern);
     }
 
     /// A drawing operator that paints the current source using the alpha
@@ -879,7 +876,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-mask-surface)
     pub fn maskSurface(self: *Context, surface: *Surface, surfaceX: f64, surfaceY: f64) void {
-        cairo_mask_surface(self, surface, surfaceX, surfaceY);
+        c.cairo_mask_surface(self, surface, surfaceX, surfaceY);
     }
 
     /// A drawing operator that paints the current source everywhere within the
@@ -887,12 +884,12 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-paint)
     pub fn paint(self: *Context) void {
-        cairo_paint(self);
+        c.cairo_paint(self);
     }
 
     /// A drawing operator that paints the current source everywhere within the
     /// current clip region using a mask of constant alpha value `alpha`. The
-    /// effect is similar to cairo_paint(), but the drawing is faded out using
+    /// effect is similar to c.cairo_paint(), but the drawing is faded out using
     /// the alpha value.
     ///
     /// **Parameters**
@@ -900,7 +897,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-paint-with-alpha)
     pub fn paintWithAlpha(self: *Context, alpha: f64) void {
-        cairo_paint_with_alpha(self, alpha);
+        c.cairo_paint_with_alpha(self, alpha);
     }
 
     /// A drawing operator that strokes the current path according to the
@@ -930,7 +927,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-stroke)
     pub fn stroke(self: *Context) void {
-        cairo_stroke(self);
+        c.cairo_stroke(self);
     }
 
     /// A drawing operator that strokes the current path according to the
@@ -944,7 +941,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-stroke-preserve)
     pub fn strokePreserve(self: *Context) void {
-        cairo_stroke_preserve(self);
+        c.cairo_stroke_preserve(self);
     }
 
     /// Computes a bounding box in user coordinates covering the area that
@@ -972,7 +969,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-stroke-extents)
     pub fn cairoStrokeExtents(self: *Context, extents: *ExtentsRectangle) void {
-        cairo_stroke_extents(self, &extents.x1, &extents.y1, &extents.x2, &extents.y2);
+        c.cairo_stroke_extents(self, &extents.x1, &extents.y1, &extents.x2, &extents.y2);
     }
 
     /// Tests whether the given point is inside the area that would be affected
@@ -988,7 +985,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-in-stroke)
     pub fn inStroke(self: *Context, point: Point) bool {
-        return cairo_in_stroke(self, point.x, point.y) != 0;
+        return c.cairo_in_stroke(self, point.x, point.y) != 0;
     }
 
     /// Emits the current page for backends that support multiple pages, but
@@ -1001,7 +998,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-copy-page)
     pub fn copyPage(self: *Context) void {
-        cairo_copy_page(self);
+        c.cairo_copy_page(self);
     }
 
     /// Emits and clears the current page for backends that support multiple
@@ -1012,7 +1009,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-show-page)
     pub fn showPage(self: *Context) void {
-        cairo_show_page(self);
+        c.cairo_show_page(self);
     }
 
     /// Returns the current reference count of `self`.
@@ -1024,7 +1021,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-reference-count)
     pub fn getReferenceCount(self: *Context) usize {
-        return @intCast(cairo_get_reference_count(self));
+        return @intCast(c.cairo_get_reference_count(self));
     }
 
     /// Attach user data to `self`. To remove user data from a surface, call
@@ -1044,7 +1041,7 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-user-data)
     pub fn setUserData(self: *Context, key: *const UserDataKey, userData: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
-        try cairo_set_user_data(self, key, userData, destroyFn).toErr();
+        try c.cairo_set_user_data(self, key, userData, destroyFn).toErr();
     }
 
     /// Return user data previously attached to `self` using the specified key.
@@ -1061,66 +1058,6 @@ pub const Mixin = struct {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-get-user-data)
     pub fn getUserData(self: *Context, key: *const UserDataKey) ?*anyopaque {
-        return cairo_get_user_data(self, key);
+        return c.cairo_get_user_data(self, key);
     }
 };
-
-extern fn cairo_create(target: ?*Surface) ?*Context;
-extern fn cairo_reference(cr: ?*Context) ?*Context;
-extern fn cairo_destroy(cr: ?*Context) void;
-extern fn cairo_status(cr: ?*Context) Status;
-extern fn cairo_save(cr: ?*Context) void;
-extern fn cairo_restore(cr: ?*Context) void;
-extern fn cairo_get_target(cr: ?*Context) ?*Surface;
-extern fn cairo_push_group(cr: ?*Context) void;
-extern fn cairo_push_group_with_content(cr: ?*Context, content: Content) void;
-extern fn cairo_pop_group(cr: ?*Context) ?*SurfacePattern;
-extern fn cairo_pop_group_to_source(cr: ?*Context) void;
-extern fn cairo_get_group_target(cr: ?*Context) ?*Surface;
-extern fn cairo_set_source_rgb(cr: ?*Context, red: f64, green: f64, blue: f64) void;
-extern fn cairo_set_source_rgba(cr: ?*Context, red: f64, green: f64, blue: f64, alpha: f64) void;
-extern fn cairo_set_source(cr: ?*Context, source: ?*Pattern) void;
-extern fn cairo_set_source_surface(cr: ?*Context, surface: ?*Surface, x: f64, y: f64) void;
-extern fn cairo_get_source(cr: ?*Context) ?*Pattern;
-extern fn cairo_set_antialias(cr: ?*Context, antialias: Antialias) void;
-extern fn cairo_get_antialias(cr: ?*Context) Antialias;
-extern fn cairo_set_dash(cr: ?*Context, dashes: [*c]const f64, num_dashes: c_int, offset: f64) void;
-extern fn cairo_get_dash_count(cr: ?*Context) c_int;
-extern fn cairo_get_dash(cr: ?*Context, dashes: [*c]f64, offset: [*c]f64) void;
-extern fn cairo_set_fill_rule(cr: ?*Context, fill_rule: FillRule) void;
-extern fn cairo_get_fill_rule(cr: ?*Context) FillRule;
-extern fn cairo_set_line_cap(cr: ?*Context, line_cap: LineCap) void;
-extern fn cairo_get_line_cap(cr: ?*Context) LineCap;
-extern fn cairo_set_line_join(cr: ?*Context, line_join: LineJoin) void;
-extern fn cairo_get_line_join(cr: ?*Context) LineJoin;
-extern fn cairo_set_line_width(cr: ?*Context, width: f64) void;
-extern fn cairo_get_line_width(cr: ?*Context) f64;
-extern fn cairo_set_miter_limit(cr: ?*Context, limit: f64) void;
-extern fn cairo_get_miter_limit(cr: ?*Context) f64;
-extern fn cairo_set_operator(cr: ?*Context, op: Operator) void;
-extern fn cairo_get_operator(cr: ?*Context) Operator;
-extern fn cairo_set_tolerance(cr: ?*Context, tolerance: f64) void;
-extern fn cairo_get_tolerance(cr: ?*Context) f64;
-extern fn cairo_clip(cr: ?*Context) void;
-extern fn cairo_clip_preserve(cr: ?*Context) void;
-extern fn cairo_clip_extents(cr: ?*Context, x1: [*c]f64, y1: [*c]f64, x2: [*c]f64, y2: [*c]f64) void;
-extern fn cairo_in_clip(cr: ?*Context, x: f64, y: f64) c_int;
-extern fn cairo_reset_clip(cr: ?*Context) void;
-extern fn cairo_copy_clip_rectangle_list(cr: ?*Context) [*c]RectangleList;
-extern fn cairo_fill(cr: ?*Context) void;
-extern fn cairo_fill_preserve(cr: ?*Context) void;
-extern fn cairo_fill_extents(cr: ?*Context, x1: [*c]f64, y1: [*c]f64, x2: [*c]f64, y2: [*c]f64) void;
-extern fn cairo_in_fill(cr: ?*Context, x: f64, y: f64) c_int;
-extern fn cairo_mask(cr: ?*Context, pattern: ?*Pattern) void;
-extern fn cairo_mask_surface(cr: ?*Context, surface: ?*Surface, surface_x: f64, surface_y: f64) void;
-extern fn cairo_paint(cr: ?*Context) void;
-extern fn cairo_paint_with_alpha(cr: ?*Context, alpha: f64) void;
-extern fn cairo_stroke(cr: ?*Context) void;
-extern fn cairo_stroke_preserve(cr: ?*Context) void;
-extern fn cairo_stroke_extents(cr: ?*Context, x1: [*c]f64, y1: [*c]f64, x2: [*c]f64, y2: [*c]f64) void;
-extern fn cairo_in_stroke(cr: ?*Context, x: f64, y: f64) c_int;
-extern fn cairo_copy_page(cr: ?*Context) void;
-extern fn cairo_show_page(cr: ?*Context) void;
-extern fn cairo_get_reference_count(cr: ?*Context) c_uint;
-extern fn cairo_set_user_data(cr: ?*Context, key: [*c]const UserDataKey, user_data: ?*anyopaque, destroy: DestroyFn) Status;
-extern fn cairo_get_user_data(cr: ?*Context, key: [*c]const UserDataKey) ?*anyopaque;
