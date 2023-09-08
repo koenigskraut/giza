@@ -194,7 +194,7 @@ pub const Surface = opaque {
         pub fn strideForWidth(self: Format, width: c_int) !u18 {
             // TODO: check example, rework it? work on createForData func?
             const stride = switch (self) {
-                .ARGB32, .RGB24, .A8, .A1, .RGB16_565, .RGB30 => cairo_format_stride_for_width(@intFromEnum(self), width),
+                .ARGB32, .RGB24, .A8, .A1, .RGB16_565, .RGB30 => cairo_format_stride_for_width(self, width),
                 else => return error.InvalidFormat,
             };
             if (stride == -1) return error.WidthTooLarge;
