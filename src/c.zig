@@ -71,6 +71,18 @@ pub extern fn cairo_svg_surface_restrict_to_version(surface: ?*cairo.SvgSurface,
 pub extern fn cairo_svg_get_versions(versions: [*c][*c]const cairo.SvgVersion, num_versions: [*c]c_int) void;
 pub extern fn cairo_svg_version_to_string(version: cairo.SvgVersion) [*c]const u8;
 
+// PdfSurface
+pub extern fn cairo_pdf_surface_create(filename: [*c]const u8, width_in_points: f64, height_in_points: f64) ?*cairo.PdfSurface;
+pub extern fn cairo_pdf_surface_create_for_stream(write_func: cairo.WriteFn, closure: ?*anyopaque, width_in_points: f64, height_in_points: f64) ?*cairo.PdfSurface;
+pub extern fn cairo_pdf_surface_restrict_to_version(surface: ?*cairo.PdfSurface, version: cairo.PdfSurface.PdfVersion) void;
+pub extern fn cairo_pdf_get_versions(versions: [*c][*c]const cairo.PdfSurface.PdfVersion, num_versions: [*c]c_int) void;
+pub extern fn cairo_pdf_version_to_string(version: cairo.PdfSurface.PdfVersion) [*c]const u8;
+pub extern fn cairo_pdf_surface_set_size(surface: ?*cairo.PdfSurface, width_in_points: f64, height_in_points: f64) void;
+pub extern fn cairo_pdf_surface_add_outline(surface: ?*cairo.PdfSurface, parent_id: c_int, utf8: [*c]const u8, link_attribs: [*c]const u8, flags: cairo.PdfSurface.OutlineFlags) c_int;
+pub extern fn cairo_pdf_surface_set_metadata(surface: ?*cairo.PdfSurface, metadata: cairo.PdfSurface.Metadata, utf8: [*c]const u8) void;
+pub extern fn cairo_pdf_surface_set_page_label(surface: ?*cairo.PdfSurface, utf8: [*c]const u8) void;
+pub extern fn cairo_pdf_surface_set_thumbnail_size(surface: ?*cairo.PdfSurface, width: c_int, height: c_int) void;
+
 // Context basic
 pub extern fn cairo_rectangle_list_destroy(rectangle_list: [*c]cairo.RectangleList) void;
 pub extern fn cairo_create(target: ?*cairo.Surface) ?*cairo.Context;
