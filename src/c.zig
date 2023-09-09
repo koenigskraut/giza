@@ -65,11 +65,11 @@ pub extern fn cairo_script_write_comment(script: ?*cairo.Script, comment: [*c]co
 // SvgSurface
 pub extern fn cairo_svg_surface_create(filename: [*c]const u8, width_in_points: f64, height_in_points: f64) ?*cairo.SvgSurface;
 pub extern fn cairo_svg_surface_create_for_stream(write_func: cairo.WriteFn, closure: ?*const anyopaque, width_in_points: f64, height_in_points: f64) ?*cairo.SvgSurface;
-pub extern fn cairo_svg_surface_get_document_unit(surface: ?*cairo.SvgSurface) cairo.SvgUnit;
-pub extern fn cairo_svg_surface_set_document_unit(surface: ?*cairo.SvgSurface, cairo.SvgUnit) void;
-pub extern fn cairo_svg_surface_restrict_to_version(surface: ?*cairo.SvgSurface, version: cairo.SvgVersion) void;
-pub extern fn cairo_svg_get_versions(versions: [*c][*c]const cairo.SvgVersion, num_versions: [*c]c_int) void;
-pub extern fn cairo_svg_version_to_string(version: cairo.SvgVersion) [*c]const u8;
+pub extern fn cairo_svg_surface_get_document_unit(surface: ?*cairo.SvgSurface) cairo.SvgSurface.SvgUnit;
+pub extern fn cairo_svg_surface_set_document_unit(surface: ?*cairo.SvgSurface, cairo.SvgSurface.SvgUnit) void;
+pub extern fn cairo_svg_surface_restrict_to_version(surface: ?*cairo.SvgSurface, version: cairo.SvgSurface.SvgVersion) void;
+pub extern fn cairo_svg_get_versions(versions: [*c][*c]const cairo.SvgSurface.SvgVersion, num_versions: [*c]c_int) void;
+pub extern fn cairo_svg_version_to_string(version: cairo.SvgSurface.SvgVersion) [*c]const u8;
 
 // PdfSurface
 pub extern fn cairo_pdf_surface_create(filename: [*c]const u8, width_in_points: f64, height_in_points: f64) ?*cairo.PdfSurface;
