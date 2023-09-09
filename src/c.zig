@@ -254,10 +254,10 @@ pub extern fn cairo_show_text_glyphs(cr: ?*cairo.Context, utf8: [*c]const u8, ut
 pub extern fn cairo_font_extents(cr: ?*cairo.Context, extents: [*c]cairo.FontExtents) void;
 pub extern fn cairo_text_extents(cr: ?*cairo.Context, utf8: [*c]const u8, extents: [*c]cairo.TextExtents) void;
 pub extern fn cairo_glyph_extents(cr: ?*cairo.Context, glyphs: [*c]const cairo.Glyph, num_glyphs: c_int, extents: [*c]cairo.TextExtents) void;
-// pub extern fn cairo_toy_font_face_create(family: [*c]const u8, slant: cairo.FontFace.FontSlant, weight: cairo.FontFace.FontWeight) ?*cairo_font_face_t;
-// pub extern fn cairo_toy_font_face_get_family(font_face: ?*cairo_font_face_t) [*c]const u8;
-// pub extern fn cairo_toy_font_face_get_slant(font_face: ?*cairo_font_face_t) cairo_font_slant_t;
-// pub extern fn cairo_toy_font_face_get_weight(font_face: ?*cairo_font_face_t) cairo_font_weight_t;
+pub extern fn cairo_toy_font_face_create(family: [*c]const u8, slant: cairo.FontFace.FontSlant, weight: cairo.FontFace.FontWeight) ?*cairo.ToyFontFace;
+pub extern fn cairo_toy_font_face_get_family(font_face: ?*cairo.ToyFontFace) [*c]const u8;
+pub extern fn cairo_toy_font_face_get_slant(font_face: ?*cairo.ToyFontFace) cairo.FontFace.FontSlant;
+pub extern fn cairo_toy_font_face_get_weight(font_face: ?*cairo.ToyFontFace) cairo.FontFace.FontWeight;
 pub extern fn cairo_glyph_allocate(num_glyphs: c_int) [*c]cairo.Glyph;
 pub extern fn cairo_glyph_free(glyphs: [*c]cairo.Glyph) void;
 pub extern fn cairo_text_cluster_allocate(num_clusters: c_int) [*c]cairo.TextCluster;
@@ -297,13 +297,13 @@ pub extern fn cairo_device_observer_print(device: ?*cairo.Device, write_func: ca
 pub extern fn cairo_device_observer_stroke_elapsed(device: ?*cairo.Device) f64;
 
 // Font Face
-pub extern fn cairo_font_face_reference(font_face: ?*cairo.FontFace) ?*cairo.FontFace;
-pub extern fn cairo_font_face_destroy(font_face: ?*cairo.FontFace) void;
-pub extern fn cairo_font_face_status(font_face: ?*cairo.FontFace) cairo.Status;
-pub extern fn cairo_font_face_get_type(font_face: ?*cairo.FontFace) cairo.FontFace.Type;
-pub extern fn cairo_font_face_get_reference_count(font_face: ?*cairo.FontFace) c_uint;
-pub extern fn cairo_font_face_set_user_data(font_face: ?*cairo.FontFace, key: [*c]const cairo.UserDataKey, user_data: ?*anyopaque, destroy: cairo.DestroyFn) cairo.Status;
-pub extern fn cairo_font_face_get_user_data(font_face: ?*cairo.FontFace, key: [*c]const cairo.UserDataKey) ?*anyopaque;
+pub extern fn cairo_font_face_reference(font_face: ?*anyopaque) ?*anyopaque;
+pub extern fn cairo_font_face_destroy(font_face: ?*anyopaque) void;
+pub extern fn cairo_font_face_status(font_face: ?*anyopaque) cairo.Status;
+pub extern fn cairo_font_face_get_type(font_face: ?*anyopaque) cairo.FontFace.Type;
+pub extern fn cairo_font_face_get_reference_count(font_face: ?*anyopaque) c_uint;
+pub extern fn cairo_font_face_set_user_data(font_face: ?*anyopaque, key: [*c]const cairo.UserDataKey, user_data: ?*anyopaque, destroy: cairo.DestroyFn) cairo.Status;
+pub extern fn cairo_font_face_get_user_data(font_face: ?*anyopaque, key: [*c]const cairo.UserDataKey) ?*anyopaque;
 
 // Font Options
 pub extern fn cairo_font_options_create() ?*cairo.FontOptions;

@@ -17,7 +17,8 @@ pub const Region = @import("drawing/regions.zig").Region;
 const text = @import("drawing/text.zig");
 pub const Glyph = text.Glyph;
 pub const TextCluster = text.TextCluster;
-pub usingnamespace @import("fonts/font_face.zig");
+pub const FontFace = @import("fonts/font_face.zig").FontFace;
+pub const ToyFontFace = text.ToyFontFace;
 pub usingnamespace @import("fonts/font_options.zig");
 pub usingnamespace @import("fonts/scaled_font.zig");
 

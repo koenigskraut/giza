@@ -35,6 +35,8 @@ const TextExtents = cairo.TextExtents;
 const Context = cairo.Context;
 const Matrix = cairo.Matrix;
 
+const FontFaceMixin = @import("../fonts/font_face.zig").Base;
+
 pub const Mixin = struct {
     /// **Note**: The `ctx.selectFontFace()` function call is part of what the
     /// cairo designers call the "toy" text API. It is convenient for short
@@ -456,13 +458,69 @@ pub const TextCluster = extern struct {
     }
 };
 
-// // extern fn cairo_toy_font_face_create(family: [*c]const u8, slant: FontFace.FontSlant, weight: FontFace.FontWeight) ?*cairo_font_face_t;
-// // extern fn cairo_toy_font_face_get_family(font_face: ?*cairo_font_face_t) [*c]const u8;
-// // extern fn cairo_toy_font_face_get_slant(font_face: ?*cairo_font_face_t) cairo_font_slant_t;
-// // extern fn cairo_toy_font_face_get_weight(font_face: ?*cairo_font_face_t) cairo_font_weight_t;
+pub const ToyFontFace = opaque {
+    pub usingnamespace FontFaceMixin(@This());
+    /// Creates a font face from a triplet of family, slant, and weight. These
+    /// font faces are used in implementation of the the `cairo.Context` "toy"
+    /// font API.
+    ///
+    /// If `family` is the zero-length string "", the platform-specific default
+    /// family is assumed. The default family then can be queried using
+    /// `cairo.ToyFontFace.getFamily()`.
+    ///
+    /// The `cairo.Context.selectFontFace()` function uses this to create font
+    /// faces. See that function for limitations and other details of toy font
+    /// faces.
+    ///
+    /// **Parameters**
+    /// - `family`: a font family name, encoded in UTF-8
+    /// - `slant`: the slant for the font
+    /// - `weight`: the weight for the font
+    ///
+    /// **Returns**
+    ///
+    /// a newly created `cairo.ToyFontFace`.
+    ///
+    /// **NOTE**: The caller owns the created font face and should call
+    /// `font_face.destroy()` when done with it. You can use idiomatic Zig
+    /// pattern with `defer`:
+    /// ```zig
+    /// const font_face = cairo.ToyFontFace.create("", .Normal, .Normal);
+    /// defer font_face.destroy();
+    /// ```
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-create)
+    pub fn create(family: ?[:0]const u8, slant: FontFace.FontSlant, weight: FontFace.FontWeight) CairoError!*ToyFontFace {
+        const font_face = c.cairo_toy_font_face_create(family orelse null, slant, weight) orelse
+            return CairoError.NullPointer;
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), font_face);
+        try font_face.status().toErr();
+        return font_face;
+    }
 
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-create)
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-get-family)
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-get-slant)
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-get-weight)
-const _ = {};
+    /// Gets the familly name of a toy font.
+    ///
+    /// **Returns**
+    ///
+    /// the family name. This string is owned by the font face and remains
+    /// valid as long as the font face is alive (referenced).
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-get-family)
+    pub fn getFamily(self: *ToyFontFace) [:0]const u8 {
+        return std.mem.span(c.cairo_toy_font_face_get_family(self));
+    }
+
+    /// Gets the slant a toy font.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-get-slant)
+    pub fn getSlant(self: *ToyFontFace) FontFace.FontSlant {
+        return c.cairo_toy_font_face_get_slant(self);
+    }
+
+    /// Gets the weight a toy font.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-toy-font-face-get-weight)
+    pub fn getWeight(self: *ToyFontFace) FontFace.FontWeight {
+        return c.cairo_toy_font_face_get_weight(self);
+    }
+};
