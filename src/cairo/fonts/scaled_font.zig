@@ -3,7 +3,7 @@
 //! `cairo.ScaledFont` represents a realization of a font face at a particular
 //! size and transformation and a certain set of font options.
 
-const cairo = @import("../cairo.zig");
+const cairo = @import("../../cairo.zig");
 const safety = cairo.safety;
 const c = cairo.c;
 

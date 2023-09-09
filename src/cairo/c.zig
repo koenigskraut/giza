@@ -1,4 +1,4 @@
-const cairo = @import("cairo.zig");
+const cairo = @import("../cairo.zig");
 
 // base Surface
 pub extern fn cairo_format_stride_for_width(format: cairo.Surface.Format, width: c_int) c_int;

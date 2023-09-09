@@ -1,7 +1,7 @@
 const std = @import("std");
 const testing = std.testing;
 
-const cairo = @import("cairo.zig");
+const cairo = @import("../cairo.zig");
 const c = cairo.c;
 const Status = cairo.Status;
 

@@ -1,6 +1,6 @@
 //! Recording Surfaces — Records all drawing operations
 
-const cairo = @import("../cairo.zig");
+const cairo = @import("../../cairo.zig");
 const safety = cairo.safety;
 const c = cairo.c;
 

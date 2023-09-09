@@ -9,7 +9,7 @@
 const std = @import("std");
 const testing = std.testing;
 
-const cairo = @import("../cairo.zig");
+const cairo = @import("../../cairo.zig");
 const safety = cairo.safety;
 const c = cairo.c;
 

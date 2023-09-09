@@ -4,7 +4,7 @@
 //! matches the cairo drawing model. The scripts can be replayed using tools
 //! under the util/cairo-script directory, or with cairo-perf-trace.
 
-const cairo = @import("../cairo.zig");
+const cairo = @import("../../cairo.zig");
 const safety = cairo.safety;
 const c = cairo.c;
 
