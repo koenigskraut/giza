@@ -2,8 +2,8 @@
 
 |Objects|Number|Progress|
 |:-:|:-:|:-:|
-| Functions | 323/413 | ![](https://geps.dev/progress/78) |
-| Types and Values | 56/88 | ![](https://geps.dev/progress/64) |
+| Functions | 333/413 | ![](https://geps.dev/progress/81) |
+| Types and Values | 60/88 | ![](https://geps.dev/progress/68) |
 
 ✔️ — done  
 ❌ — not done  
@@ -524,8 +524,26 @@
 - ### [PDF Surfaces](https://www.cairographics.org/manual/cairo-PDF-Surfaces.html) — Rendering PDF documents
     ||||
     |:-:|:-:|:-:|
-    | Functions | 0/10 | ![](https://geps.dev/progress/0) |
-    | Types and Values | 0/5 | ![](https://geps.dev/progress/0) | 
+    | Functions | 10/10 | ![](https://geps.dev/progress/100) |
+    | Types and Values | 4/5 | ![](https://geps.dev/progress/80) | 
+
+    <details>
+    <summary>Functions</summary> 
+
+    | Name | Exists | Errors | Safety | Doc |
+    |:-|:-:|:-:|:-:|:-:|
+    | cairo_pdf_surface_create | ✔️ | ✔️ | ✔️ | ✔️ |
+    | cairo_pdf_surface_create_for_stream | ✔️ | ✔️ | ✔️ | ✔️ |
+    | cairo_pdf_surface_restrict_to_version | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_pdf_get_versions | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_pdf_version_to_string | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_pdf_surface_set_size | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_pdf_surface_add_outline | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_pdf_surface_set_metadata | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_pdf_surface_set_page_label | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_pdf_surface_set_thumbnail_size | ✔️ | ⬜️ | ⬜️ | ✔️ |
+
+    </summary>
 
 - ### [PNG Support](https://www.cairographics.org/manual/cairo-PNG-Support.html) — Reading and writing PNG images
     ||||

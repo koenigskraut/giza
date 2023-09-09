@@ -107,6 +107,6 @@ Every C object in **giza** is a valid Zig `opaque`/`extern struct`/`enum`, so yo
 
 ## Coverage and progress
 
-You can find coverage info [here](https://github.com/koenigskraut/giza/blob/master/coverage.md). Current progress is 78.2% regarding **cairo** functionality, __*but*__ it generally should work already. The only two parts that are missing are fonts and real devices (other than script one). If you only need cairo to draw some PNG or SVG files, that is already covered. There are other surfaces, devices and fonts coverage planned, but that would require using header files, which this wrapping has avoided so far, so we'll see.
+You can find coverage info [here](https://github.com/koenigskraut/giza/blob/master/coverage.md). Current progress is 80.6% regarding **cairo** functionality, __*but*__ it generally should work already. The only two parts that are missing are fonts and real devices (other than script one). If you only need cairo to write some PNG/PDF/SVG files, that is already covered. There are other surfaces, devices and fonts coverage planned, but that would require using header files, which this wrapping has avoided so far, so we'll see.
 
 Also pango support is planned, probably as part of this repo.
