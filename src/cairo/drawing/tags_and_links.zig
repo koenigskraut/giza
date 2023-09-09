@@ -66,7 +66,7 @@
 //!
 //! additional documentation is at https://www.cairographics.org/manual/cairo-Tags-and-Links.html
 
-const cairo = @import("../cairo.zig");
+const cairo = @import("../../cairo.zig");
 const c = cairo.c;
 const Context = cairo.Context;
 

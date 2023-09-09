@@ -7,7 +7,7 @@
 //!
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Transformations.html)
 
-const cairo = @import("../cairo.zig");
+const cairo = @import("../../cairo.zig");
 const c = cairo.c;
 
 const Context = cairo.Context;

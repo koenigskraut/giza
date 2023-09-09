@@ -9,7 +9,7 @@
 //! face can be accessed using `cairo.Context.getFontFace()`.
 // TODO: fix desc
 
-const cairo = @import("../cairo.zig");
+const cairo = @import("../../cairo.zig");
 const safety = cairo.safety;
 const c = cairo.c;
 
