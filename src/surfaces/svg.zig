@@ -1,8 +1,5 @@
 //! SVG Surfaces — Rendering SVG documents
 //!
-//! The SVG surface is used to render cairo graphics to SVG files and is a
-//! multi-page vector surface backend.
-//!
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html)
 
 const std = @import("std");
@@ -17,9 +14,75 @@ const Status = cairo.Status;
 const CairoError = cairo.CairoError;
 const WriteFn = cairo.WriteFn;
 
+/// The SVG surface is used to render cairo graphics to SVG files and is a
+/// multi-page vector surface backend.
+///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html)
 pub const SvgSurface = opaque {
     pub usingnamespace Mixin(SvgSurface);
+
+    /// `cairo.SvgSurface.SvgUnit` is used to describe the units valid for
+    /// coordinates and lengths in the SVG specification.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-unit-t)
+    pub const SvgUnit = enum(c_uint) {
+        /// User unit, a value in the current coordinate system. If used in the
+        /// root element for the initial coordinate systems it corresponds to
+        /// pixels.
+        user = 0,
+        /// The size of the element's font.
+        em,
+        /// The x-height of the element’s font
+        ex,
+        /// Pixels (1px = 1/96th of 1in).
+        px,
+        /// Inches (1in = 2.54cm = 96px).
+        in,
+        /// Centimeters (1cm = 96px/2.54).
+        cm,
+        /// Millimeters (1mm = 1/10th of 1cm).
+        mm,
+        /// Points (1pt = 1/72th of 1in).
+        pt,
+        /// Picas (1pc = 1/6th of 1in).
+        pc,
+        /// Percent, a value that is some fraction of another reference value.
+        percent,
+    };
+
+    /// Used to retrieve the list of supported SVG versions. See
+    /// `cairo.SvgSurface.restrictToVersion()`
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-get-versions)
+    pub fn getSvgVersions() []const SvgVersion {
+        var ptr: [*c]SvgVersion = undefined;
+        var numVersions: c_int = undefined;
+        c.cairo_svg_get_versions(@ptrCast(&ptr), &numVersions);
+        return ptr[0..@as(usize, @intCast(numVersions))];
+        // TODO
+    }
+
+    /// `cairo.SvgSurface.SvgVersion` is used to describe the version number of
+    /// the SVG specification that a generated SVG file will conform to.
+    ///
+    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-version-t)
+    pub const SvgVersion = enum(c_uint) {
+        @"1.1",
+        @"1.2",
+
+        /// Get the string representation of the given version id. See
+        /// `cairo.getSvgVersions()` for a way to get the list of valid
+        /// versions ids.
+        ///
+        /// **Zig binding's author here**, nevermind previous comment, and
+        /// maybe these two functions at all, you have solid Zig enums.
+        ///
+        /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-version-to-string)
+        pub fn toString(self: SvgSurface.SvgVersion) []const u8 {
+            const str = c.cairo_svg_version_to_string(self);
+            return std.mem.span(str);
+        }
+    };
 
     /// Creates a SVG surface of the specified size in points to be written to
     /// `filename`.
@@ -98,17 +161,17 @@ pub const SvgSurface = opaque {
     /// Get the unit of the SVG surface.
     ///
     /// If the surface passed as an argument is not a SVG surface, the function
-    /// sets the error status to `cairo.Status.SURFACE_TYPE_MISMATCH` and
-    /// returns `cairo.SvgUnit.user`
+    /// sets the error status to `cairo.Status.SurfaceTypeMismatch` and returns
+    /// `cairo.SvgSurface.SvgUnit.user`
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-surface-get-document-unit)
-    pub fn getDocumentUnit(self: *SvgSurface) SvgUnit {
+    pub fn getDocumentUnit(self: *SvgSurface) SvgSurface.SvgUnit {
         return c.cairo_svg_surface_get_document_unit(self);
     }
 
     /// Use the specified unit for the width and height of the generated SVG
-    /// file. See `cairo.SvgUnit` for a list of available unit values that can
-    /// be used here.
+    /// file. See `cairo.SvgSurface.SvgUnit` for a list of available unit
+    /// values that can be used here.
     ///
     /// This function can be called at any time before generating the SVG file.
     ///
@@ -125,7 +188,7 @@ pub const SvgSurface = opaque {
     /// reasons.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-surface-set-document-unit)
-    pub fn setDocumentUnit(self: *SvgSurface, unit: SvgUnit) void {
+    pub fn setDocumentUnit(self: *SvgSurface, unit: SvgSurface.SvgUnit) void {
         c.cairo_svg_surface_set_document_unit(self, unit);
     }
 
@@ -138,77 +201,14 @@ pub const SvgSurface = opaque {
     /// is to call this function immediately after creating the surface.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-surface-restrict-to-version)
-    pub fn restrictToVersion(self: *SvgSurface, version: SvgVersion) void {
+    pub fn restrictToVersion(self: *SvgSurface, version: SvgSurface.SvgVersion) void {
         c.cairo_svg_surface_restrict_to_version(self, version);
     }
 };
 
-/// `cairo.SvgUnit` is used to describe the units valid for coordinates and
-/// lengths in the SVG specification.
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-unit-t)
-pub const SvgUnit = enum(c_uint) {
-    /// User unit, a value in the current coordinate system. If used in the
-    /// root element for the initial coordinate systems it corresponds to
-    /// pixels.
-    user = 0,
-    /// The size of the element's font.
-    em,
-    /// The x-height of the element’s font
-    ex,
-    /// Pixels (1px = 1/96th of 1in).
-    px,
-    /// Inches (1in = 2.54cm = 96px).
-    in,
-    /// Centimeters (1cm = 96px/2.54).
-    cm,
-    /// Millimeters (1mm = 1/10th of 1cm).
-    mm,
-    /// Points (1pt = 1/72th of 1in).
-    pt,
-    /// Picas (1pc = 1/6th of 1in).
-    pc,
-    /// Percent, a value that is some fraction of another reference value.
-    percent,
-};
-
-/// Used to retrieve the list of supported SVG versions. See
-/// `cairo.SvgSurface.restrictToVersion()`
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-get-versions)
-pub fn getSvgVersions() []const SvgVersion {
-    var ptr: [*c]SvgVersion = undefined;
-    var numVersions: c_int = undefined;
-    c.cairo_svg_get_versions(@ptrCast(&ptr), &numVersions);
-    return ptr[0..@as(usize, @intCast(numVersions))];
-    // TODO
-}
-
-/// `cairo.SvgVersion` is used to describe the version number of the SVG
-/// specification that a generated SVG file will conform to.
-///
-/// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-version-t)
-pub const SvgVersion = enum(c_uint) {
-    @"1.1",
-    @"1.2",
-
-    /// Get the string representation of the given version id. See
-    /// `cairo.getSvgVersions()` for a way to get the list of valid versions
-    /// ids.
-    ///
-    /// **Zig binding's author here**, nevermind previous comment, and maybe
-    /// these two functions at all, you have solid Zig enums.
-    ///
-    /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-version-to-string)
-    pub fn versionToString(self: SvgVersion) []const u8 {
-        const str = c.cairo_svg_version_to_string(self);
-        return std.mem.span(str);
-    }
-};
-
 test "versions" {
-    const versions = getSvgVersions();
-    try testing.expectEqualSlices(SvgVersion, &.{ .@"1.1", .@"1.2" }, versions);
-    try testing.expectEqualStrings("SVG 1.1", SvgVersion.versionToString(.@"1.1"));
-    try testing.expectEqualStrings("SVG 1.2", SvgVersion.versionToString(.@"1.2"));
+    const versions = SvgSurface.getSvgVersions();
+    try testing.expectEqualSlices(SvgSurface.SvgVersion, &.{ .@"1.1", .@"1.2" }, versions);
+    try testing.expectEqualStrings("SVG 1.1", SvgSurface.SvgVersion.toString(.@"1.1"));
+    try testing.expectEqualStrings("SVG 1.2", SvgSurface.SvgVersion.toString(.@"1.2"));
 }
