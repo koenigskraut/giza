@@ -2,8 +2,8 @@
 
 |Objects|Number|Progress|
 |:-:|:-:|:-:|
-| Functions | 319/413 | ![](https://geps.dev/progress/77) |
-| Types and Values | 35/94 | ![](https://geps.dev/progress/39) |
+| Functions | 323/413 | ![](https://geps.dev/progress/78) |
+| Types and Values | 56/88 | ![](https://geps.dev/progress/64) |
 
 ✔️ — done  
 ❌ — not done  
@@ -236,7 +236,7 @@
 - ### [text](https://www.cairographics.org/manual/cairo-text.html) — Rendering text and glyphs
     ||||
     |:-:|:-:|:-:|
-    | Functions | 20/24 | ![](https://geps.dev/progress/83) |
+    | Functions | 24/24 | ![](https://geps.dev/progress/100) |
     | Types and Values | 5/5 | ![](https://geps.dev/progress/100) |
 
     <details>
@@ -260,10 +260,10 @@
     | cairo_font_extents | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_text_extents | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_glyph_extents | ✔️ | ⬜️ | ⬜️ | ✔️ |
-    | cairo_toy_font_face_create | ❌ | ❌ | ❌ | ❌ |
-    | cairo_toy_font_face_get_family | ❌ | ❌ | ❌ | ❌ |
-    | cairo_toy_font_face_get_slant | ❌ | ❌ | ❌ | ❌ |
-    | cairo_toy_font_face_get_weight | ❌ | ❌ | ❌ | ❌ |
+    | cairo_toy_font_face_create | ✔️ | ✔️ | ✔️ | ✔️ |
+    | cairo_toy_font_face_get_family | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_toy_font_face_get_slant | ✔️ | ⬜️ | ⬜️ | ✔️ |
+    | cairo_toy_font_face_get_weight | ✔️ | ⬜️ | ⬜️ | ✔️ |
     | cairo_glyph_allocate | ✔️ | ✔️ | ⬜️ | ✔️ |
     | cairo_glyph_free | ✔️ | ⬜️ | ✔️ | ✔️ |
     | cairo_text_cluster_allocate | ✔️ | ✔️ | ⬜️ | ✔️ |
@@ -300,7 +300,7 @@
     ||||
     |:-:|:-:|:-:|
     | Functions | 2/2 | ![](https://geps.dev/progress/100) |
-    | Types and Values | 2/2 | ![](https://geps.dev/progress/0) |
+    | Types and Values | 2/2 | ![](https://geps.dev/progress/100) |
 
     <details>
     <summary>Functions</summary>
@@ -419,7 +419,7 @@
     ||||
     |:-:|:-:|:-:|
     | Functions | 0/9 | ![](https://geps.dev/progress/0) |
-    | Types and Values | 0/4 | ![](https://geps.dev/progress/0) |  
+    | Types and Values | 0/5 | ![](https://geps.dev/progress/0) |  
 
 ## [Surfaces](https://www.cairographics.org/manual/cairo-fonts.html)
 
