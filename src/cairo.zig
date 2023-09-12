@@ -1,6 +1,5 @@
 const std = @import("std");
 
-pub const safety = @import("safety.zig");
 pub usingnamespace @import("cairo/enums.zig");
 pub usingnamespace @import("cairo/util.zig");
 

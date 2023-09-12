@@ -44,8 +44,8 @@
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-device-t.html)
 
 const cairo = @import("../cairo.zig");
-const safety = cairo.safety;
 const c = cairo.c;
+const safety = @import("safety");
 
 const CairoError = cairo.CairoError;
 const Status = cairo.Status;
