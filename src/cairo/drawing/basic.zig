@@ -48,7 +48,7 @@ pub const Mixin = struct {
     /// `ctx.destroy()` when done with it. You can use idiomatic Zig pattern
     /// with `defer`:
     /// ```zig
-    /// const ctx = cairo.Context.create(surface);
+    /// const ctx = try cairo.Context.create(surface);
     /// defer ctx.destroy();
     /// ```
     ///

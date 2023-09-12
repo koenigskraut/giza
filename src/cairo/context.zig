@@ -36,7 +36,7 @@ pub const Context = opaque {
             @compileError("pango support disabled");
         }
 
-        pub fn updatePangoLayout(_: *cairo.Context, _: *anyopaque) noreturn {
+        pub fn updateLayout(_: *cairo.Context, _: *anyopaque) noreturn {
             @compileError("pango support disabled");
         }
     } else @import("pangocairo").context;
