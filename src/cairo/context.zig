@@ -1,5 +1,6 @@
 const std = @import("std");
 const testing = std.testing;
+const build = @import("build_options");
 
 const cairo = @import("../cairo.zig");
 const c = cairo.c;
@@ -22,6 +23,23 @@ pub const Context = opaque {
     pub usingnamespace @import("drawing/paths.zig").Mixin;
     pub usingnamespace @import("drawing/text.zig").Mixin;
     pub usingnamespace @import("drawing/tags_and_links.zig");
+    pub usingnamespace if (build.@"no-pango") struct {
+        pub fn createPangoContext(_: *cairo.Context) noreturn {
+            @compileError("pango support disabled");
+        }
+
+        pub fn updatePangoContext(_: *cairo.Context, _: *anyopaque) noreturn {
+            @compileError("pango support disabled");
+        }
+
+        pub fn createLayout(_: *cairo.Context) noreturn {
+            @compileError("pango support disabled");
+        }
+
+        pub fn updatePangoLayout(_: *cairo.Context, _: *anyopaque) noreturn {
+            @compileError("pango support disabled");
+        }
+    } else @import("pangocairo").context;
 
     /// `cairo.Context.Operator` is used to set the compositing operator for
     /// all cairo drawing operations.
