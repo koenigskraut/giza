@@ -101,29 +101,29 @@ pub extern fn pango_font_description_copy_static(desc: ?*const pango.FontDescrip
 pub extern fn pango_font_description_hash(desc: ?*const pango.FontDescription) c_uint;
 pub extern fn pango_font_description_equal(desc1: ?*const pango.FontDescription, desc2: ?*const pango.FontDescription) c_int; // bool
 pub extern fn pango_font_description_free(desc: ?*pango.FontDescription) void;
-// pub extern fn pango_font_descriptions_free(descs: [*c]?*pango.FontDescription, n_descs: c_int) void;
+pub extern fn pango_font_descriptions_free(descs: [*c]?*pango.FontDescription, n_descs: c_int) void;
 pub extern fn pango_font_description_set_family(desc: ?*pango.FontDescription, family: [*c]const u8) void;
 pub extern fn pango_font_description_set_family_static(desc: ?*pango.FontDescription, family: [*c]const u8) void;
 pub extern fn pango_font_description_get_family(desc: ?*const pango.FontDescription) [*c]const u8;
-// pub extern fn pango_font_description_set_style(desc: ?*pango.FontDescription, style: PangoStyle) void;
-// pub extern fn pango_font_description_get_style(desc: ?*const pango.FontDescription) PangoStyle;
-// pub extern fn pango_font_description_set_variant(desc: ?*pango.FontDescription, variant: PangoVariant) void;
-// pub extern fn pango_font_description_get_variant(desc: ?*const pango.FontDescription) PangoVariant;
-// pub extern fn pango_font_description_set_weight(desc: ?*pango.FontDescription, weight: PangoWeight) void;
-// pub extern fn pango_font_description_get_weight(desc: ?*const pango.FontDescription) PangoWeight;
-// pub extern fn pango_font_description_set_stretch(desc: ?*pango.FontDescription, stretch: PangoStretch) void;
-// pub extern fn pango_font_description_get_stretch(desc: ?*const pango.FontDescription) PangoStretch;
+pub extern fn pango_font_description_set_style(desc: ?*pango.FontDescription, style: pango.Style) void;
+pub extern fn pango_font_description_get_style(desc: ?*const pango.FontDescription) pango.Style;
+pub extern fn pango_font_description_set_variant(desc: ?*pango.FontDescription, variant: pango.Variant) void;
+pub extern fn pango_font_description_get_variant(desc: ?*const pango.FontDescription) pango.Variant;
+pub extern fn pango_font_description_set_weight(desc: ?*pango.FontDescription, weight: pango.Weight) void;
+pub extern fn pango_font_description_get_weight(desc: ?*const pango.FontDescription) pango.Weight;
+pub extern fn pango_font_description_set_stretch(desc: ?*pango.FontDescription, stretch: pango.Stretch) void;
+pub extern fn pango_font_description_get_stretch(desc: ?*const pango.FontDescription) pango.Stretch;
 pub extern fn pango_font_description_set_size(desc: ?*pango.FontDescription, size: c_int) void;
 pub extern fn pango_font_description_get_size(desc: ?*const pango.FontDescription) c_int;
 pub extern fn pango_font_description_set_absolute_size(desc: ?*pango.FontDescription, size: f64) void;
 pub extern fn pango_font_description_get_size_is_absolute(desc: ?*const pango.FontDescription) c_int; // bool
-// pub extern fn pango_font_description_set_gravity(desc: ?*pango.FontDescription, gravity: PangoGravity) void;
-// pub extern fn pango_font_description_get_gravity(desc: ?*const pango.FontDescription) PangoGravity;
+pub extern fn pango_font_description_set_gravity(desc: ?*pango.FontDescription, gravity: pango.Gravity) void;
+pub extern fn pango_font_description_get_gravity(desc: ?*const pango.FontDescription) pango.Gravity;
 pub extern fn pango_font_description_set_variations_static(desc: ?*pango.FontDescription, variations: [*c]const u8) void;
 pub extern fn pango_font_description_set_variations(desc: ?*pango.FontDescription, variations: [*c]const u8) void;
 pub extern fn pango_font_description_get_variations(desc: ?*const pango.FontDescription) [*c]const u8;
-// pub extern fn pango_font_description_get_set_fields(desc: ?*const pango.FontDescription) PangoFontMask;
-// pub extern fn pango_font_description_unset_fields(desc: ?*pango.FontDescription, to_unset: PangoFontMask) void;
+pub extern fn pango_font_description_get_set_fields(desc: ?*const pango.FontDescription) pango.FontMask;
+pub extern fn pango_font_description_unset_fields(desc: ?*pango.FontDescription, to_unset: pango.FontMask) void;
 pub extern fn pango_font_description_merge(desc: ?*pango.FontDescription, desc_to_merge: ?*const pango.FontDescription, replace_existing: c_int) void; // bool
 pub extern fn pango_font_description_merge_static(desc: ?*pango.FontDescription, desc_to_merge: ?*const pango.FontDescription, replace_existing: c_int) void; // bool
 pub extern fn pango_font_description_better_match(desc: ?*const pango.FontDescription, old_match: ?*const pango.FontDescription, new_match: ?*const pango.FontDescription) c_int; // bool
