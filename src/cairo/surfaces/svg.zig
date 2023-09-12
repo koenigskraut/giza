@@ -5,8 +5,8 @@
 const std = @import("std");
 const testing = std.testing;
 
+const safety = @import("safety");
 const cairo = @import("../../cairo.zig");
-const safety = cairo.safety;
 const c = cairo.c;
 
 const Mixin = @import("base.zig").Base;

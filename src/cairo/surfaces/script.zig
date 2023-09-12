@@ -5,8 +5,8 @@
 //! under the util/cairo-script directory, or with cairo-perf-trace.
 
 const cairo = @import("../../cairo.zig");
-const safety = cairo.safety;
 const c = cairo.c;
+const safety = @import("safety");
 
 const CairoError = cairo.CairoError;
 const Content = cairo.Content;

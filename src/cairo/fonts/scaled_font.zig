@@ -4,8 +4,8 @@
 //! size and transformation and a certain set of font options.
 
 const cairo = @import("../../cairo.zig");
-const safety = cairo.safety;
 const c = cairo.c;
+const safety = @import("safety");
 
 const CairoError = cairo.CairoError;
 const DestroyFn = cairo.DestroyFn;

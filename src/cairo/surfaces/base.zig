@@ -38,8 +38,8 @@
 const std = @import("std");
 
 const cairo = @import("../../cairo.zig");
-const safety = cairo.safety;
 const c = cairo.c;
+const safety = @import("safety");
 
 const Content = cairo.Content;
 const CairoError = cairo.CairoError;

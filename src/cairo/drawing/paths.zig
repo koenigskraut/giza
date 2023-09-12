@@ -6,8 +6,8 @@
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html)
 
 const cairo = @import("../../cairo.zig");
-const safety = cairo.safety;
 const c = cairo.c;
+const safety = @import("safety");
 
 const Context = cairo.Context;
 const Rectangle = cairo.Rectangle;

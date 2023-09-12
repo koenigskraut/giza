@@ -10,8 +10,8 @@
 // TODO: fix desc
 
 const cairo = @import("../../cairo.zig");
-const safety = cairo.safety;
 const c = cairo.c;
+const safety = @import("safety");
 
 const CairoError = cairo.CairoError;
 const Status = cairo.Status;

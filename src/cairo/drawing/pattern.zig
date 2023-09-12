@@ -15,8 +15,8 @@ const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
 
 const cairo = @import("../../cairo.zig");
-const safety = cairo.safety;
 const c = cairo.c;
+const safety = @import("safety");
 
 const Content = cairo.Content;
 const Status = cairo.Status;
