@@ -72,8 +72,13 @@ pub const Layout = opaque {
 
     // pub fn setMarkup
     // pub fn setMarkupWithAccel
-    // pub fn setFontDescription
-    // pub fn getFontDescription
+    pub fn setFontDescription(self: *Layout, desc: *pango.FontDescription) void {
+        c.pango_layout_set_font_description(self, desc);
+    }
+
+    pub fn getFontDescription(self: *Layout) !*pango.FontDescription {
+        return c.pango_layout_get_font_description(self) orelse error.NullPointer;
+    }
 
     /// Sets the width to which the lines of the `pango.Layout` should wrap or
     /// ellipsized.
