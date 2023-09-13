@@ -3,6 +3,7 @@ const pango = @import("../pango.zig");
 const c_bool = c_int;
 
 // glib
+pub extern fn g_free(ptr: ?*anyopaque) void;
 pub extern fn g_object_ref(object: ?*anyopaque) ?*anyopaque;
 pub extern fn g_object_unref(object: ?*anyopaque) void;
 

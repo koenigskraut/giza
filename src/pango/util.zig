@@ -1,3 +1,6 @@
+const safety = @import("safety");
+const c = @import("../pango.zig").c;
+
 /// The `pango.Rectangle` structure represents a rectangle.
 ///
 /// `pango.Rectangle` is frequently used to represent the logical or ink
@@ -13,3 +16,12 @@ pub const Rectangle = extern struct {
     /// Height of the rectangle.
     height: c_int,
 };
+
+pub fn free(memory: anytype) void {
+    const info = @typeInfo(@TypeOf(memory));
+    switch (info) {
+        .Pointer => c.g_free(@ptrCast(memory)),
+        else => @compileError("wrong type"),
+    }
+    if (safety.tracing) safety.destroy(@ptrCast(memory));
+}
