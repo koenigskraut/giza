@@ -1,5 +1,7 @@
 const pango = @import("../pango.zig");
 
+const c_bool = c_int;
+
 // glib
 pub extern fn g_object_ref(object: ?*anyopaque) ?*anyopaque;
 pub extern fn g_object_unref(object: ?*anyopaque) void;
@@ -130,3 +132,13 @@ pub extern fn pango_font_description_better_match(desc: ?*const pango.FontDescri
 pub extern fn pango_font_description_from_string(str: [*c]const u8) ?*pango.FontDescription;
 pub extern fn pango_font_description_to_string(desc: ?*const pango.FontDescription) [*c]u8;
 pub extern fn pango_font_description_to_filename(desc: ?*const pango.FontDescription) [*c]u8;
+
+// Language
+pub extern fn pango_language_get_default() ?*pango.Language;
+pub extern fn pango_language_get_preferred() [*c]?*pango.Language;
+pub extern fn pango_language_from_string(language: [*c]const u8) ?*pango.Language;
+pub extern fn pango_language_to_string(language: ?*pango.Language) [*c]const u8;
+pub extern fn pango_language_get_sample_string(language: ?*pango.Language) [*c]const u8;
+pub extern fn pango_language_matches(language: ?*pango.Language, range_list: [*c]const u8) c_bool;
+// pub extern fn pango_language_includes_script(language: ?*pango.Language, script: pango.Script) gboolean;
+// pub extern fn pango_language_get_scripts(language: ?*pango.Language, num_scripts: [*c]c_int) [*c]const pango.Script;
