@@ -32,7 +32,7 @@ pub const FontMap = opaque {
         return c.pango_cairo_font_map_get_default() orelse error.NullPointer;
     }
 
-    pub fn setDefault(self: *FontMap) void {
+    pub fn setDefault(self: ?*FontMap) void {
         c.pango_cairo_font_map_set_default(self);
     }
 
