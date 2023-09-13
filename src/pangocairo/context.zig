@@ -75,6 +75,35 @@ pub fn createLayout(self: *cairo.Context) cairo.CairoError!*pango.Layout {
 ///
 /// **Parameters**
 /// - `layout`: A `pango.Layout`, from `cairo.Context.createLayout()`.
-pub fn updateLayout(self: *cairo.Context, context: *pango.Layout) void {
-    c.pango_cairo_update_layout(self, context);
+pub fn updateLayout(self: *cairo.Context, layout: *pango.Layout) void {
+    c.pango_cairo_update_layout(self, layout);
+}
+
+// pub extern fn pango_cairo_show_glyph_string(cr: ?*cairo.Context, font: [*c]PangoFont, glyphs: [*c]PangoGlyphString) void;
+// pub extern fn pango_cairo_show_glyph_item(cr: ?*cairo.Context, text: [*c]const u8, glyph_item: [*c]PangoGlyphItem) void;
+
+pub fn showLayoutLine(self: *cairo.Context, line: *pango.Layout.Line) void {
+    c.pango_cairo_show_layout_line(self, line);
+}
+
+pub fn showLayout(self: *cairo.Context, layout: *pango.Layout) void {
+    c.pango_cairo_show_layout(self, layout);
+}
+
+pub fn showErrorUnderline(self: *cairo.Context, x: f64, y: f64, width: f64, height: f64) void {
+    c.pango_cairo_show_error_underline(self, x, y, width, height);
+}
+
+// pub extern fn pango_cairo_glyph_string_path(cr: ?*cairo.Context, font: [*c]PangoFont, glyphs: [*c]PangoGlyphString) void;
+
+pub fn layoutLinePath(self: *cairo.Context, line: *pango.Layout.Line) void {
+    c.pango_cairo_layout_line_path(self, line);
+}
+
+pub fn layoutLine(self: *cairo.Context, layout: *pango.Layout) void {
+    c.pango_cairo_layout_path(self, layout);
+}
+
+pub fn errorUnderlinePath(self: *cairo.Context, x: f64, y: f64, width: f64, height: f64) void {
+    c.pango_cairo_error_underline_path(self, x, y, width, height);
 }
