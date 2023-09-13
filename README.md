@@ -14,11 +14,11 @@ There are just the two of them, but what are these two!
 
 **cairo** sometimes returns allocated objects with user-managed lifetime, take for example:
 ```zig
-const surface = cairo.ImageSurface.create(.ARGB32, 600, 400); // cairo.ImageSurface with alpha 600x400px
+const surface = try cairo.ImageSurface.create(.ARGB32, 600, 400); // cairo.ImageSurface with alpha 600x400px
 ```
 `surface` is owned by user and should be destroyed at some point with `surface.destroy()`. It can be done nicely with Zig `defer` pattern:
 ```zig
-const surface = cairo.ImageSurface.create(.ARGB32, 600, 400);
+const surface = try cairo.ImageSurface.create(.ARGB32, 600, 400);
 defer surface.destroy();
 ```
 But what if it cannot? Let's see some example:
@@ -68,16 +68,13 @@ test "interop 1" {
     try std.testing.expect(image.status() == .FileNotFound);
 }
 ```
-We can do even without pointer casting!
+We can use prepared C functions from `cairo` module to avoid pointer casting:
 ```zig
 test "interop 2" {
     const image = cairo_image_surface_create_from_png("does_not_exist.png").?;
-    defer c.cairo_surface_destroy(image);
+    defer cairo.c.cairo_surface_destroy(image);
     try std.testing.expect(image.status() == .FileNotFound);
 }
-
-extern fn cairo_image_surface_create_from_png(filename: [*c]const u8) ?*cairo.ImageSurface;
-extern fn cairo_surface_destroy(surface: ?*anyopaque) void;
 ```
 **giza**'s matrix functions return matrices by value:
 ```zig
@@ -94,19 +91,18 @@ test "interop 3" {
     ...
 }
 ```
-or with `extern fn`:
+or with `giza`'s prepared `extern fn`s:
 ```zig
 test "interop 4" {
     var m: cairo.Matrix = undefined;
-    cairo_matrix_init_identity(&m);
+    cairo.c.cairo_matrix_init_identity(&m);
     ...
 }
-extern fn cairo_matrix_init_identity(matrix: ?*cairo.Matrix) void;
 ```
 Every C object in **giza** is a valid Zig `opaque`/`extern struct`/`enum`, so you can call C functions with them like nothing yourself!
 
 ## Coverage and progress
 
-You can find coverage info [here](https://github.com/koenigskraut/giza/blob/master/coverage.md). Current progress is 80.6% regarding **cairo** functionality, __*but*__ it generally should work already. The only two parts that are missing are fonts and real devices (other than script one). If you only need cairo to write some PNG/PDF/SVG files, that is already covered. There are other surfaces, devices and fonts coverage planned, but that would require using header files, which this wrapping has avoided so far, so we'll see.
+You can find coverage info [here](https://github.com/koenigskraut/giza/blob/master/coverage_cairo.md). Current progress is 80.6% regarding **cairo** functionality, __*but*__ it generally should work already. The only two parts that are missing are fonts and real devices (other than script one). If you only need cairo to write some PNG/PDF/SVG files, that is already covered. There are other surfaces, devices and fonts coverage planned, but that would require using header files, which this wrapping has avoided so far, so we'll see.
 
 Also pango support is planned, probably as part of this repo.
