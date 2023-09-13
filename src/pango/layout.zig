@@ -392,8 +392,8 @@ pub const Layout = opaque {
         c.g_object_unref(self);
     }
 
-    pub fn getIter(self: *Layout) !Iter {
-        const iter = c.pango_layout_get_iter(self) orelse error.NullPointer;
+    pub fn getIter(self: *Layout) !*Iter {
+        const iter = c.pango_layout_get_iter(self) orelse return error.NullPointer;
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), iter);
         return iter;
     }
@@ -404,7 +404,7 @@ pub const Layout = opaque {
     /// To obtain a `pango.Layout.Iter`, use `pango.Layout.getIter()`.
     pub const Iter = opaque {
         pub fn copy(self: *Iter) !*Iter {
-            const iter = c.pango_layout_iter_copy(self) orelse error.NullPointer;
+            const iter = c.pango_layout_iter_copy(self) orelse return error.NullPointer;
             if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), iter);
             return iter;
         }
@@ -469,15 +469,15 @@ pub const Layout = opaque {
             return logical_rect;
         }
 
-        pub fn getClusterExtents(self: *Iter, ink_rect: *pango.Rectangle, logical_rect: *pango.Rectangle) void {
+        pub fn getClusterExtents(self: *Iter, ink_rect: ?*pango.Rectangle, logical_rect: ?*pango.Rectangle) void {
             c.pango_layout_iter_get_cluster_extents(self, ink_rect, logical_rect);
         }
 
-        pub fn getRunExtents(self: *Iter, ink_rect: *pango.Rectangle, logical_rect: *pango.Rectangle) void {
+        pub fn getRunExtents(self: *Iter, ink_rect: ?*pango.Rectangle, logical_rect: ?*pango.Rectangle) void {
             c.pango_layout_iter_get_run_extents(self, ink_rect, logical_rect);
         }
 
-        pub fn get_lineExtents(self: *Iter, ink_rect: *pango.Rectangle, logical_rect: *pango.Rectangle) void {
+        pub fn getLineExtents(self: *Iter, ink_rect: ?*pango.Rectangle, logical_rect: ?*pango.Rectangle) void {
             c.pango_layout_iter_get_line_extents(self, ink_rect, logical_rect);
         }
 
@@ -485,7 +485,7 @@ pub const Layout = opaque {
             c.pango_layout_iter_get_line_yrange(self, y0, y1);
         }
 
-        pub fn getLayoutExtents(self: *Iter, ink_rect: *pango.Rectangle, logical_rect: *pango.Rectangle) void {
+        pub fn getLayoutExtents(self: *Iter, ink_rect: ?*pango.Rectangle, logical_rect: ?*pango.Rectangle) void {
             c.pango_layout_iter_get_layout_extents(self, ink_rect, logical_rect);
         }
 
