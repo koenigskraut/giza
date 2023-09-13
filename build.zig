@@ -29,15 +29,14 @@ pub fn build(b: *std.Build) void {
             .{ .name = "safety", .module = safety_module },
         },
     });
-    _ = pango_module;
-    // var pangocairo_module = b.addModule("pangocairo", .{
-    //     .source_file = .{ .path = "src/pangocairo.zig" },
-    //     .dependencies = &.{
-    //         .{ .name = "build_options", .module = opts.createModule() },
-    //         .{ .name = "cairo", .module = cairo_module },
-    //         .{ .name = "pango", .module = pango_module },
-    //         .{ .name = "safety", .module = safety_module },
-    //     },
-    // });
-    // cairo_module.dependencies.put("pangocairo", pangocairo_module) catch @panic("OOM");
+    var pangocairo_module = b.addModule("pangocairo", .{
+        .source_file = .{ .path = "src/pangocairo.zig" },
+        .dependencies = &.{
+            .{ .name = "build_options", .module = opts.createModule() },
+            .{ .name = "cairo", .module = cairo_module },
+            .{ .name = "pango", .module = pango_module },
+            .{ .name = "safety", .module = safety_module },
+        },
+    });
+    cairo_module.dependencies.put("pangocairo", pangocairo_module) catch @panic("OOM");
 }
