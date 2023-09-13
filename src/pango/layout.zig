@@ -504,8 +504,6 @@ pub const Layout = opaque {
     /// `pango.Layout.Line` structures are obtained by calling
     /// `pango.Layout.getLine()` and are only valid until the text, attributes,
     /// or settings of the parent `pango.Layout` are modified.
-    ///
-    ///
     pub const Line = packed struct {
         // TODO: should we expose that? maybe use opaque?
 
@@ -521,5 +519,163 @@ pub const Layout = opaque {
         is_paragraph_start: bool,
         ///Resolved `pango.Direction` of line.
         resolved_dir: u3,
+
+        /// Increase the reference count of a `pango.Layout.Line` by one.
+        ///
+        /// **Returns**
+        ///
+        /// the line passed in.
+        pub fn reference(self: *Line) !*Line {
+            const ptr = c.pango_layout_line_ref(self) orelse return error.NullPointer;
+            if (safety.tracing) safety.reference(self);
+            return ptr;
+        }
+
+        /// Decrease the reference count of a pango.Layout.Line by one.
+        ///
+        /// If the result is zero, the line and all associated memory will be freed.
+        pub fn destroy(self: *Line) void {
+            c.pango_layout_line_unref(self);
+            if (safety.tracing) safety.destroy(self);
+        }
+
+        /// Returns the start index of the line, as byte index into the text of
+        /// the layout.
+        ///
+        /// **Returns**
+        ///
+        /// the start index of the line.
+        pub fn getStartIndex(self: *Line) i32 {
+            return @intCast(c.pango_layout_line_get_start_index(self));
+        }
+
+        /// Returns the length of the line, in bytes.
+        pub fn getLength(self: *Line) i32 {
+            return @intCast(c.pango_layout_line_get_length(self));
+        }
+
+        /// Returns whether this is the first line of the paragraph.
+        pub fn isParagraphStart(self: *Line) bool {
+            return c.pango_layout_line_is_paragraph_start(self) != 0;
+        }
+
+        /// Returns the resolved direction of the line.
+        pub fn getResolvedDirection(self: *Line) pango.Direction {
+            return c.pango_layout_line_get_resolved_direction(self);
+        }
+
+        /// Converts from x offset to the byte index of the corresponding
+        /// character within the text of the layout.
+        ///
+        /// If `x_pos` is outside the line, `index` and `trailing` will point
+        /// to the very first or very last position in the line. This
+        /// determination is based on the resolved direction of the paragraph;
+        /// for example, if the resolved direction is right-to-left, then an X
+        /// position to the right of the line (after it) results in 0 being
+        /// stored in `index` and `trailing`. An X position to the left of the
+        /// line results in `index` pointing to the (logical) last grapheme in
+        /// the line and `trailing` being set to the number of characters in
+        /// that grapheme. The reverse is true for a left-to-right line.
+        ///
+        /// **Parameters**
+        /// - `x_pos`: the X offset (in Pango units) from the left edge of the
+        /// line
+        /// - `index`: location to store calculated byte index for the grapheme
+        /// in which the user clicked
+        /// - `trailing`: location to store an integer indicating where in the
+        /// grapheme the user clicked. It will either be zero, or the number of
+        /// characters in the grapheme. 0 represents the leading edge of the
+        /// grapheme
+        ///
+        /// **Returns**
+        ///
+        /// `false` if `x_pos` was outside the line, `true` if inside.
+        pub fn xToIndex(self: *Line, x_pos: c_int, index: *c_int, trailing: *c_int) bool {
+            return c.pango_layout_line_x_to_index(self, x_pos, index, trailing) != 0;
+        }
+
+        /// Converts an index within a line to a X position.
+        ///
+        /// **Parameters**
+        /// - `index`: byte offset of a grapheme within the layout
+        /// - `trailing`: an integer indicating the edge of the grapheme to
+        /// retrieve the position of. If > 0, the trailing edge of the
+        /// grapheme, if 0, the leading of the grapheme.
+        /// - `x_pos`: location to store the x_offset (in Pango units)
+        pub fn indexToX(self: *Line, index: c_int, trailing: bool, x_pos: *c_int) void {
+            c.pango_layout_line_index_to_x(self, index, if (trailing) 1 else 0, x_pos);
+        }
+
+        /// Gets a list of visual ranges corresponding to a given logical
+        /// range.
+        ///
+        /// This list is not necessarily minimal - there may be consecutive
+        /// ranges which are adjacent. The ranges will be sorted from left to
+        /// right. The ranges are with respect to the left edge of the entire
+        /// layout, not with respect to the line.
+        ///
+        /// **Parameters**
+        /// - `start_index`: start byte index of the logical range. If this
+        /// value is less than the start index for the line, then the first
+        /// range will extend all the way to the leading edge of the layout.
+        /// Otherwise, it will start at the leading edge of the first
+        /// character.
+        /// - `end_index`: ending byte index of the logical range. If this
+        /// value is greater than the end index for the line, then the last
+        /// range will extend all the way to the trailing edge of the layout.
+        /// Otherwise, it will end at the trailing edge of the last character.
+        /// - `ranges`: location to store a pointer to an array of ranges. The
+        /// array will be of length 2*n_ranges, with each range starting at
+        /// (*ranges)[2*n] and of width (*ranges)[2*n + 1] - (*ranges)[2*n].
+        /// This array must be freed with `pango.free()`. The coordinates are
+        /// relative to the layout and are in Pango units.
+        /// - `n_ranges`: the number of ranges stored in ranges
+        pub fn getXRanges(line: *Line, start_index: i32, end_index: i32, ranges: [*c][*c]c_int, n_ranges: [*c]c_int) void {
+            // TODO: review this
+            c.pango_layout_line_get_x_ranges(line, @intCast(start_index), @intCast(end_index), ranges, n_ranges);
+        }
+
+        /// Computes the logical and ink extents of a layout line.
+        ///
+        /// See `pango.Font.getGlyphExtents()` for details about the
+        /// interpretation of the rectangles.
+        ///
+        /// **Parameters**
+        /// - `ink_rect`: rectangle used to store the extents of the glyph
+        /// string as drawn
+        /// - `logical_rect`: rectangle used to store the logical extents of
+        /// the glyph string
+        pub fn getExtents(self: *pango.Layout.Line, ink_rect: ?*pango.Rectangle, logical_rect: ?*pango.Rectangle) void {
+            c.pango_layout_line_get_extents(self, ink_rect, logical_rect);
+        }
+
+        /// Computes the height of the line, as the maximum of the heights of
+        /// fonts used in this line.
+        ///
+        /// Note that the actual baseline-to-baseline distance between lines of
+        /// text is influenced by other factors, such as
+        /// `pango.Layout.setSpacing()` and `pango.Layout.setLineSpacing()`.
+        pub fn getHeight(self: *Line) i32 {
+            var height: c_int = undefined;
+            c.pango_layout_line_get_height(self, &height);
+            return @intCast(height);
+        }
+
+        /// Computes the logical and ink extents of `self` in device units.
+        ///
+        /// This function just calls `pango.Layout.Line.getExtents()` followed
+        /// by two `pango.extentsToPixels()` calls, rounding `ink_rect` and
+        /// `logical_rect` such that the rounded rectangles fully contain the
+        /// unrounded one (that is, passes them as first argument to
+        /// `pango.extentsToPixels()`).
+        ///
+        /// **Parameters**
+        /// - `ink_rect`: rectangle used to store the extents of the glyph
+        /// string as drawn
+        /// - `logical_rect`: rectangle used to store the logical extents of
+        /// the glyph string
+        pub fn getPixelExtents(layout_line: *Line, ink_rect: ?*pango.Rectangle, logical_rect: ?*pango.Rectangle) void {
+            c.pango_layout_line_get_pixel_extents(layout_line, ink_rect, logical_rect);
+        }
     };
 };

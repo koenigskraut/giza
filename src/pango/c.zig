@@ -159,6 +159,18 @@ pub extern fn pango_layout_iter_get_baseline(iter: ?*pango.Layout.Iter) c_int;
 pub extern fn pango_layout_iter_get_run_baseline(iter: ?*pango.Layout.Iter) c_int;
 
 // LayoutLine
+pub extern fn pango_layout_line_ref(line: ?*pango.Layout.Line) ?*pango.Layout.Line;
+pub extern fn pango_layout_line_unref(line: ?*pango.Layout.Line) void;
+pub extern fn pango_layout_line_get_start_index(line: ?*pango.Layout.Line) c_int;
+pub extern fn pango_layout_line_get_length(line: ?*pango.Layout.Line) c_int;
+pub extern fn pango_layout_line_is_paragraph_start(line: ?*pango.Layout.Line) c_bool;
+pub extern fn pango_layout_line_get_resolved_direction(line: ?*pango.Layout.Line) pango.Direction;
+pub extern fn pango_layout_line_x_to_index(line: ?*pango.Layout.Line, x_pos: c_int, index_: [*c]c_int, trailing: [*c]c_int) c_bool;
+pub extern fn pango_layout_line_index_to_x(line: ?*pango.Layout.Line, index_: c_int, trailing: c_bool, x_pos: [*c]c_int) void;
+pub extern fn pango_layout_line_get_x_ranges(line: ?*pango.Layout.Line, start_index: c_int, end_index: c_int, ranges: [*c][*c]c_int, n_ranges: [*c]c_int) void;
+pub extern fn pango_layout_line_get_extents(line: ?*pango.Layout.Line, ink_rect: [*c]pango.Rectangle, logical_rect: [*c]pango.Rectangle) void;
+pub extern fn pango_layout_line_get_height(line: ?*pango.Layout.Line, height: [*c]c_int) void;
+pub extern fn pango_layout_line_get_pixel_extents(layout_line: ?*pango.Layout.Line, ink_rect: [*c]pango.Rectangle, logical_rect: [*c]pango.Rectangle) void;
 
 // Language
 pub extern fn pango_language_get_default() ?*pango.Language;
