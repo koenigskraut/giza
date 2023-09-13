@@ -152,7 +152,7 @@ pub const SvgSurface = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-surface-create-for-stream)
     pub fn createForStream(writer: anytype, width: f64, height: f64) CairoError!*SvgSurface {
         const writeFn = cairo.createWriteFn(@TypeOf(writer));
-        const svg = c.cairo_svg_surface_create_for_stream(writeFn, writer, width, height) orelse return error.SvgSurfaceNull;
+        const svg = c.cairo_svg_surface_create_for_stream(writeFn, writer, width, height).?;
         try svg.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), svg);
         return svg;
