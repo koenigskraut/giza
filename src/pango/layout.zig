@@ -402,7 +402,7 @@ pub const Layout = opaque {
     /// `pango.Layout`.
     ///
     /// To obtain a `pango.Layout.Iter`, use `pango.Layout.getIter()`.
-    const Iter = opaque {
+    pub const Iter = opaque {
         pub fn copy(self: *Iter) !*Iter {
             const iter = c.pango_layout_iter_copy(self) orelse error.NullPointer;
             if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), iter);
