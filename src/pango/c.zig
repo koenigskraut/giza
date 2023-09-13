@@ -50,7 +50,7 @@ pub extern fn pango_layout_set_height(layout: ?*pango.Layout, height: c_int) voi
 pub extern fn pango_layout_get_height(layout: ?*pango.Layout) c_int;
 pub extern fn pango_layout_set_wrap(layout: ?*pango.Layout, wrap: pango.WrapMode) void;
 pub extern fn pango_layout_get_wrap(layout: ?*pango.Layout) pango.WrapMode;
-pub extern fn pango_layout_is_wrapped(layout: ?*pango.Layout) c_int; // bool
+pub extern fn pango_layout_is_wrapped(layout: ?*pango.Layout) c_int;
 pub extern fn pango_layout_set_indent(layout: ?*pango.Layout, indent: c_int) void;
 pub extern fn pango_layout_get_indent(layout: ?*pango.Layout) c_int;
 pub extern fn pango_layout_set_spacing(layout: ?*pango.Layout, spacing: c_int) void;
@@ -58,21 +58,21 @@ pub extern fn pango_layout_get_spacing(layout: ?*pango.Layout) c_int;
 pub extern fn pango_layout_set_line_spacing(layout: ?*pango.Layout, factor: f32) void;
 pub extern fn pango_layout_get_line_spacing(layout: ?*pango.Layout) f32;
 
-pub extern fn pango_layout_set_justify(layout: ?*pango.Layout, justify: c_int) void; // bool
-pub extern fn pango_layout_get_justify(layout: ?*pango.Layout) c_int; // bool
-pub extern fn pango_layout_set_justify_last_line(layout: ?*pango.Layout, justify: c_int) void; // bool
-pub extern fn pango_layout_get_justify_last_line(layout: ?*pango.Layout) c_int; // bool
-pub extern fn pango_layout_set_auto_dir(layout: ?*pango.Layout, auto_dir: c_int) void; // bool
-pub extern fn pango_layout_get_auto_dir(layout: ?*pango.Layout) c_int; // bool
+pub extern fn pango_layout_set_justify(layout: ?*pango.Layout, justify: c_bool) void;
+pub extern fn pango_layout_get_justify(layout: ?*pango.Layout) c_bool;
+pub extern fn pango_layout_set_justify_last_line(layout: ?*pango.Layout, justify: c_bool) void;
+pub extern fn pango_layout_get_justify_last_line(layout: ?*pango.Layout) c_bool;
+pub extern fn pango_layout_set_auto_dir(layout: ?*pango.Layout, auto_dir: c_bool) void;
+pub extern fn pango_layout_get_auto_dir(layout: ?*pango.Layout) c_bool;
 pub extern fn pango_layout_set_alignment(layout: ?*pango.Layout, alignment: pango.Alignment) void;
 pub extern fn pango_layout_get_alignment(layout: ?*pango.Layout) pango.Alignment;
 // pub extern fn pango_layout_set_tabs(layout: ?*pango.Layout, tabs: ?*PangoTabArray) void;
 // pub extern fn pango_layout_get_tabs(layout: ?*pango.Layout) ?*PangoTabArray;
-// pub extern fn pango_layout_set_single_paragraph_mode(layout: ?*pango.Layout, setting: gboolean) void;
-// pub extern fn pango_layout_get_single_paragraph_mode(layout: ?*pango.Layout) gboolean;
+// pub extern fn pango_layout_set_single_paragraph_mode(layout: ?*pango.Layout, setting: c_bool) void;
+// pub extern fn pango_layout_get_single_paragraph_mode(layout: ?*pango.Layout) c_bool;
 // pub extern fn pango_layout_set_ellipsize(layout: ?*pango.Layout, ellipsize: PangoEllipsizeMode) void;
 // pub extern fn pango_layout_get_ellipsize(layout: ?*pango.Layout) PangoEllipsizeMode;
-// pub extern fn pango_layout_is_ellipsized(layout: ?*pango.Layout) gboolean;
+// pub extern fn pango_layout_is_ellipsized(layout: ?*pango.Layout) c_bool;
 // pub extern fn pango_layout_get_unknown_glyphs_count(layout: ?*pango.Layout) c_int;
 // pub extern fn pango_layout_get_direction(layout: ?*pango.Layout, index: c_int) PangoDirection;
 // pub extern fn pango_layout_context_changed(layout: ?*pango.Layout) void;
@@ -80,11 +80,11 @@ pub extern fn pango_layout_get_alignment(layout: ?*pango.Layout) pango.Alignment
 // pub extern fn pango_layout_get_log_attrs(layout: ?*pango.Layout, attrs: [*c]?*PangoLogAttr, n_attrs: [*c]gint) void;
 // pub extern fn pango_layout_get_log_attrs_readonly(layout: ?*pango.Layout, n_attrs: [*c]gint) ?*const PangoLogAttr;
 // pub extern fn pango_layout_index_to_pos(layout: ?*pango.Layout, index_: c_int, pos: [*c]PangoRectangle) void;
-// pub extern fn pango_layout_index_to_line_x(layout: ?*pango.Layout, index_: c_int, trailing: gboolean, line: [*c]c_int, x_pos: [*c]c_int) void;
+// pub extern fn pango_layout_index_to_line_x(layout: ?*pango.Layout, index_: c_int, trailing: c_bool, line: [*c]c_int, x_pos: [*c]c_int) void;
 // pub extern fn pango_layout_get_cursor_pos(layout: ?*pango.Layout, index_: c_int, strong_pos: [*c]PangoRectangle, weak_pos: [*c]PangoRectangle) void;
 // pub extern fn pango_layout_get_caret_pos(layout: ?*pango.Layout, index_: c_int, strong_pos: [*c]PangoRectangle, weak_pos: [*c]PangoRectangle) void;
-// pub extern fn pango_layout_move_cursor_visually(layout: ?*pango.Layout, strong: gboolean, old_index: c_int, old_trailing: c_int, direction: c_int, new_index: [*c]c_int, new_trailing: [*c]c_int) void;
-// pub extern fn pango_layout_xy_to_index(layout: ?*pango.Layout, x: c_int, y: c_int, index_: [*c]c_int, trailing: [*c]c_int) gboolean;
+// pub extern fn pango_layout_move_cursor_visually(layout: ?*pango.Layout, strong: c_bool, old_index: c_int, old_trailing: c_int, direction: c_int, new_index: [*c]c_int, new_trailing: [*c]c_int) void;
+// pub extern fn pango_layout_xy_to_index(layout: ?*pango.Layout, x: c_int, y: c_int, index_: [*c]c_int, trailing: [*c]c_int) c_bool;
 // pub extern fn pango_layout_get_extents(layout: ?*pango.Layout, ink_rect: [*c]PangoRectangle, logical_rect: [*c]PangoRectangle) void;
 // pub extern fn pango_layout_get_pixel_extents(layout: ?*pango.Layout, ink_rect: [*c]PangoRectangle, logical_rect: [*c]PangoRectangle) void;
 // pub extern fn pango_layout_get_size(layout: ?*pango.Layout, width: [*c]c_int, height: [*c]c_int) void;
@@ -101,7 +101,7 @@ pub extern fn pango_font_description_new() ?*pango.FontDescription;
 pub extern fn pango_font_description_copy(desc: ?*const pango.FontDescription) ?*pango.FontDescription;
 pub extern fn pango_font_description_copy_static(desc: ?*const pango.FontDescription) ?*pango.FontDescription;
 pub extern fn pango_font_description_hash(desc: ?*const pango.FontDescription) c_uint;
-pub extern fn pango_font_description_equal(desc1: ?*const pango.FontDescription, desc2: ?*const pango.FontDescription) c_int; // bool
+pub extern fn pango_font_description_equal(desc1: ?*const pango.FontDescription, desc2: ?*const pango.FontDescription) c_bool;
 pub extern fn pango_font_description_free(desc: ?*pango.FontDescription) void;
 pub extern fn pango_font_descriptions_free(descs: [*c]?*pango.FontDescription, n_descs: c_int) void;
 pub extern fn pango_font_description_set_family(desc: ?*pango.FontDescription, family: [*c]const u8) void;
@@ -118,7 +118,7 @@ pub extern fn pango_font_description_get_stretch(desc: ?*const pango.FontDescrip
 pub extern fn pango_font_description_set_size(desc: ?*pango.FontDescription, size: c_int) void;
 pub extern fn pango_font_description_get_size(desc: ?*const pango.FontDescription) c_int;
 pub extern fn pango_font_description_set_absolute_size(desc: ?*pango.FontDescription, size: f64) void;
-pub extern fn pango_font_description_get_size_is_absolute(desc: ?*const pango.FontDescription) c_int; // bool
+pub extern fn pango_font_description_get_size_is_absolute(desc: ?*const pango.FontDescription) c_bool;
 pub extern fn pango_font_description_set_gravity(desc: ?*pango.FontDescription, gravity: pango.Gravity) void;
 pub extern fn pango_font_description_get_gravity(desc: ?*const pango.FontDescription) pango.Gravity;
 pub extern fn pango_font_description_set_variations_static(desc: ?*pango.FontDescription, variations: [*c]const u8) void;
@@ -126,12 +126,38 @@ pub extern fn pango_font_description_set_variations(desc: ?*pango.FontDescriptio
 pub extern fn pango_font_description_get_variations(desc: ?*const pango.FontDescription) [*c]const u8;
 pub extern fn pango_font_description_get_set_fields(desc: ?*const pango.FontDescription) pango.FontMask;
 pub extern fn pango_font_description_unset_fields(desc: ?*pango.FontDescription, to_unset: pango.FontMask) void;
-pub extern fn pango_font_description_merge(desc: ?*pango.FontDescription, desc_to_merge: ?*const pango.FontDescription, replace_existing: c_int) void; // bool
-pub extern fn pango_font_description_merge_static(desc: ?*pango.FontDescription, desc_to_merge: ?*const pango.FontDescription, replace_existing: c_int) void; // bool
-pub extern fn pango_font_description_better_match(desc: ?*const pango.FontDescription, old_match: ?*const pango.FontDescription, new_match: ?*const pango.FontDescription) c_int; // bool
+pub extern fn pango_font_description_merge(desc: ?*pango.FontDescription, desc_to_merge: ?*const pango.FontDescription, replace_existing: c_bool) void;
+pub extern fn pango_font_description_merge_static(desc: ?*pango.FontDescription, desc_to_merge: ?*const pango.FontDescription, replace_existing: c_bool) void;
+pub extern fn pango_font_description_better_match(desc: ?*const pango.FontDescription, old_match: ?*const pango.FontDescription, new_match: ?*const pango.FontDescription) c_bool;
 pub extern fn pango_font_description_from_string(str: [*c]const u8) ?*pango.FontDescription;
 pub extern fn pango_font_description_to_string(desc: ?*const pango.FontDescription) [*c]u8;
 pub extern fn pango_font_description_to_filename(desc: ?*const pango.FontDescription) [*c]u8;
+
+// LayoutIter
+pub extern fn pango_layout_get_iter(layout: ?*pango.Layout) ?*pango.Layout.Iter;
+pub extern fn pango_layout_iter_copy(iter: ?*pango.Layout.Iter) ?*pango.Layout.Iter;
+pub extern fn pango_layout_iter_free(iter: ?*pango.Layout.Iter) void;
+pub extern fn pango_layout_iter_get_index(iter: ?*pango.Layout.Iter) c_int;
+// pub extern fn pango_layout_iter_get_run(iter: ?*pango.Layout.Iter) [*c]PangoLayoutRun;
+// pub extern fn pango_layout_iter_get_run_readonly(iter: ?*pango.Layout.Iter) [*c]PangoLayoutRun;
+pub extern fn pango_layout_iter_get_line(iter: ?*pango.Layout.Iter) ?*pango.Layout.Line;
+pub extern fn pango_layout_iter_get_line_readonly(iter: ?*pango.Layout.Iter) ?*pango.Layout.Line;
+pub extern fn pango_layout_iter_at_last_line(iter: ?*pango.Layout.Iter) c_bool;
+pub extern fn pango_layout_iter_get_layout(iter: ?*pango.Layout.Iter) ?*pango.Layout;
+pub extern fn pango_layout_iter_next_char(iter: ?*pango.Layout.Iter) c_bool;
+pub extern fn pango_layout_iter_next_cluster(iter: ?*pango.Layout.Iter) c_bool;
+pub extern fn pango_layout_iter_next_run(iter: ?*pango.Layout.Iter) c_bool;
+pub extern fn pango_layout_iter_next_line(iter: ?*pango.Layout.Iter) c_bool;
+pub extern fn pango_layout_iter_get_char_extents(iter: ?*pango.Layout.Iter, logical_rect: [*c]pango.Rectangle) void;
+pub extern fn pango_layout_iter_get_cluster_extents(iter: ?*pango.Layout.Iter, ink_rect: [*c]pango.Rectangle, logical_rect: [*c]pango.Rectangle) void;
+pub extern fn pango_layout_iter_get_run_extents(iter: ?*pango.Layout.Iter, ink_rect: [*c]pango.Rectangle, logical_rect: [*c]pango.Rectangle) void;
+pub extern fn pango_layout_iter_get_line_extents(iter: ?*pango.Layout.Iter, ink_rect: [*c]pango.Rectangle, logical_rect: [*c]pango.Rectangle) void;
+pub extern fn pango_layout_iter_get_line_yrange(iter: ?*pango.Layout.Iter, y0_: [*c]c_int, y1_: [*c]c_int) void;
+pub extern fn pango_layout_iter_get_layout_extents(iter: ?*pango.Layout.Iter, ink_rect: [*c]pango.Rectangle, logical_rect: [*c]pango.Rectangle) void;
+pub extern fn pango_layout_iter_get_baseline(iter: ?*pango.Layout.Iter) c_int;
+pub extern fn pango_layout_iter_get_run_baseline(iter: ?*pango.Layout.Iter) c_int;
+
+// LayoutLine
 
 // Language
 pub extern fn pango_language_get_default() ?*pango.Language;
