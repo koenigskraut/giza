@@ -178,7 +178,7 @@ fn Mixin(comptime Self: type) type {
         /// **Parameters**
         /// - `key`: the address of a `cairo.UserDataKey` to attach the user data
         /// to
-        /// - `userData`: the user data to attach to the `cairo.Pattern`
+        /// - `user_data`: the user data to attach to the `cairo.Pattern`
         /// - `destroyFn`: a `cairo.DestroyFn` which will be called when the
         /// `cairo.Context` is destroyed or when new user data is attached using
         /// the same key.
@@ -187,8 +187,8 @@ fn Mixin(comptime Self: type) type {
         /// for the user data.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-set-user-data)
-        pub fn setUserData(self: *Self, key: *const UserDataKey, userData: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
-            return c.cairo_pattern_set_user_data(self, key, userData, destroyFn).toErr();
+        pub fn setUserData(self: *Self, key: *const UserDataKey, user_data: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
+            return c.cairo_pattern_set_user_data(self, key, user_data, destroyFn).toErr();
         }
 
         /// Return user data previously attached to `pattern` using the specified
@@ -546,9 +546,9 @@ fn Gradient(comptime Self: type) type {
         /// A convenience function that gets all color stops and offsets for
         /// this `color.Gradient`. Don't forget to `.deinit()`.
         pub fn getColorStops(self: *Self, allocator: Allocator) CairoError!ArrayList(ColorStop) {
-            const numStops = try self.getColorStopCount();
-            var stops = try ArrayList(ColorStop).initCapacity(allocator, numStops);
-            for (0..numStops) |n| {
+            const num_stops = try self.getColorStopCount();
+            var stops = try ArrayList(ColorStop).initCapacity(allocator, num_stops);
+            for (0..num_stops) |n| {
                 var stop: ColorStop = undefined;
                 try self.getColorStopRGBA(@intCast(n), &stop.offset, &stop.red, &stop.green, &stop.blue, &stop.alpha);
                 try stops.append(stop);
@@ -754,16 +754,16 @@ pub const RadialGradientPattern = opaque {
 ///        +---------------+
 ///      C0     Side 3        C3
 /// ```
-/// Each patch is constructed by first calling `meshPattern.beginPatch()`, then
-/// `meshPattern.moveTo()` to specify the first point in the patch (C0). Then
-/// the sides are specified with calls to `meshPattern.curveTo()` and
-/// `meshPattern.lineTo()`.
+/// Each patch is constructed by first calling `mesh_pattern.beginPatch()`,
+/// then `mesh_pattern.moveTo()` to specify the first point in the patch (C0).
+/// Then the sides are specified with calls to `mesh_pattern.curveTo()` and
+/// `mesh_pattern.lineTo()`.
 ///
 /// The four additional control points (P0, P1, P2, P3) in a patch can be
-/// specified with `meshPattern.setControlPoint()`.
+/// specified with `mesh_pattern.setControlPoint()`.
 ///
 /// At each corner of the patch (C0, C1, C2, C3) a color may be specified with
-/// `meshPattern.setCornerColorRGB()` or `meshPattern.setCornerColorRGBA()`.
+/// `mesh_pattern.setCornerColorRGB()` or `mesh_pattern.setCornerColorRGBA()`.
 /// Any corner whose color is not explicitly specified defaults to transparent
 /// black.
 ///
@@ -786,7 +786,7 @@ pub const RadialGradientPattern = opaque {
 /// always be the first point, corner 1 the point between side 0 and side 1
 /// etc.
 ///
-/// Calling `meshPattern.endPatch()` completes the current patch. If less than
+/// Calling `mesh_pattern.endPatch()` completes the current patch. If less than
 /// 4 sides have been defined, the first missing side is defined as a line from
 /// the current point to the first point of the patch (C0) and the other sides
 /// are degenerate lines from C0 to C0. The corners between the added sides
@@ -794,32 +794,32 @@ pub const RadialGradientPattern = opaque {
 /// be the same as the color of C0.
 ///
 /// Additional patches may be added with additional calls to
-/// `meshPattern.beginPatch()`/`meshPattern.endPatch().
+/// `mesh_pattern.beginPatch()`/`mesh_pattern.endPatch().
 /// ```zig
-/// const meshPattern = cairo.MeshPattern.create();
+/// const mesh_pattern = cairo.MeshPattern.create();
 ///
 /// // Add a Coons patch
-/// meshPattern.beginPatch();
-/// meshPattern.moveTo(0, 0);
-/// meshPattern.curveTo(30, -30,  60,  30, 100, 0);
-/// meshPattern.curveTo(60,  30, 130,  60, 100, 100);
-/// meshPattern.curveTo(60,  70,  30, 130,   0, 100);
-/// meshPattern.curveTo(30,  70, -30,  30,   0, 0);
-/// meshPattern.setCornerColorRGB(0, 1, 0, 0);
-/// meshPattern.setCornerColorRGB(1, 0, 1, 0);
-/// meshPattern.setCornerColorRGB(2, 0, 0, 1);
-/// meshPattern.setCornerColorRGB(3, 1, 1, 0);
-/// meshPattern.endPatch();
+/// mesh_pattern.beginPatch();
+/// mesh_pattern.moveTo(0, 0);
+/// mesh_pattern.curveTo(30, -30,  60,  30, 100, 0);
+/// mesh_pattern.curveTo(60,  30, 130,  60, 100, 100);
+/// mesh_pattern.curveTo(60,  70,  30, 130,   0, 100);
+/// mesh_pattern.curveTo(30,  70, -30,  30,   0, 0);
+/// mesh_pattern.setCornerColorRGB(0, 1, 0, 0);
+/// mesh_pattern.setCornerColorRGB(1, 0, 1, 0);
+/// mesh_pattern.setCornerColorRGB(2, 0, 0, 1);
+/// mesh_pattern.setCornerColorRGB(3, 1, 1, 0);
+/// mesh_pattern.endPatch();
 ///
 /// // Add a Gouraud-shaded triangle
-/// meshPattern.beginPatch();
-/// meshPattern.moveTo(100, 100);
-/// meshPattern.lineTo(130, 130);
-/// meshPattern.lineTo(130,  70);
-/// meshPattern.setCornerColorRGB(0, 1, 0, 0);
-/// meshPattern.setCornerColorRGB(1, 0, 1, 0);
-/// meshPattern.setCornerColorRGB(2, 0, 0, 1);
-/// meshPattern.endPatch();
+/// mesh_pattern.beginPatch();
+/// mesh_pattern.moveTo(100, 100);
+/// mesh_pattern.lineTo(130, 130);
+/// mesh_pattern.lineTo(130,  70);
+/// mesh_pattern.setCornerColorRGB(0, 1, 0, 0);
+/// mesh_pattern.setCornerColorRGB(1, 0, 1, 0);
+/// mesh_pattern.setCornerColorRGB(2, 0, 0, 1);
+/// mesh_pattern.endPatch();
 /// ```
 ///
 /// When two patches overlap, the last one that has been added is drawn over
@@ -870,10 +870,10 @@ pub const MeshPattern = opaque {
     /// Begin a patch in a mesh pattern.
     ///
     /// After calling this function, the patch shape should be defined with
-    /// `meshPattern.moveTo()`, `meshPattern.lineTo()` and
-    /// `meshPattern.curveTo()`.
+    /// `mesh_pattern.moveTo()`, `mesh_pattern.lineTo()` and
+    /// `mesh_pattern.curveTo()`.
     ///
-    /// After defining the patch, `meshPattern.endPatch()` must be called
+    /// After defining the patch, `mesh_pattern.endPatch()` must be called
     /// before using `pattern` as a source or mask.
     ///
     /// Note: If `self` is not a mesh pattern then `self` will be put into an
@@ -894,7 +894,7 @@ pub const MeshPattern = opaque {
     ///
     /// If the current patch has less than 4 sides, it is closed with a
     /// straight line from the current point to the first point of the patch
-    /// as if `meshPattern.lineTo()` was used.
+    /// as if `mesh_pattern.lineTo()` was used.
     ///
     /// Note: If `self` is not a mesh pattern then `self` will be put into an
     /// error status with a status of `cairo.Status.PatternTypeMismatch`,
@@ -933,8 +933,8 @@ pub const MeshPattern = opaque {
     /// Adds a line to the current patch from the current point to position
     /// `(x, y)` in pattern-space coordinates.
     ///
-    /// If there is no current point before the call to `meshPattern.lineTo()`
-    /// this function will behave as `meshPattern.moveTo(x, y)`.
+    /// If there is no current point before the call to `mesh_pattern.lineTo()`
+    /// this function will behave as `mesh_pattern.moveTo(x, y)`.
     ///
     /// After this call the current point will be `(x, y)`.
     ///
@@ -960,8 +960,8 @@ pub const MeshPattern = opaque {
     /// and `(x2, y2)` as the control points.
     ///
     /// If the current patch has no current point before the call to
-    /// `meshPattern.curveTo()`, this function will behave as if preceded by a
-    /// call to `meshPattern.moveTo(x1, y1)`.
+    /// `mesh_pattern.curveTo()`, this function will behave as if preceded by a
+    /// call to `mesh_pattern.moveTo(x1, y1)`.
     ///
     /// After this call the current point will be `(x3, y3)`.
     ///
@@ -988,7 +988,7 @@ pub const MeshPattern = opaque {
 
     /// Set an internal control point of the current patch.
     ///
-    /// Valid values for pointNum are from 0 to 3 and identify the control
+    /// Valid values for point_num are from 0 to 3 and identify the control
     /// points as explained in documentation to `cairo.MeshPattern`.
     ///
     /// Note: If `self` is not a mesh pattern then `self` will be put into an
@@ -999,12 +999,12 @@ pub const MeshPattern = opaque {
     /// of `cairo.Status.InvalidMeshConstruction`.
     ///
     /// **Parameters**
-    /// - `pointNum`: the control point to set the position for
+    /// - `point_num`: the control point to set the position for
     /// - `point`: the control point
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-set-control-point)
-    pub fn setControlPoint(self: *MeshPattern, pointNum: c_uint, point: Point) void {
-        c.cairo_mesh_pattern_set_control_point(self, pointNum, point.x, point.y);
+    pub fn setControlPoint(self: *MeshPattern, point_num: c_uint, point: Point) void {
+        c.cairo_mesh_pattern_set_control_point(self, point_num, point.x, point.y);
     }
 
     /// Sets the color of a corner of the current patch in a mesh pattern.
@@ -1012,27 +1012,27 @@ pub const MeshPattern = opaque {
     /// The color is specified in the same way as in
     /// `cairo.Context.setSourceRGB()`.
     ///
-    /// Valid values for cornerNum are from 0 to 3 and identify the corners as
+    /// Valid values for corner_num are from 0 to 3 and identify the corners as
     /// explained in documentation to `cairo.MeshPattern`.
     ///
     /// Note: If `self` is not a mesh pattern then `self` will be put into an
     /// error status with a status of `cairo.Status.PatternTypeMismatch`, you
     /// don't have to worry about that unless you've casted a pointer from one
-    /// pattern type into another, which you **SHOULDN'T**. If `cornerNum` is
+    /// pattern type into another, which you **SHOULDN'T**. If `corner_num` is
     /// not valid, pattern will be put into an error status with a status of
     /// `cairo.Status.InvalidIndex`. If pattern has no current patch, pattern
     /// will be put into an error status with a status of
     /// `cairo.Status.InvalidMeshConstruction`.
     ///
     /// **Parameters**
-    /// - `cornerNum`: the corner to set the color for
+    /// - `corner_num`: the corner to set the color for
     /// - `red`: red component of color
     /// - `green`: green component of color
     /// - `blue`: blue component of color
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-set-corner-color-rgb)
-    pub fn setCornerColorRGB(self: *MeshPattern, cornerNum: c_uint, red: f64, green: f64, blue: f64) void {
-        c.cairo_mesh_pattern_set_corner_color_rgb(self, cornerNum, red, green, blue);
+    pub fn setCornerColorRGB(self: *MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64) void {
+        c.cairo_mesh_pattern_set_corner_color_rgb(self, corner_num, red, green, blue);
     }
 
     /// Sets the color of a corner of the current patch in a mesh pattern.
@@ -1040,20 +1040,20 @@ pub const MeshPattern = opaque {
     /// The color is specified in the same way as in
     /// `cairo.Context.setSourceRGBA()`.
     ///
-    /// Valid values for cornerNum are from 0 to 3 and identify the corners as
+    /// Valid values for corner_num are from 0 to 3 and identify the corners as
     /// explained in documentation to `cairo.MeshPattern`.
     ///
     /// Note: If `self` is not a mesh pattern then `self` will be put into an
     /// error status with a status of `cairo.Status.PatternTypeMismatch`, you
     /// don't have to worry about that unless you've casted a pointer from one
-    /// pattern type into another, which you **SHOULDN'T**. If `cornerNum` is
+    /// pattern type into another, which you **SHOULDN'T**. If `corner_num` is
     /// not valid, pattern will be put into an error status with a status of
     /// `cairo.Status.InvalidIndex`. If pattern has no current patch, pattern
     /// will be put into an error status with a status of
     /// `cairo.Status.InvalidMeshConstruction`.
     ///
     /// **Parameters**
-    /// - `cornerNum`: the corner to set the color for
+    /// - `corner_num`: the corner to set the color for
     /// - `red`: red component of color
     /// - `green`: green component of color
     /// - `blue`: blue component of color
@@ -1067,7 +1067,7 @@ pub const MeshPattern = opaque {
     /// Gets the number of patches specified in the given mesh pattern.
     ///
     /// The number only includes patches which have been finished by calling
-    /// `meshPattern.endPatch()`. For example it will be 0 during the
+    /// `mesh_pattern.endPatch()`. For example it will be 0 during the
     /// definition of the first patch.
     ///
     /// **Returns**
@@ -1085,25 +1085,25 @@ pub const MeshPattern = opaque {
         return @intCast(count);
     }
 
-    /// Gets path defining the patch `patchNum` for a mesh pattern.
+    /// Gets path defining the patch `patch_num` for a mesh pattern.
     ///
     /// `patch_num` can range from 0 to n-1 where n is the number returned by
-    /// `meshPattern.getPatchCount()`.
+    /// `mesh_pattern.getPatchCount()`.
     ///
     /// **Parameters**
-    /// - `patchNum`: the patch number to return data for
+    /// - `patch_num`: the patch number to return data for
     ///
     /// **Returns**
     ///
     /// the path defining the patch, or a path with status
-    /// `cairo.Status.InvalidIndex` if `patchNum` is not valid for `pattern`.
+    /// `cairo.Status.InvalidIndex` if `patch_num` is not valid for `pattern`.
     /// If `pattern` is not a mesh pattern, a path with status
     /// `cairo.Status.PatternTypeMismatch` is returned, you don't have to worry
     /// about that unless you've casted a pointer from one pattern type into
     /// another, which you **SHOULDN'T**.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-get-path)
-    pub fn getPath(self: *MeshPattern, patchNum: u32) *Path {
+    pub fn getPath(self: *MeshPattern, patch_num: u32) *Path {
         // TODO: who ownes this? check with valgrind or smth, ChatGPT says:
         // Based on the available information, the ownership of the struct
         // returned by the c.cairo_mesh_pattern_get_path function depends on
@@ -1115,64 +1115,64 @@ pub const MeshPattern = opaque {
         // c.cairo_mesh_pattern_end_patch, then the user becomes the owner of the
         // returned struct and is responsible for destroying it when it is no
         // longer needed.
-        return c.cairo_mesh_pattern_get_path(self, @intCast(patchNum)).?;
+        return c.cairo_mesh_pattern_get_path(self, @intCast(patch_num)).?;
     }
 
-    /// Gets the control point `pointNum` of patch `patchNum` for a mesh
+    /// Gets the control point `point_num` of patch `patch_num` for a mesh
     /// pattern.
     ///
-    /// `patchNum` can range from 0 to n-1 where n is the number returned by
-    /// `meshPattern.getPatchCount()`.
+    /// `patch_num` can range from 0 to n-1 where n is the number returned by
+    /// `mesh_pattern.getPatchCount()`.
     ///
-    /// Valid values for pointNum are from 0 to 3 and identify the control
+    /// Valid values for point_num are from 0 to 3 and identify the control
     /// points as explained in documentation to `cairo.MeshPattern`.
     ///
     /// **Parameters**
-    /// - `patchNum`: the patch number to return data for
-    /// - `pointNum`: the control point number to return data for
+    /// - `patch_num`: the patch number to return data for
+    /// - `point_num`: the control point number to return data for
     ///
     /// **Returns**
     ///
     /// coordinates of the control point.
     ///
-    /// Possible errors are: `error.InvalidIndex` if `patchNum` or `pointNum`
+    /// Possible errors are: `error.InvalidIndex` if `patch_num` or `point_num`
     /// is not valid for `self` and `error.PatternTypeMismatch` (you don't have
     /// to worry about that unless you've casted a pointer from one pattern
     /// type into another, which you **SHOULDN'T**).
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-get-control-point)
-    pub fn getControlPoint(self: *MeshPattern, patchNum: u32, pointNum: u32) CairoError!Point {
+    pub fn getControlPoint(self: *MeshPattern, patch_num: u32, point_num: u32) CairoError!Point {
         // TODO: check if undefined is problematic here
         var point: Point = undefined;
-        try c.cairo_mesh_pattern_get_control_point(self, @intCast(patchNum), @intCast(pointNum), &point.x, &point.y).toErr();
+        try c.cairo_mesh_pattern_get_control_point(self, @intCast(patch_num), @intCast(point_num), &point.x, &point.y).toErr();
         return point;
     }
 
-    /// Gets the color information in corner `cornerNum` of patch `patchNum`
+    /// Gets the color information in corner `corner_num` of patch `patch_num`
     /// for a mesh pattern.
     ///
-    /// `patchNum` can range from 0 to n-1 where n is the number returned by
-    /// `meshPattern.getPatchCount()`.
+    /// `patch_num` can range from 0 to n-1 where n is the number returned by
+    /// `mesh_pattern.getPatchCount()`.
     ///
-    /// Valid values for pointNum are from 0 to 3 and identify the control
+    /// Valid values for point_num are from 0 to 3 and identify the control
     /// points as explained in documentation to `cairo.MeshPattern`.
     ///
     /// **Parameters**
-    /// - `patchNum`: the patch number to return data for
-    /// - `cornerNum`: the corner number to return data for
+    /// - `patch_num`: the patch number to return data for
+    /// - `corner_num`: the corner number to return data for
     /// - `red`: return value for red component of color, or `null`
     /// - `green`: return value for green component of color, or `null`
     /// - `blue`: return value for blue component of color, or `null`
     /// - `alpha`: return value for alpha component of color, or `null`
     ///
-    /// Possible errors are: `error.InvalidIndex` if `patchNum` or `cornerNum`
-    /// is not valid for `self` and `error.PatternTypeMismatch` (you don't have
-    /// to worry about that unless you've casted a pointer from one pattern
-    /// type into another, which you **SHOULDN'T**).
+    /// Possible errors are: `error.InvalidIndex` if `patch_num` or
+    /// `corner_num` is not valid for `self` and `error.PatternTypeMismatch`
+    /// (you don't have to worry about that unless you've casted a pointer from
+    /// one pattern type into another, which you **SHOULDN'T**).
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-get-corner-color-rgba)
-    pub fn getCornerColorRGBA(self: *MeshPattern, patchNum: u32, cornerNum: u32, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
-        try c.cairo_mesh_pattern_get_corner_color_rgba(self, @intCast(patchNum), @intCast(cornerNum), red, green, blue, alpha).toErr();
+    pub fn getCornerColorRGBA(self: *MeshPattern, patch_num: u32, corner_num: u32, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
+        try c.cairo_mesh_pattern_get_corner_color_rgba(self, @intCast(patch_num), @intCast(corner_num), red, green, blue, alpha).toErr();
     }
 };
 
@@ -1200,7 +1200,7 @@ pub const RasterSourcePattern = opaque {
     /// The only mandatory callback is acquire.
     ///
     /// **Parameters**
-    /// - `userData`: the user data to be passed to all callbacks
+    /// - `user_data`: the user data to be passed to all callbacks
     /// - `content`: content type for the pixel data that will be returned. Knowing
     /// the content type ahead of time is used for analysing the operation and
     /// picking the appropriate rendering path.
@@ -1220,9 +1220,9 @@ pub const RasterSourcePattern = opaque {
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-pattern-create-raster-source)
-    pub fn create(userData: ?*anyopaque, content: Content, width: c_int, height: c_int) CairoError!*Pattern {
+    pub fn create(user_data: ?*anyopaque, content: Content, width: c_int, height: c_int) CairoError!*Pattern {
         // TODO: fix doc example
-        const pattern = c.cairo_pattern_create_raster_source(userData, content, width, height).?;
+        const pattern = c.cairo_pattern_create_raster_source(user_data, content, width, height).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
         return pattern;
@@ -1365,7 +1365,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// **Parameters**
     /// - `pattern`: the pattern being rendered from
-    /// - `callbackData`: the user data supplied during creation
+    /// - `callback_data`: the user data supplied during creation
     /// - `target`: the rendering target surface
     /// - `extents`: rectangular region of interest in pixels in sample space
     ///
@@ -1374,7 +1374,7 @@ pub const RasterSourcePattern = opaque {
     /// a `cairo.Surface`
     ///
     /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-acquire-func-t)
-    pub const AcquireFn = *const fn (pattern: ?*Pattern, callbackData: ?*anyopaque, target: ?*Surface, extents: ?*const RectangleInt) callconv(.C) ?*Surface;
+    pub const AcquireFn = *const fn (pattern: ?*Pattern, callback_data: ?*anyopaque, target: ?*Surface, extents: ?*const RectangleInt) callconv(.C) ?*Surface;
 
     /// `cairo.RasterSourcePattern.ReleaseFn` is the type of function which is
     /// called when the pixel data is no longer being access by the pattern for
@@ -1383,11 +1383,11 @@ pub const RasterSourcePattern = opaque {
     ///
     /// **Parameters**
     /// - `pattern`: the pattern being rendered from
-    /// - `callbackData`: the user data supplied during creation
+    /// - `callback_data`: the user data supplied during creation
     /// - `surface`: the surface created during acquire
     ///
     /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-release-func-t)
-    pub const ReleaseFn = ?*const fn (pattern: ?*Pattern, callbackData: ?*anyopaque, surface: ?*Surface) callconv(.C) void;
+    pub const ReleaseFn = ?*const fn (pattern: ?*Pattern, callback_data: ?*anyopaque, surface: ?*Surface) callconv(.C) void;
 
     /// `cairo.RasterSourcePattern.SnapshotFn` is the type of function which is
     /// called when the pixel data needs to be preserved for later use during
@@ -1396,7 +1396,7 @@ pub const RasterSourcePattern = opaque {
     ///
     /// **Parameters**
     /// - `pattern`: the pattern being rendered from
-    /// - `callbackData`: the user data supplied during creation
+    /// - `callback_data`: the user data supplied during creation
     ///
     /// **Returns**
     ///
@@ -1404,14 +1404,14 @@ pub const RasterSourcePattern = opaque {
     /// codes for failure.
     ///
     /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-snapshot-func-t)
-    pub const SnapshotFn = ?*const fn (pattern: ?*Pattern, callbackData: ?*anyopaque) callconv(.C) Status;
+    pub const SnapshotFn = ?*const fn (pattern: ?*Pattern, callback_data: ?*anyopaque) callconv(.C) Status;
 
     /// `cairo.RasterSourcePattern.CopyFn` is the type of function which is
     /// called when the pattern gets copied as a normal part of rendering.
     ///
     /// **Parameters**
     /// - `pattern`: the `cairo.Pattern` that was copied to
-    /// - `callbackData`: the user data supplied during creation
+    /// - `callback_data`: the user data supplied during creation
     /// - `other`: the `cairo.Pattern` being used as the source for the copy
     ///
     /// **Returns**
@@ -1420,17 +1420,17 @@ pub const RasterSourcePattern = opaque {
     /// codes for failure.
     ///
     /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-copy-func-t)
-    pub const CopyFn = ?*const fn (pattern: ?*Pattern, callbackData: ?*anyopaque, other: ?*const Pattern) callconv(.C) Status;
+    pub const CopyFn = ?*const fn (pattern: ?*Pattern, callback_data: ?*anyopaque, other: ?*const Pattern) callconv(.C) Status;
 
     /// `cairo.RasterSourcePattern.SnapshotFn` is the type of function which is
     /// called when the pattern (or a copy thereof) is no longer required.
     ///
     /// **Parameters**
     /// - `pattern`: the pattern being rendered from
-    /// - `callbackData`: the user data supplied during creation
+    /// - `callback_data`: the user data supplied during creation
     ///
     /// [Lnk to Cairo manual](https://www.cairographics.org/manual/cairo-Raster-Sources.html#cairo-raster-source-finish-func-t)
-    pub const FinishFn = ?*const fn (pattern: ?*Pattern, callbackData: ?*anyopaque) callconv(.C) void;
+    pub const FinishFn = ?*const fn (pattern: ?*Pattern, callback_data: ?*anyopaque) callconv(.C) void;
 };
 
 /// Holds info about color stop for gradient patterns

@@ -56,9 +56,9 @@ pub const SvgSurface = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-SVG-Surfaces.html#cairo-svg-get-versions)
     pub fn getSvgVersions() []const SvgVersion {
         var ptr: [*c]SvgVersion = undefined;
-        var numVersions: c_int = undefined;
-        c.cairo_svg_get_versions(@ptrCast(&ptr), &numVersions);
-        return ptr[0..@as(usize, @intCast(numVersions))];
+        var num_versions: c_int = undefined;
+        c.cairo_svg_get_versions(@ptrCast(&ptr), &num_versions);
+        return ptr[0..@as(usize, @intCast(num_versions))];
         // TODO
     }
 

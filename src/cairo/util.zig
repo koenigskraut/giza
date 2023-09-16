@@ -304,9 +304,9 @@ pub fn createReadFn(comptime readerT: type) ReadFn {
     const T = @Type(.{ .Pointer = info });
 
     const S = struct {
-        pub fn readFn(erasedStream: ?*const anyopaque, data: [*c]u8, len: c_uint) callconv(.C) Status {
-            const castedStream: T = @ptrCast(@alignCast(erasedStream));
-            const read = castedStream.readAll(data[0..len]) catch return .ReadError;
+        pub fn readFn(erased_stream: ?*const anyopaque, data: [*c]u8, len: c_uint) callconv(.C) Status {
+            const casted_stream: T = @ptrCast(@alignCast(erased_stream));
+            const read = casted_stream.readAll(data[0..len]) catch return .ReadError;
             return if (read == len) .Success else .ReadError;
         }
     };
@@ -316,15 +316,15 @@ pub fn createReadFn(comptime readerT: type) ReadFn {
 
 test "ReadFn" {
     var buf = [_]u8{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    var readBuf: [buf.len]u8 = undefined;
+    var read_buf: [buf.len]u8 = undefined;
 
     var stream = std.io.fixedBufferStream(&buf);
     var reader = stream.reader();
 
     const readFn = createReadFn(@TypeOf(&reader));
-    const status = readFn.?(@ptrCast(&reader), &readBuf, readBuf.len);
+    const status = readFn.?(@ptrCast(&reader), &read_buf, read_buf.len);
     try testing.expect(status == .Success);
-    try testing.expectEqualSlices(u8, buf[0..], readBuf[0..]);
+    try testing.expectEqualSlices(u8, buf[0..], read_buf[0..]);
 }
 
 /// `cairo.WriteFn` is the type of function which is called when a backend
@@ -349,9 +349,9 @@ pub fn createWriteFn(comptime writerT: type) WriteFn {
     const T = @Type(.{ .Pointer = info });
 
     const S = struct {
-        pub fn writeFn(erasedStream: ?*const anyopaque, data: [*c]const u8, len: c_uint) callconv(.C) Status {
-            const castedStream: T = @ptrCast(@alignCast(erasedStream));
-            castedStream.writeAll(data[0..len]) catch return .WriteError;
+        pub fn writeFn(erased_stream: ?*const anyopaque, data: [*c]const u8, len: c_uint) callconv(.C) Status {
+            const casted_stream: T = @ptrCast(@alignCast(erased_stream));
+            casted_stream.writeAll(data[0..len]) catch return .WriteError;
             return .Success;
         }
     };
@@ -360,16 +360,16 @@ pub fn createWriteFn(comptime writerT: type) WriteFn {
 }
 
 test "WriteFn" {
-    var writeBuf = [_]u8{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    var buf: [writeBuf.len]u8 = undefined;
+    var write_buf = [_]u8{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    var buf: [write_buf.len]u8 = undefined;
 
     var stream = std.io.fixedBufferStream(&buf);
     var writer = stream.writer();
 
     const writeFn = createWriteFn(@TypeOf(&writer));
-    const status = writeFn.?(@ptrCast(&writer), &writeBuf, writeBuf.len);
+    const status = writeFn.?(@ptrCast(&writer), &write_buf, write_buf.len);
     try testing.expect(status == .Success);
-    try testing.expectEqualSlices(u8, writeBuf[0..], buf[0..]);
+    try testing.expectEqualSlices(u8, write_buf[0..], buf[0..]);
 }
 
 /// `cairo.DestroyFn` is the type of function which is called when a data

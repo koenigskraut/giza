@@ -4,19 +4,19 @@ const builtin = @import("builtin");
 var arena: ?std.heap.ArenaAllocator = undefined;
 pub const tracing = builtin.mode == .Debug;
 
-const ibT = if (tracing) [16 * 16]usize else [0]usize;
-var instructionsBuffer: ibT = undefined;
-var ibEnd: usize = 0;
+const ib_T = if (tracing) [16 * 16]usize else [0]usize;
+var instructions_buffer: ib_T = undefined;
+var ib_end: usize = 0;
 
 const LeakInfo = struct {
     count: usize,
     st: std.builtin.StackTrace,
-    typeName: []const u8,
+    type_name: []const u8,
     ptr: *anyopaque,
 };
-const liT = if (tracing) [16]LeakInfo else [0]LeakInfo;
-var leakInfos: liT = undefined;
-var liEnd: usize = 0;
+const li_T = if (tracing) [16]LeakInfo else [0]LeakInfo;
+var leak_infos: li_T = undefined;
+var li_end: usize = 0;
 
 var instructions: []usize = undefined;
 var leaks: std.AutoArrayHashMap(usize, LeakInfo) = undefined;
@@ -56,38 +56,38 @@ const LeaksWriter = union(enum) {
     }
 };
 
-var leaksWriter: LeaksWriter = undefined;
-var ttyConfig: ?std.io.tty.Config = null;
+var leaks_writer: LeaksWriter = undefined;
+var tty_config: ?std.io.tty.Config = null;
 
 fn init() void {
     arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     instructions = arena.?.allocator().alloc(usize, 512) catch unreachable;
-    ttyConfig = ttyConfig orelse std.io.tty.detectConfig(std.io.getStdErr());
+    tty_config = tty_config orelse std.io.tty.detectConfig(std.io.getStdErr());
     leaks = @TypeOf(leaks).init(arena.?.allocator());
-    leaksWriter = LeaksWriter{ .FileWriter = std.io.getStdErr().writer() };
+    leaks_writer = LeaksWriter{ .FileWriter = std.io.getStdErr().writer() };
     _ = atexit(&detectLeaks);
 }
 
 pub fn markForLeakDetection(address: usize, ptr: anytype) !void {
     if (arena == null) init();
 
-    if (ibEnd >= instructions.len) {
-        const newSlice = try arena.?.allocator().alloc(usize, instructions.len * 2);
-        @memcpy(newSlice[0..instructions.len], instructions);
-        instructions = newSlice;
+    if (ib_end >= instructions.len) {
+        const new_slice = try arena.?.allocator().alloc(usize, instructions.len * 2);
+        @memcpy(new_slice[0..instructions.len], instructions);
+        instructions = new_slice;
     }
 
-    var leakInfo: LeakInfo = undefined;
-    leakInfo.count = 1;
-    leakInfo.st.instruction_addresses = instructions[ibEnd..];
-    leakInfo.typeName = trimmedTypeName(@TypeOf(ptr));
-    leakInfo.ptr = ptr;
+    var leak_info: LeakInfo = undefined;
+    leak_info.count = 1;
+    leak_info.st.instruction_addresses = instructions[ib_end..];
+    leak_info.type_name = trimmedTypeName(@TypeOf(ptr));
+    leak_info.ptr = ptr;
 
-    std.debug.captureStackTrace(address, &(leakInfo.st));
+    std.debug.captureStackTrace(address, &(leak_info.st));
 
-    try leaks.put(@intFromPtr(ptr), leakInfo);
-    ibEnd += leakInfo.st.index;
-    liEnd += 1;
+    try leaks.put(@intFromPtr(ptr), leak_info);
+    ib_end += leak_info.st.index;
+    li_end += 1;
 }
 
 pub fn reference(address: usize, ptr: anytype) void {
@@ -116,24 +116,24 @@ pub export fn detectLeaks() void {
     defer {
         if (arena) |a| a.deinit();
         arena = null;
-        leakInfos = undefined;
-        ibEnd = 0;
-        liEnd = 0;
+        leak_infos = undefined;
+        ib_end = 0;
+        li_end = 0;
         if (error_state) @panic("giza safety check failure");
     }
-    const writer = leaksWriter;
+    const writer = leaks_writer;
     var it = leaks.iterator();
     while (it.next()) |pair| {
         error_state = true;
-        const debugInfo = std.debug.getSelfDebugInfo() catch |err| {
+        const debug_info = std.debug.getSelfDebugInfo() catch |err| {
             writer.print("\nUnable to print stack trace: Unable to open debug info: {s}\n", .{@errorName(err)}) catch return;
             return;
         };
         const li = pair.value_ptr;
-        writer.print("[giza] (err): Leak detected! {s}@{x} leaked:\n", .{ li.typeName, @intFromPtr(li.ptr) }) catch |err| {
+        writer.print("[giza] (err): Leak detected! {s}@{x} leaked:\n", .{ li.type_name, @intFromPtr(li.ptr) }) catch |err| {
             writer.print("Unable to print stack trace: {s}\n", .{@errorName(err)}) catch return;
         };
-        std.debug.writeStackTrace(li.st, writer, arena.?.allocator(), debugInfo, ttyConfig.?) catch |err| {
+        std.debug.writeStackTrace(li.st, writer, arena.?.allocator(), debug_info, tty_config.?) catch |err| {
             writer.print("Unable to print stack trace: {s}\n", .{@errorName(err)}) catch return;
         };
         writer.print("\n", .{}) catch unreachable;
@@ -142,11 +142,11 @@ pub export fn detectLeaks() void {
 
 pub inline fn trimmedTypeName(comptime T: type) []const u8 {
     comptime {
-        var typeName: []const u8 = @typeName(T);
-        const startPtr = std.mem.lastIndexOf(u8, typeName, "*") orelse 0;
-        typeName = typeName[startPtr + 1 ..];
-        const startType = std.mem.lastIndexOf(u8, typeName, ".") orelse 0;
-        return typeName[startType + 1 ..];
+        var type_name: []const u8 = @typeName(T);
+        const start_ptr = std.mem.lastIndexOf(u8, type_name, "*") orelse 0;
+        type_name = type_name[start_ptr + 1 ..];
+        const startType = std.mem.lastIndexOf(u8, type_name, ".") orelse 0;
+        return type_name[startType + 1 ..];
     }
 }
 

@@ -246,9 +246,9 @@ pub const PdfSurface = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PDF-Surfaces.html#cairo-pdf-get-versions)
     pub fn getPdfVersions() []const PdfSurface.PdfVersion {
         var ptr: [*c]PdfVersion = undefined;
-        var numVersions: c_int = undefined;
-        c.cairo_pdf_get_versions(@ptrCast(&ptr), &numVersions);
-        return ptr[0..@intCast(numVersions)];
+        var num_versions: c_int = undefined;
+        c.cairo_pdf_get_versions(@ptrCast(&ptr), &num_versions);
+        return ptr[0..@intCast(num_versions)];
         // TODO
     }
 

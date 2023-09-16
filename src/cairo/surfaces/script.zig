@@ -180,7 +180,7 @@ pub const ScriptSurface = opaque {
     /// ```zig
     /// const device = try cairo.Script.create("script.txt");
     /// defer device.destroy();
-    /// const image = try cairo.ImageSurface.create(.ARGB32, 100, 100);
+    /// const image = try cairo.ImageSurface.create(.argb32, 100, 100);
     /// defer image.destroy();
     /// const surface = try cairo.ScriptSurface.createForTarget(device, surface.asSurface());
     /// defer surface.destroy();

@@ -41,16 +41,16 @@ pub const ImageSurface = opaque {
     /// `surface.destroy()` when done with it. You can use idiomatic Zig
     /// pattern with `defer`:
     /// ```zig
-    /// const surface = cairo.ImageSurface.create(.ARGB32, 100, 100);
+    /// const surface = cairo.ImageSurface.create(.argb32, 100, 100);
     /// defer surface.destroy();
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-create)
     pub fn create(format: Format, width: u16, height: u16) CairoError!*ImageSurface {
-        const imageSurface = c.cairo_image_surface_create(format, width, height).?;
-        try imageSurface.status().toErr();
-        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
-        return imageSurface;
+        const image = c.cairo_image_surface_create(format, width, height).?;
+        try image.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
+        return image;
     }
 
     /// Creates an image surface for the provided pixel data. The output buffer
@@ -93,10 +93,10 @@ pub const ImageSurface = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-image-surface-create-for-data)
     pub fn createForData(data: [*c]u8, format: Format, width: u16, height: u16, stride: u18) CairoError!*ImageSurface {
         // TODO: check destroy
-        const imageSurface = c.cairo_image_surface_create_for_data(data, format, width, height, stride).?;
-        try imageSurface.status().toErr();
-        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
-        return imageSurface;
+        const image = c.cairo_image_surface_create_for_data(data, format, width, height, stride).?;
+        try image.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
+        return image;
     }
 
     /// Creates a new image surface and initializes the contents to the given
@@ -125,11 +125,11 @@ pub const ImageSurface = opaque {
     pub fn createFromPNG(filename: []const u8) (CairoError || error{NameTooLong})!*ImageSurface {
         // TODO: allow errors to propagate?
         var buf: [4097]u8 = undefined;
-        const fileNameZ = std.fmt.bufPrintZ(&buf, "{s}", .{filename}) catch return error.NameTooLong;
-        const imageSurface = c.cairo_image_surface_create_from_png(fileNameZ.ptr).?;
-        try imageSurface.status().toErr();
-        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
-        return imageSurface;
+        const filename_z = std.fmt.bufPrintZ(&buf, "{s}", .{filename}) catch return error.NameTooLong;
+        const image = c.cairo_image_surface_create_from_png(filename_z.ptr).?;
+        try image.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
+        return image;
     }
 
     /// Creates a new image surface from PNG data read incrementally via the
@@ -159,10 +159,10 @@ pub const ImageSurface = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png-stream)
     pub fn createFromPNGStream(reader: anytype) CairoError!*ImageSurface {
         const readFn = cairo.createReadFn(@TypeOf(reader));
-        const imageSurface = c.cairo_image_surface_create_from_png_stream(readFn, reader).?;
-        try imageSurface.status().toErr();
-        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), imageSurface);
-        return imageSurface;
+        const image = c.cairo_image_surface_create_from_png_stream(readFn, reader).?;
+        try image.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), image);
+        return image;
     }
 
     /// Get a pointer to the data of the image surface, for direct inspection
@@ -218,9 +218,9 @@ pub const ImageSurface = opaque {
 
 test "ImageSurface" {
     {
-        const surface = try ImageSurface.create(.ARGB32, 512, 256);
+        const surface = try ImageSurface.create(.argb32, 512, 256);
         defer surface.destroy();
-        try testing.expectEqual(Format.ARGB32, surface.getFormat());
+        try testing.expectEqual(Format.argb32, surface.getFormat());
         try testing.expectEqual(@as(u16, 512), surface.getWidth());
         try testing.expectEqual(@as(u16, 256), surface.getHeight());
         try testing.expectEqual(@as(u18, 512 * 4), surface.getStride());

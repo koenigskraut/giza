@@ -70,8 +70,8 @@ const cairo = @import("../../cairo.zig");
 const c = cairo.c;
 const Context = cairo.Context;
 
-/// Marks the beginning of the `tagName` structure. Call `ctx.tagEnd()` with
-/// the same `tagName` to mark the end of the structure.
+/// Marks the beginning of the `tag_name` structure. Call `ctx.tagEnd()` with
+/// the same `tag_name` to mark the end of the structure.
 ///
 /// The `attributes` string is of the form `"key1=value2 key2=value2 ..."`.
 /// Values may be boolean (true/false or 1/0), integer, float, string, or an
@@ -92,15 +92,15 @@ const Context = cairo.Context;
 /// for the list of tags and attributes.
 ///
 /// **Parameters**
-/// - `tagName`: tag name
+/// - `tag_name`: tag name
 /// - `attributes`: tag attributes
 ///
 /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-Tags-and-Links.html#cairo-tag-begin)
-pub fn tagBegin(self: *Context, tagName: [:0]const u8, attributes: ?[:0]const u8) void {
-    c.cairo_tag_begin(self, tagName, attributes orelse null);
+pub fn tagBegin(self: *Context, tag_name: [:0]const u8, attributes: ?[:0]const u8) void {
+    c.cairo_tag_begin(self, tag_name, attributes orelse null);
 }
 
-/// Marks the end of the `tagName` structure.
+/// Marks the end of the `tag_name` structure.
 ///
 /// Invalid nesting of tags will cause `self` to shutdown with a status of
 /// `cairo.Status.TagError`.
@@ -108,11 +108,11 @@ pub fn tagBegin(self: *Context, tagName: [:0]const u8, attributes: ?[:0]const u8
 /// See `cairo.Context.tagBegin()`.
 ///
 /// **Parameters**
-/// - `tagName`: tag name
+/// - `tag_name`: tag name
 ///
 /// [Link to Cairo documentation](https://www.cairographics.org/manual/cairo-Tags-and-Links.html#cairo-tag-end)
-pub fn tagEnd(self: *Context, tagName: [:0]const u8) void {
-    c.cairo_tag_end(self, tagName);
+pub fn tagEnd(self: *Context, tag_name: [:0]const u8) void {
+    c.cairo_tag_end(self, tag_name);
 }
 
 pub const TagDest = "cairo.dest";

@@ -460,11 +460,11 @@ pub const Mixin = struct {
     /// The default fill rule is `.Winding`.
     ///
     /// **Parameters**
-    /// - `fillRule`: a fill rule, specified as a `cairo.Context.FillRule`
+    /// - `fill_rule`: a fill rule, specified as a `cairo.Context.FillRule`
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-fill-rule)
-    pub fn setFillRule(self: *Context, fillRule: FillRule) void {
-        c.cairo_set_fill_rule(self, fillRule);
+    pub fn setFillRule(self: *Context, fill_rule: FillRule) void {
+        c.cairo_set_fill_rule(self, fill_rule);
     }
 
     /// Gets the current fill rule, as set by `ctx.setFillRule()`.
@@ -490,11 +490,11 @@ pub const Mixin = struct {
     /// The default line cap style is `.Butt`.
     ///
     /// **Parameters**
-    /// - `lineCap`: a line cap style
+    /// - `line_cap`: a line cap style
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-line-cap)
-    pub fn setLineCap(self: *Context, lineCap: LineCap) void {
-        c.cairo_set_line_cap(self, lineCap);
+    pub fn setLineCap(self: *Context, line_cap: LineCap) void {
+        c.cairo_set_line_cap(self, line_cap);
     }
 
     /// Gets the current line cap style, as set by `ctx.setLineCap()`.
@@ -520,11 +520,11 @@ pub const Mixin = struct {
     /// The default line join style is `.Miter`.
     ///
     /// **Parameters**
-    /// - `lineJoin`: a line join style
+    /// - `line_join`: a line join style
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-line-join)
-    pub fn setLineJoin(self: *Context, lineJoin: LineJoin) void {
-        c.cairo_set_line_join(self, lineJoin);
+    pub fn setLineJoin(self: *Context, line_join: LineJoin) void {
+        c.cairo_set_line_join(self, line_join);
     }
 
     /// Gets the current line join style, as set by `ctx.setLineJoin()`.
@@ -559,11 +559,11 @@ pub const Mixin = struct {
     /// The default line width value is 2.0.
     ///
     /// **Parameters**
-    /// - `lineWidth`: a line width
+    /// - `line_width`: a line width
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-line-width)
-    pub fn setLineWidth(self: *Context, lineWidth: f64) void {
-        c.cairo_set_line_width(self, lineWidth);
+    pub fn setLineWidth(self: *Context, line_width: f64) void {
+        c.cairo_set_line_width(self, line_width);
     }
 
     /// This function returns the current line width value exactly as set by
@@ -871,12 +871,12 @@ pub const Mixin = struct {
     ///
     /// **Parameters**
     /// - `surface`: a `cairo.Surface`
-    /// - `surfaceX`: X coordinate at which to place the origin of `surface`
-    /// - `surfaceY`: Y coordinate at which to place the origin of `surface`
+    /// - `surface_x`: X coordinate at which to place the origin of `surface`
+    /// - `surface_y`: Y coordinate at which to place the origin of `surface`
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-mask-surface)
-    pub fn maskSurface(self: *Context, surface: *Surface, surfaceX: f64, surfaceY: f64) void {
-        c.cairo_mask_surface(self, surface, surfaceX, surfaceY);
+    pub fn maskSurface(self: *Context, surface: *Surface, surface_x: f64, surface_y: f64) void {
+        c.cairo_mask_surface(self, surface, surface_x, surface_y);
     }
 
     /// A drawing operator that paints the current source everywhere within the
@@ -1031,7 +1031,7 @@ pub const Mixin = struct {
     /// **Parameters**
     /// - `key`: the address of a `cairo.UserDataKey` to attach the user data
     /// to
-    /// - `userData`: the user data to attach to the `cairo.Context`
+    /// - `user_data`: the user data to attach to the `cairo.Context`
     /// - `destroyFn`: a `cairo.DestroyFn` which will be called when the
     /// `cairo.Context` is destroyed or when new user data is attached using
     /// the same key.
@@ -1040,8 +1040,8 @@ pub const Mixin = struct {
     /// a slot could not be allocated for the user data.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-user-data)
-    pub fn setUserData(self: *Context, key: *const UserDataKey, userData: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
-        try c.cairo_set_user_data(self, key, userData, destroyFn).toErr();
+    pub fn setUserData(self: *Context, key: *const UserDataKey, user_data: ?*anyopaque, destroyFn: DestroyFn) CairoError!void {
+        try c.cairo_set_user_data(self, key, user_data, destroyFn).toErr();
     }
 
     /// Return user data previously attached to `self` using the specified key.

@@ -154,28 +154,28 @@ pub const Surface = opaque {
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Image-Surfaces.html#cairo-format-t)
     pub const Format = enum(c_int) {
         /// no such format exists or is supported
-        INVALID = -1,
+        invalid = -1,
         /// each pixel is a 32-bit quantity, with alpha in the upper8 bits,
         /// then red, then green, then blue. The 32-bit quantities are stored
         /// native-endian. Pre-multiplied alpha is used (That is, 50%
         /// transparent red is 0x80800000, not 0x80ff0000)
-        ARGB32,
+        argb32,
         /// each pixel is a 32-bit quantity, with the upper 8 bits unused. Red,
         /// Green, and Blue are stored in the remaining 24 bits in that order
-        RGB24,
+        rgb24,
         /// each pixel is a 8-bit quantity holding an alpha value
-        A8,
+        a8,
         /// each pixel is a 1-bit quantity holding an alpha value. Pixels are
         /// packed together into 32-bit quantities. The ordering of the bits
         /// matches the endianness of the platform. On a big-endian machine,
         /// the first pixel is in the uppermost bit, on a little-endian machine
         /// the first pixel is in the least-significant bit
-        A1,
+        a1,
         /// each pixel is a 16-bit quantity with red in the upper 5 bits, then
         /// green in the middle 6 bits, and blue in the lower 5 bits
-        RGB16_565,
-        /// like RGB24 but with 10bpc
-        RGB30,
+        rgb16_565,
+        /// like rgb24 but with 10bpc
+        rgb30,
         _,
 
         /// This function provides a stride value that will respect all
@@ -184,7 +184,7 @@ pub const Surface = opaque {
         ///
         /// Typical usage will be of the form:
         /// ```zig
-        /// const format = cairo.Surface.Format.ARGB32;
+        /// const format = cairo.Surface.Format.argb32;
         /// const stride = try format.strideForWidth(width);
         /// const data = try allocator.alloc(u8, @as(usize, stride) * height);
         /// const surface = try cairo.ImageSurface.createForData(data.ptr, format, width, height, stride);
@@ -195,7 +195,7 @@ pub const Surface = opaque {
         pub fn strideForWidth(self: Format, width: c_int) !u18 {
             // TODO: check example, rework it? work on createForData func?
             const stride = switch (self) {
-                .ARGB32, .RGB24, .A8, .A1, .RGB16_565, .RGB30 => c.cairo_format_stride_for_width(self, width),
+                .argb32, .rgb24, .a8, .a1, .rgb16_565, .rgb30 => c.cairo_format_stride_for_width(self, width),
                 else => return error.InvalidFormat,
             };
             if (stride == -1) return error.WidthTooLarge;
@@ -335,7 +335,7 @@ pub fn Base(comptime Self: type) type {
         /// `surface.destroy()` when done with it. You can use idiomatic Zig
         /// pattern with `defer`:
         /// ```zig
-        /// const image = surface.createSimilarImage(.ARGB32, 100, 100);
+        /// const image = surface.createSimilarImage(.argb32, 100, 100);
         /// defer image.destroy();
         /// ```
         ///
@@ -378,7 +378,7 @@ pub fn Base(comptime Self: type) type {
         /// `surface.destroy()` when done with it. You can use idiomatic Zig
         /// pattern with `defer`:
         /// ```zig
-        /// const image = surface.createSimilarImage(.ARGB32, 100, 100);
+        /// const image = surface.createSimilarImage(.argb32, 100, 100);
         /// defer image.destroy();
         /// ```
         ///
@@ -867,8 +867,8 @@ pub fn Base(comptime Self: type) type {
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-surface-write-to-png)
         pub fn writeToPNG(surface: *Self, filename: []const u8) (CairoError || error{NameTooLong})!void {
             var buf: [4097]u8 = undefined;
-            const fileNameZ = std.fmt.bufPrintZ(&buf, "{s}", .{filename}) catch return error.NameTooLong;
-            return c.cairo_surface_write_to_png(surface, fileNameZ.ptr).toErr();
+            const filename_z = std.fmt.bufPrintZ(&buf, "{s}", .{filename}) catch return error.NameTooLong;
+            return c.cairo_surface_write_to_png(surface, filename_z.ptr).toErr();
         }
 
         /// Writes the image surface to the `writer` stream.

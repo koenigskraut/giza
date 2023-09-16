@@ -229,7 +229,7 @@ pub const RectangleList = extern struct {
 };
 
 test "RectangleList" {
-    const surface = try cairo.ImageSurface.create(.ARGB32, 10, 10);
+    const surface = try cairo.ImageSurface.create(.argb32, 10, 10);
     defer surface.destroy();
     const context = try cairo.Context.create(surface.asSurface());
     defer context.destroy();
@@ -242,8 +242,8 @@ test "RectangleList" {
     const rects = try context.copyClipRectangleList();
     defer rects.destroy();
 
-    const expectRect = Rectangle{ .x = 0, .y = 0, .width = 5, .height = 5 };
+    const expect_rect = Rectangle{ .x = 0, .y = 0, .width = 5, .height = 5 };
     try testing.expect(rects.num_rectangles == 1);
-    try testing.expectEqual(expectRect, rects.rectangles[0]);
-    try testing.expectEqualSlices(Rectangle, &.{expectRect}, rects.asSlice());
+    try testing.expectEqual(expect_rect, rects.rectangles[0]);
+    try testing.expectEqualSlices(Rectangle, &.{expect_rect}, rects.asSlice());
 }
