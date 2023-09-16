@@ -21,6 +21,7 @@ const Status = cairo.Status;
 pub const Context = opaque {
     pub usingnamespace @import("drawing/basic.zig").Mixin;
     pub usingnamespace @import("drawing/paths.zig").Mixin;
+    pub usingnamespace @import("drawing/transformations.zig");
     pub usingnamespace @import("drawing/text.zig").Mixin;
     pub usingnamespace @import("drawing/tags_and_links.zig");
     pub usingnamespace if (build.@"no-pango") struct {
