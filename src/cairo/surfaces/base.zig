@@ -865,7 +865,7 @@ pub fn Base(comptime Self: type) type {
         /// ```
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-surface-write-to-png)
-        pub fn writeToPNG(surface: *Self, filename: []const u8) (CairoError || error{NameTooLong})!void {
+        pub fn writeToPng(surface: *Self, filename: []const u8) (CairoError || error{NameTooLong})!void {
             var buf: [4097]u8 = undefined;
             const filename_z = std.fmt.bufPrintZ(&buf, "{s}", .{filename}) catch return error.NameTooLong;
             return c.cairo_surface_write_to_png(surface, filename_z.ptr).toErr();
@@ -883,7 +883,7 @@ pub fn Base(comptime Self: type) type {
         /// ```
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png-stream)
-        pub fn writeToPNGStream(surface: *Self, writer: anytype) CairoError!void {
+        pub fn writeToPngStream(surface: *Self, writer: anytype) CairoError!void {
             const writeFn = cairo.createWriteFn(@TypeOf(writer));
             return c.cairo_surface_write_to_png_stream(surface, writeFn, writer).toErr();
         }

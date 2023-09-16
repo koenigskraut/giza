@@ -117,12 +117,12 @@ pub const ImageSurface = opaque {
     /// `surface.destroy()` when done with it. You can use idiomatic Zig
     /// pattern with `defer`:
     /// ```zig
-    /// const surface = cairo.ImageSurface.createFromPNG("file.png");
+    /// const surface = cairo.ImageSurface.createFromPng("file.png");
     /// defer surface.destroy();
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png)
-    pub fn createFromPNG(filename: []const u8) (CairoError || error{NameTooLong})!*ImageSurface {
+    pub fn createFromPng(filename: []const u8) (CairoError || error{NameTooLong})!*ImageSurface {
         // TODO: allow errors to propagate?
         var buf: [4097]u8 = undefined;
         const filename_z = std.fmt.bufPrintZ(&buf, "{s}", .{filename}) catch return error.NameTooLong;
@@ -152,12 +152,12 @@ pub const ImageSurface = opaque {
     /// pattern with `defer`:
     /// ```zig
     /// var file = try std.fs.cwd.open("image.png", .{});
-    /// const surface = cairo.ImageSurface.createFromPNGStream(&file);
+    /// const surface = cairo.ImageSurface.createFromPngStream(&file);
     /// defer surface.destroy();
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-PNG-Support.html#cairo-image-surface-create-from-png-stream)
-    pub fn createFromPNGStream(reader: anytype) CairoError!*ImageSurface {
+    pub fn createFromPngStream(reader: anytype) CairoError!*ImageSurface {
         const readFn = cairo.createReadFn(@TypeOf(reader));
         const image = c.cairo_image_surface_create_from_png_stream(readFn, reader).?;
         try image.status().toErr();
@@ -229,9 +229,9 @@ test "ImageSurface" {
     }
 }
 
-// test "createFromPNGStream" {
+// test "createFromPngStream" {
 //     var file1 = try std.fs.cwd().openFile("out1.png", .{});
-//     const surface = try ImageSurface.createFromPNGStream(&file1);
+//     const surface = try ImageSurface.createFromPngStream(&file1);
 //     defer surface.destroy();
 //     const ctx = try cairo.Context.create(surface.asSurface());
 //     defer ctx.destroy();
@@ -239,5 +239,5 @@ test "ImageSurface" {
 //     ctx.setSourceRgba(0, 0, 0, 0.8);
 //     ctx.fill();
 //     var file2 = try std.fs.cwd().createFile("out2.png", .{});
-//     try surface.writeToPNGStream(&file2);
+//     try surface.writeToPngStream(&file2);
 // }
