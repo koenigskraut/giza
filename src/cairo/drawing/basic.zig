@@ -271,7 +271,7 @@ pub const Mixin = struct {
     /// If the values passed in are outside that range, they will be clamped.
     ///
     /// The default source pattern is opaque black, (that is, it is equivalent
-    /// to `ctx.setSourceRGB(0.0, 0.0, 0.0)`).
+    /// to `ctx.setSourceRgb(0.0, 0.0, 0.0)`).
     ///
     /// **Parameters**
     /// - `red`: red component of color
@@ -279,7 +279,7 @@ pub const Mixin = struct {
     /// - `blue`: blue component of color
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-source-rgb)
-    pub fn setSourceRGB(self: *Context, red: f64, green: f64, blue: f64) void {
+    pub fn setSourceRgb(self: *Context, red: f64, green: f64, blue: f64) void {
         c.cairo_set_source_rgb(self, red, green, blue);
     }
 
@@ -292,7 +292,7 @@ pub const Mixin = struct {
     /// clamped.
     ///
     /// The default source pattern is opaque black, (that is, it is equivalent
-    /// to `ctx.setSourceRGBA(0.0, 0.0, 0.0, 1.0)`).
+    /// to `ctx.setSourceRgba(0.0, 0.0, 0.0, 1.0)`).
     ///
     /// **Parameters**
     /// - `red`: red component of color
@@ -301,7 +301,7 @@ pub const Mixin = struct {
     /// - `alpha`: alpha component of color
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-set-source-rgba)
-    pub fn setSourceRGBA(self: *Context, red: f64, green: f64, blue: f64, alpha: f64) void {
+    pub fn setSourceRgba(self: *Context, red: f64, green: f64, blue: f64, alpha: f64) void {
         c.cairo_set_source_rgba(self, red, green, blue, alpha);
     }
 
@@ -315,7 +315,7 @@ pub const Mixin = struct {
     /// affect the source pattern. See `cairo.Pattern.setMatrix()`.
     ///
     /// The default source pattern is a solid pattern that is opaque black,
-    /// (that is, it is equivalent to `ctx.setSourceRGB(0.0, 0.0, 0.0)`).
+    /// (that is, it is equivalent to `ctx.setSourceRgb(0.0, 0.0, 0.0)`).
     ///
     /// **Parameters**
     /// - `source`: a `cairo.Pattern` to be used as the source for subsequent

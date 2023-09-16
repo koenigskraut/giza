@@ -212,7 +212,7 @@ fn Mixin(comptime Self: type) type {
 
 /// A `cairo.Pattern` represents a source when drawing onto a surface. There
 /// are different subtypes of `cairo.Pattern`, for different types of sources;
-/// for example, `cairo.SolidPattern.createRGB()` creates a pattern for a solid
+/// for example, `cairo.SolidPattern.createRgb()` creates a pattern for a solid
 /// opaque color.
 ///
 /// **IMPORTANT**: you should **NOT** create pointers to this type manually.
@@ -223,7 +223,7 @@ fn Mixin(comptime Self: type) type {
 ///
 /// Other than various `cairo.Pattern.create*Type*()` functions, some of the
 /// pattern types can be implicitly created using various
-/// `ctx.setSource*Type*()` functions; for example `ctx.setSourceRGB()`.
+/// `ctx.setSource*Type*()` functions; for example `ctx.setSourceRgb()`.
 ///
 /// The type of a pattern can be queried with `pattern.getType()`.
 ///
@@ -237,7 +237,7 @@ pub const Pattern = opaque {
     /// `cairo.Pattern.Type` is used to describe the type of a given pattern.
     ///
     /// The type of a pattern is determined by the function used to create it.
-    /// The `cairo.Pattern.createRGB()` and `cairo.Pattern.createRGBA()`
+    /// The `cairo.Pattern.createRgb()` and `cairo.Pattern.createRgba()`
     /// functions create SOLID patterns. The remaining cairo.Pattern.create
     /// functions map to pattern types in obvious ways.
     ///
@@ -246,7 +246,7 @@ pub const Pattern = opaque {
     /// Most `cairo.Pattern` functions can be called with a pattern of any
     /// type, (though trying to change the extend or filter for a solid pattern
     /// will have no effect). A notable exception is
-    /// `pattern.addColorStopRGB()` and `pattern.addColorStopRGBA()` which must
+    /// `pattern.addColorStopRgb()` and `pattern.addColorStopRgba()` which must
     /// only be called with gradient patterns (either `.Linear` or `.Radial`).
     /// Otherwise the pattern will be shutdown and put into an error state.
     ///
@@ -334,12 +334,12 @@ pub const SolidPattern = opaque {
     /// `pattern.destroy()` when done with it. You can use idiomatic Zig
     /// pattern with `defer`:
     /// ```zig
-    /// const pattern = cairo.SolidPattern.createRGB(0.3, 0.6, 0.9);
+    /// const pattern = cairo.SolidPattern.createRgb(0.3, 0.6, 0.9);
     /// defer pattern.destroy();
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-rgb)
-    pub fn createRGB(red: f64, green: f64, blue: f64) CairoError!*SolidPattern {
+    pub fn createRgb(red: f64, green: f64, blue: f64) CairoError!*SolidPattern {
         const pattern = c.cairo_pattern_create_rgb(red, green, blue).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
@@ -366,12 +366,12 @@ pub const SolidPattern = opaque {
     /// `pattern.destroy()` when done with it. You can use idiomatic Zig
     /// pattern with `defer`:
     /// ```zig
-    /// const pattern = cairo.SolidPattern.createRGBA(0.3, 0.6, 0.9, 0.5);
+    /// const pattern = cairo.SolidPattern.createRgba(0.3, 0.6, 0.9, 0.5);
     /// defer pattern.destroy();
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-create-rgba)
-    pub fn createRGBA(red: f64, green: f64, blue: f64, alpha: f64) CairoError!*SolidPattern {
+    pub fn createRgba(red: f64, green: f64, blue: f64, alpha: f64) CairoError!*SolidPattern {
         const pattern = c.cairo_pattern_create_rgba(red, green, blue, alpha).?;
         try pattern.status().toErr();
         if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), pattern);
@@ -391,7 +391,7 @@ pub const SolidPattern = opaque {
     /// type into another, which you **SHOULDN'T**.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-rgba)
-    pub fn getRGBA(self: *SolidPattern, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
+    pub fn getRgba(self: *SolidPattern, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
         try c.cairo_pattern_get_rgba(self, red, green, blue, alpha).toErr();
     }
 };
@@ -486,7 +486,7 @@ fn Gradient(comptime Self: type) type {
         /// (x1,y1) while a radial gradient's control vector is from any point
         /// on the start circle to the corresponding point on the end circle.
         ///
-        /// The color is specified in the same way as in `ctx.setSourceRGB()`.
+        /// The color is specified in the same way as in `ctx.setSourceRgb()`.
         ///
         /// If two (or more) stops are specified with identical offset values,
         /// they will be sorted according to the order in which the stops are
@@ -507,7 +507,7 @@ fn Gradient(comptime Self: type) type {
         /// - `blue`: blue component of color
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-add-color-stop-rgb)
-        pub fn addColorStopRGB(self: *Self, offset: f64, red: f64, green: f64, blue: f64) void {
+        pub fn addColorStopRgb(self: *Self, offset: f64, red: f64, green: f64, blue: f64) void {
             c.cairo_pattern_add_color_stop_rgb(self, offset, red, green, blue);
         }
 
@@ -517,7 +517,7 @@ fn Gradient(comptime Self: type) type {
         /// (x1,y1) while a radial gradient's control vector is from any point
         /// on the start circle to the corresponding point on the end circle.
         ///
-        /// The color is specified in the same way as in `ctx.setSourceRGBA()`.
+        /// The color is specified in the same way as in `ctx.setSourceRgba()`.
         ///
         /// If two (or more) stops are specified with identical offset values,
         /// they will be sorted according to the order in which the stops are
@@ -539,7 +539,7 @@ fn Gradient(comptime Self: type) type {
         /// - `alpha`: alpha component of color
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-add-color-stop-rgba)
-        pub fn addColorStopRGBA(self: *Self, offset: f64, red: f64, green: f64, blue: f64, alpha: f64) void {
+        pub fn addColorStopRgba(self: *Self, offset: f64, red: f64, green: f64, blue: f64, alpha: f64) void {
             c.cairo_pattern_add_color_stop_rgba(self, offset, red, green, blue, alpha);
         }
 
@@ -550,7 +550,7 @@ fn Gradient(comptime Self: type) type {
             var stops = try ArrayList(ColorStop).initCapacity(allocator, num_stops);
             for (0..num_stops) |n| {
                 var stop: ColorStop = undefined;
-                try self.getColorStopRGBA(@intCast(n), &stop.offset, &stop.red, &stop.green, &stop.blue, &stop.alpha);
+                try self.getColorStopRgba(@intCast(n), &stop.offset, &stop.red, &stop.green, &stop.blue, &stop.alpha);
                 try stops.append(stop);
             }
             return stops;
@@ -593,7 +593,7 @@ fn Gradient(comptime Self: type) type {
         /// you **SHOULDN'T**).
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-pattern-get-color-stop-rgba)
-        pub fn getColorStopRGBA(self: *Self, index: c_int, offset: ?*f64, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
+        pub fn getColorStopRgba(self: *Self, index: c_int, offset: ?*f64, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
             try c.cairo_pattern_get_color_stop_rgba(self, index, offset, red, green, blue, alpha).toErr();
         }
     };
@@ -605,7 +605,7 @@ pub const LinearGradientPattern = opaque {
     /// Create a new linear gradient `cairo.LinearGradientPattern` along the
     /// line defined by (x0, y0) and (x1, y1). Before using the gradient
     /// pattern, a number of color stops should be defined using
-    /// `pattern.addColorStopRGB()` or `pattern.addColorStopRGBA()`.
+    /// `pattern.addColorStopRgb()` or `pattern.addColorStopRgba()`.
     ///
     /// Note: The coordinates here are in pattern space. For a new pattern,
     /// pattern space is identical to user space, but the relationship between
@@ -664,8 +664,8 @@ pub const RadialGradientPattern = opaque {
     /// Creates a new radial gradient `cairo.RadialGradientPattern` between the
     /// two circles defined by (cx0, cy0, radius0) and (cx1, cy1, radius1).
     /// Before using the gradient pattern, a number of color stops should be
-    /// defined using `pattern.addColorStopRGB()` or
-    /// `pattern.addColorStopRGBA()`.
+    /// defined using `pattern.addColorStopRgb()` or
+    /// `pattern.addColorStopRgba()`.
     ///
     /// Note: The coordinates here are in pattern space. For a new pattern,
     /// pattern space is identical to user space, but the relationship between
@@ -763,7 +763,7 @@ pub const RadialGradientPattern = opaque {
 /// specified with `mesh_pattern.setControlPoint()`.
 ///
 /// At each corner of the patch (C0, C1, C2, C3) a color may be specified with
-/// `mesh_pattern.setCornerColorRGB()` or `mesh_pattern.setCornerColorRGBA()`.
+/// `mesh_pattern.setCornerColorRgb()` or `mesh_pattern.setCornerColorRgba()`.
 /// Any corner whose color is not explicitly specified defaults to transparent
 /// black.
 ///
@@ -805,10 +805,10 @@ pub const RadialGradientPattern = opaque {
 /// mesh_pattern.curveTo(60,  30, 130,  60, 100, 100);
 /// mesh_pattern.curveTo(60,  70,  30, 130,   0, 100);
 /// mesh_pattern.curveTo(30,  70, -30,  30,   0, 0);
-/// mesh_pattern.setCornerColorRGB(0, 1, 0, 0);
-/// mesh_pattern.setCornerColorRGB(1, 0, 1, 0);
-/// mesh_pattern.setCornerColorRGB(2, 0, 0, 1);
-/// mesh_pattern.setCornerColorRGB(3, 1, 1, 0);
+/// mesh_pattern.setCornerColorRgb(0, 1, 0, 0);
+/// mesh_pattern.setCornerColorRgb(1, 0, 1, 0);
+/// mesh_pattern.setCornerColorRgb(2, 0, 0, 1);
+/// mesh_pattern.setCornerColorRgb(3, 1, 1, 0);
 /// mesh_pattern.endPatch();
 ///
 /// // Add a Gouraud-shaded triangle
@@ -816,9 +816,9 @@ pub const RadialGradientPattern = opaque {
 /// mesh_pattern.moveTo(100, 100);
 /// mesh_pattern.lineTo(130, 130);
 /// mesh_pattern.lineTo(130,  70);
-/// mesh_pattern.setCornerColorRGB(0, 1, 0, 0);
-/// mesh_pattern.setCornerColorRGB(1, 0, 1, 0);
-/// mesh_pattern.setCornerColorRGB(2, 0, 0, 1);
+/// mesh_pattern.setCornerColorRgb(0, 1, 0, 0);
+/// mesh_pattern.setCornerColorRgb(1, 0, 1, 0);
+/// mesh_pattern.setCornerColorRgb(2, 0, 0, 1);
 /// mesh_pattern.endPatch();
 /// ```
 ///
@@ -1010,7 +1010,7 @@ pub const MeshPattern = opaque {
     /// Sets the color of a corner of the current patch in a mesh pattern.
     ///
     /// The color is specified in the same way as in
-    /// `cairo.Context.setSourceRGB()`.
+    /// `cairo.Context.setSourceRgb()`.
     ///
     /// Valid values for corner_num are from 0 to 3 and identify the corners as
     /// explained in documentation to `cairo.MeshPattern`.
@@ -1031,14 +1031,14 @@ pub const MeshPattern = opaque {
     /// - `blue`: blue component of color
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-set-corner-color-rgb)
-    pub fn setCornerColorRGB(self: *MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64) void {
+    pub fn setCornerColorRgb(self: *MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64) void {
         c.cairo_mesh_pattern_set_corner_color_rgb(self, corner_num, red, green, blue);
     }
 
     /// Sets the color of a corner of the current patch in a mesh pattern.
     ///
     /// The color is specified in the same way as in
-    /// `cairo.Context.setSourceRGBA()`.
+    /// `cairo.Context.setSourceRgba()`.
     ///
     /// Valid values for corner_num are from 0 to 3 and identify the corners as
     /// explained in documentation to `cairo.MeshPattern`.
@@ -1060,7 +1060,7 @@ pub const MeshPattern = opaque {
     /// - `alpha`: alpha component of color
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-set-corner-color-rgba)
-    pub fn setCornerColorRGBA(self: *MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64, alpha: f64) void {
+    pub fn setCornerColorRgba(self: *MeshPattern, corner_num: c_uint, red: f64, green: f64, blue: f64, alpha: f64) void {
         c.cairo_mesh_pattern_set_corner_color_rgba(self, corner_num, red, green, blue, alpha);
     }
 
@@ -1171,7 +1171,7 @@ pub const MeshPattern = opaque {
     /// one pattern type into another, which you **SHOULDN'T**).
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html#cairo-mesh-pattern-get-corner-color-rgba)
-    pub fn getCornerColorRGBA(self: *MeshPattern, patch_num: u32, corner_num: u32, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
+    pub fn getCornerColorRgba(self: *MeshPattern, patch_num: u32, corner_num: u32, red: ?*f64, green: ?*f64, blue: ?*f64, alpha: ?*f64) CairoError!void {
         try c.cairo_mesh_pattern_get_corner_color_rgba(self, @intCast(patch_num), @intCast(corner_num), red, green, blue, alpha).toErr();
     }
 };

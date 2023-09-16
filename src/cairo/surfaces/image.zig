@@ -236,7 +236,7 @@ test "ImageSurface" {
 //     const ctx = try cairo.Context.create(surface.asSurface());
 //     defer ctx.destroy();
 //     ctx.rectangle(.{ .x = 500, .y = 300, .width = 80, .height = 80 });
-//     ctx.setSourceRGBA(0, 0, 0, 0.8);
+//     ctx.setSourceRgba(0, 0, 0, 0.8);
 //     ctx.fill();
 //     var file2 = try std.fs.cwd().createFile("out2.png", .{});
 //     try surface.writeToPNGStream(&file2);
