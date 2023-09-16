@@ -374,6 +374,142 @@ pub const Layout = opaque {
         return c.pango_layout_get_alignment(self);
     }
 
+    // pub extern fn pango_layout_set_tabs(layout: ?*pango.Layout, tabs: ?*PangoTabArray) void;
+    // pub extern fn pango_layout_get_tabs(layout: ?*pango.Layout) ?*PangoTabArray;
+
+    /// Sets the single paragraph mode of `self`.
+    ///
+    /// If `setting` is `true`, do not treat newlines and similar characters as
+    /// paragraph separators; instead, keep all text in a single paragraph, and
+    /// display a glyph for paragraph separator characters. Used when you want
+    /// to allow editing of newlines on a single text line.
+    ///
+    /// The default value is `false`.
+    ///
+    /// **Parameters**
+    /// - `setting`: new setting
+    pub fn setSingleParagraphMode(self: *Layout, setting: bool) void {
+        c.pango_layout_set_single_paragraph_mode(self, if (setting) 1 else 0);
+    }
+
+    /// Obtains whether `self` is in single paragraph mode.
+    ///
+    /// See `pango.Layout.setSingleParagraphMode()`.
+    ///
+    /// **Returns**
+    ///
+    /// `true` if the layout does not break paragraphs at paragraph separator
+    /// characters, `false` otherwise.
+    pub fn getSingleParagraphMode(self: *Layout) bool {
+        return c.pango_layout_get_single_paragraph_mode(self) != 0;
+    }
+
+    /// Sets the type of ellipsization being performed for `self`.
+    ///
+    /// Depending on the ellipsization mode `ellipsize` text is removed from
+    /// the start, middle, or end of text so they fit within the width and
+    /// height of layout set with `pango.Layout.setWidth()` and
+    /// `pango.Layout.setHeight()`.
+    ///
+    /// If the layout contains characters such as newlines that force it to be
+    /// layed out in multiple paragraphs, then whether each paragraph is
+    /// ellipsized separately or the entire layout is ellipsized as a whole
+    /// depends on the set height of the layout.
+    ///
+    /// The default value is `pango.EllipsizeMode.None`.
+    ///
+    /// See `pango.Layout.setHeight()` for details.
+    ///
+    /// **Parameters**
+    /// - `ellipsize`: the new ellipsization mode for `self`.
+    pub fn setEllipsize(self: *Layout, ellipsize: pango.EllipsizeMode) void {
+        c.pango_layout_set_ellipsize(self, ellipsize);
+    }
+
+    /// Gets the type of ellipsization being performed for `self`.
+    ///
+    /// See `pango.Layout.setEllipsize()`.
+    ///
+    /// Use `pango.Layout.isEllipsized()` to query whether any paragraphs
+    /// were actually ellipsized.
+    ///
+    /// **Returns**
+    ///
+    /// the current ellipsization mode for `self`.
+    pub fn getEllipsize(self: *Layout) pango.EllipsizeMode {
+        return c.pango_layout_get_ellipsize(self);
+    }
+
+    /// Queries whether the layout had to ellipsize any paragraphs.
+    ///
+    /// This returns `true` if the ellipsization mode for layout is not
+    /// `pango.EllipsizeMode.None`, a positive width is set on layout, and
+    /// there are paragraphs exceeding that width that have to be ellipsized.
+    ///
+    /// **Returns**
+    ///
+    /// `true` if any paragraphs had to be ellipsized, `false` otherwise.
+    pub fn isEllipsized(self: *Layout) bool {
+        return c.pango_layout_is_ellipsized(self) != 0;
+    }
+
+    /// Counts the number of unknown glyphs in `self`.
+    ///
+    /// This function can be used to determine if there are any fonts available
+    /// to render all characters in a certain string, or when used in
+    /// combination with PANGO_ATTR_FALLBACK, to check if a certain font
+    /// supports all the characters in the string.
+    ///
+    /// **Returns**
+    ///
+    /// the number of unknown glyphs in `self`.
+    pub fn getUnknownGlyphsCount(self: *Layout) u32 {
+        // TODO: fix desc
+        return @intCast(c.pango_layout_get_unknown_glyphs_count(self));
+    }
+
+    /// Gets the text direction at the given character position in `self`.
+    ///
+    /// **Parameters**
+    /// - `index`: the byte index of the char.
+    ///
+    /// **Returns**
+    ///
+    /// the text direction at `index`.
+    pub fn getDirection(self: *Layout, index: u32) pango.Direction {
+        return c.pango_layout_get_direction(self, @intCast(index));
+    }
+
+    /// Forces recomputation of any state in the PangoLayout that might depend
+    /// on the layout’s context.
+    ///
+    /// This function should be called if you make changes to the context
+    /// subsequent to creating the layout.
+    pub fn contextChanged(self: *Layout) void {
+        c.pango_layout_context_changed(self);
+    }
+
+    /// Returns the current serial number of `self`.
+    ///
+    /// The serial number is initialized to an small number larger than zero
+    /// when a new layout is created and is increased whenever the layout is
+    /// changed using any of the setter functions, or the PangoContext it uses
+    /// has changed. The serial may wrap, but will never have the value 0.
+    /// Since it can wrap, never compare it with “less than”, always use “not
+    /// equals”.
+    ///
+    /// This can be used to automatically detect changes to a `pango.Layout`,
+    /// and is useful for example to decide whether a layout needs redrawing.
+    /// To force the serial to be increased, use
+    /// `pango.Layout.contextChanged()`.
+    ///
+    /// **Returns**
+    ///
+    /// the current serial number of `self`.
+    pub fn getSerial(self: *Layout) u32 {
+        return @intCast(c.pango_layout_get_serial(self));
+    }
+
     /// Increases the reference count of `self`.
     ///
     /// **Returns**
@@ -383,6 +519,38 @@ pub const Layout = opaque {
         if (safety.tracing) safety.reference(@returnAddress(), self);
         return @ptrCast(c.g_object_ref(self).?);
     }
+
+    // pub extern fn pango_layout_get_log_attrs(layout: ?*pango.Layout, attrs: [*c]?*PangoLogAttr, n_attrs: [*c]gint) void;
+    // pub extern fn pango_layout_get_log_attrs_readonly(layout: ?*pango.Layout, n_attrs: [*c]gint) ?*const PangoLogAttr;
+    // pub extern fn pango_layout_index_to_pos(layout: ?*pango.Layout, index_: c_int, pos: [*c]PangoRectangle) void;
+    // pub extern fn pango_layout_index_to_line_x(layout: ?*pango.Layout, index_: c_int, trailing: c_bool, line: [*c]c_int, x_pos: [*c]c_int) void;
+    // pub extern fn pango_layout_get_cursor_pos(layout: ?*pango.Layout, index_: c_int, strong_pos: [*c]PangoRectangle, weak_pos: [*c]PangoRectangle) void;
+    // pub extern fn pango_layout_get_caret_pos(layout: ?*pango.Layout, index_: c_int, strong_pos: [*c]PangoRectangle, weak_pos: [*c]PangoRectangle) void;
+    // pub extern fn pango_layout_move_cursor_visually(layout: ?*pango.Layout, strong: c_bool, old_index: c_int, old_trailing: c_int, direction: c_int, new_index: [*c]c_int, new_trailing: [*c]c_int) void;
+    // pub extern fn pango_layout_xy_to_index(layout: ?*pango.Layout, x: c_int, y: c_int, index_: [*c]c_int, trailing: [*c]c_int) c_bool;
+    // pub extern fn pango_layout_get_extents(layout: ?*pango.Layout, ink_rect: [*c]PangoRectangle, logical_rect: [*c]PangoRectangle) void;
+    // pub extern fn pango_layout_get_pixel_extents(layout: ?*pango.Layout, ink_rect: [*c]PangoRectangle, logical_rect: [*c]PangoRectangle) void;
+
+    /// Determines the logical width and height of a `pango.Layout` in Pango
+    /// units.
+    ///
+    /// This is simply a convenience function around
+    /// `pango.Layout.getExtents()`.
+    ///
+    /// **Parameters**
+    /// - `width`: location to store the logical width
+    /// - `height`: location to store the logical height
+    pub fn getSize(self: *pango.Layout, width: ?*i32, height: ?*i32) void {
+        c.pango_layout_get_size(self, @ptrCast(width), @ptrCast(height));
+    }
+
+    // pub extern fn pango_layout_get_pixel_size(layout: ?*pango.Layout, width: [*c]c_int, height: [*c]c_int) void;
+    // pub extern fn pango_layout_get_baseline(layout: ?*pango.Layout) c_int;
+    // pub extern fn pango_layout_get_line_count(layout: ?*pango.Layout) c_int;
+    // pub extern fn pango_layout_get_line(layout: ?*pango.Layout, line: c_int) ?*pango.LayoutLine;
+    // pub extern fn pango_layout_get_line_readonly(layout: ?*pango.Layout, line: c_int) ?*pango.LayoutLine;
+    // pub extern fn pango_layout_get_lines(layout: ?*pango.Layout) [*c]GSList;
+    // pub extern fn pango_layout_get_lines_readonly(layout: ?*pango.Layout) [*c]GSList;
 
     /// Decreases the reference count on layout by one. If the result is zero,
     /// then `self` and all associated resources are freed. See

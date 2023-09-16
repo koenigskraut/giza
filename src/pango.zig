@@ -12,6 +12,8 @@ pub const FontDescription = @import("pango/font_description.zig").FontDescriptio
 pub const FontMap = @import("pango/font_map.zig").FontMap;
 pub const FontFamily = @import("pango/font_family.zig").FontFamily;
 
+pub const SCALE = 1024;
+
 pub const c = @import("pango/c.zig");
 
 comptime {
