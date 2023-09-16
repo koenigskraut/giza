@@ -380,6 +380,7 @@ pub const Glyph = extern struct {
     pub fn allocate(num_glyphs: usize) error{OutOfMemory}![]Glyph {
         // TODO: fix desc
         const ptr: [*]Glyph = c.cairo_glyph_allocate(@intCast(num_glyphs)) orelse return error.OutOfMemory;
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), ptr);
         return ptr[0..num_glyphs];
     }
 
