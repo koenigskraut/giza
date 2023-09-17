@@ -34,7 +34,6 @@ Zig version is 0.11.0.
 
     +   const opts = .{ .target = target, .optimize = optimize };
     +   const dep = b.dependency("giza", opts);
-    +   const json_module = b.dependency("json", opts).module("json");
     +
     +   const cairo_module = dep.module("cairo");
     +   const pango_module = dep.module("pango");
@@ -46,10 +45,10 @@ Zig version is 0.11.0.
             .target = target,
             .optimize = optimize,
         });
-    +   lib.addModule("cairo", cairo_module);
-    +   lib.addModule("pango", pango_module);
-    +   lib.addModule("pangocairo", pangocairo_module);
-    +   lib.linkSystemLibrary("pangocairo"); // if you need both cairo and pango, use this
+    +   exe.addModule("cairo", cairo_module);
+    +   exe.addModule("pango", pango_module);
+    +   exe.addModule("pangocairo", pangocairo_module);
+    +   exe.linkSystemLibrary("pangocairo"); // if you need both cairo and pango, use this
         exe.install();
 
         ...
