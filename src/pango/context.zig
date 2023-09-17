@@ -1,3 +1,4 @@
+const build = @import("build_options");
 const pango = @import("../pango.zig");
 const c = pango.c;
 const safety = pango.safety;
@@ -13,6 +14,8 @@ const Direction = pango.Direction;
 ///
 /// To obtain a `pango.Context`, use `pango.FontMap.createContext()`.
 pub const Context = opaque {
+    pub usingnamespace @import("pangocairo").pango_context;
+
     // TODO: fix desc
     /// Creates a new `pango.Context` initialized to default values.
     ///

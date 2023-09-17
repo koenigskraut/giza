@@ -23,6 +23,13 @@ pub extern fn pango_cairo_show_layout_line(cr: ?*cairo.Context, line: ?*pango.La
 pub extern fn pango_cairo_show_layout(cr: ?*cairo.Context, layout: ?*pango.Layout) void;
 pub extern fn pango_cairo_show_error_underline(cr: ?*cairo.Context, x: f64, y: f64, width: f64, height: f64) void;
 // pub extern fn pango_cairo_glyph_string_path(cr: ?*cairo.Context, font: [*c]PangoFont, glyphs: [*c]PangoGlyphString) void;
-pub extern fn pango_cairo_layout_line_path(cr: ?*cairo.Context, line: ?*pango.Layout.Line) void;
 pub extern fn pango_cairo_layout_path(cr: ?*cairo.Context, layout: ?*pango.Layout) void;
+pub extern fn pango_cairo_layout_line_path(cr: ?*cairo.Context, line: ?*pango.Layout.Line) void;
 pub extern fn pango_cairo_error_underline_path(cr: ?*cairo.Context, x: f64, y: f64, width: f64, height: f64) void;
+
+pub extern fn pango_cairo_context_set_font_options(context: ?*pango.Context, options: ?*const cairo.FontOptions) void;
+pub extern fn pango_cairo_context_get_font_options(context: ?*pango.Context) ?*const cairo.FontOptions;
+pub extern fn pango_cairo_context_set_resolution(context: ?*pango.Context, dpi: f64) void;
+pub extern fn pango_cairo_context_get_resolution(context: ?*pango.Context) f64;
+pub extern fn pango_cairo_context_set_shape_renderer(context: ?*pango.Context, func: pangocairo.ShapeRendererFunc, data: ?*anyopaque, dnotify: pango.GDestroyNotify) void;
+pub extern fn pango_cairo_context_get_shape_renderer(context: ?*pango.Context, data: [*c]?*anyopaque) pangocairo.ShapeRendererFunc;

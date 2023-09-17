@@ -96,6 +96,15 @@ pub fn showErrorUnderline(self: *cairo.Context, x: f64, y: f64, width: f64, heig
 
 // pub extern fn pango_cairo_glyph_string_path(cr: ?*cairo.Context, font: [*c]PangoFont, glyphs: [*c]PangoGlyphString) void;
 
+/// Adds the text in a `pango.Layout` to the current path in the specified
+/// cairo context.
+///
+/// The top-left corner of the PangoLayout will be at the current point of the
+/// cairo context.
+pub fn layoutPath(self: *cairo.Context, line: *pango.Layout) void {
+    c.pango_cairo_layout_path(self, line);
+}
+
 pub fn layoutLinePath(self: *cairo.Context, line: *pango.Layout.Line) void {
     c.pango_cairo_layout_line_path(self, line);
 }
