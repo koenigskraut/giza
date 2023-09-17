@@ -77,7 +77,6 @@ fn miniSvgRender(shape: *const MiniSvg, cr: *cairo.Context, do_path: bool) !void
 }
 
 fn miniSvgShapeRenderer(cr: *cairo.Context, attr: *pango.AttrShape, do_path: c_int, _: ?*anyopaque) callconv(.C) void {
-    std.debug.print("called\n", .{});
     const shape: *MiniSvg = @alignCast(@ptrCast(attr.data.?));
     var scale_x = @as(f64, @floatFromInt(attr.ink_rect.width)) / (pango.SCALE * shape.width);
     var scale_y = @as(f64, @floatFromInt(attr.ink_rect.height)) / (pango.SCALE * shape.height);
@@ -156,8 +155,6 @@ pub fn main() !void {
     try drawText(context, &width, &height);
     context.destroy();
     surface.destroy();
-
-    std.debug.print("{} {}\n", .{ width, height });
 
     // Now create the final surface and draw to it
     surface = try cairo.ImageSurface.create(.argb32, @intCast(width), @intCast(height));

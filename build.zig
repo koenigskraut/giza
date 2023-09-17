@@ -24,6 +24,7 @@ const EXAMPLES = [_][]const u8{
     "mask",
     "multi_segment_caps",
     "pango_simple",
+    "pango_shape",
     "pythagoras_tree",
     "rounded_rectangle",
     "save_and_restore",
@@ -78,6 +79,7 @@ pub fn build(b: *std.Build) void {
         },
     });
     cairo_module.dependencies.put("pangocairo", pangocairo_module) catch @panic("OOM");
+    pango_module.dependencies.put("pangocairo", pangocairo_module) catch @panic("OOM");
 
     const examples_step = b.step("examples", "Run all examples");
     inline for (EXAMPLES) |name| {

@@ -35,6 +35,14 @@ pub const Layout = opaque {
         return layout;
     }
 
+    pub fn setAttributes(self: *Layout, attrs: *pango.AttrList) void {
+        c.pango_layout_set_attributes(self, attrs);
+    }
+
+    pub fn getAttributes(self: *Layout) !*pango.AttrList {
+        return c.pango_layout_get_attributes(self) orelse error.NullPointer;
+    }
+
     pub fn getContext(self: *Layout) !*pango.Context {
         return c.pango_layout_get_context(self) orelse return error.NullPointer;
     }
@@ -544,7 +552,20 @@ pub const Layout = opaque {
         c.pango_layout_get_size(self, @ptrCast(width), @ptrCast(height));
     }
 
-    // pub extern fn pango_layout_get_pixel_size(layout: ?*pango.Layout, width: [*c]c_int, height: [*c]c_int) void;
+    /// Determines the logical width and height of a `pango.Layout` in device
+    /// units.
+    ///
+    /// `pango.Layout.getSize()` returns the width and height scaled by
+    /// `pango.SCALE`. This is simply a convenience function around
+    /// `pango.Layout.getPixelExtents()`.
+    ///
+    /// **Parameters**
+    /// - `width`: location to store the logical width
+    /// - `height`: location to store the logical height
+    pub fn getPixelSize(self: *pango.Layout, width: ?*i32, height: ?*i32) void {
+        c.pango_layout_get_pixel_size(self, width, height);
+    }
+
     // pub extern fn pango_layout_get_baseline(layout: ?*pango.Layout) c_int;
     // pub extern fn pango_layout_get_line_count(layout: ?*pango.Layout) c_int;
     // pub extern fn pango_layout_get_line(layout: ?*pango.Layout, line: c_int) ?*pango.LayoutLine;

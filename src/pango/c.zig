@@ -36,8 +36,8 @@ pub extern fn pango_context_get_base_dir(context: ?*pango.Context) pango.Directi
 pub extern fn pango_layout_new(context: ?*pango.Context) ?*pango.Layout;
 pub extern fn pango_layout_copy(src: ?*pango.Layout) ?*pango.Layout;
 pub extern fn pango_layout_get_context(layout: ?*pango.Layout) ?*pango.Context;
-// pub extern fn pango_layout_set_attributes(layout: ?*pango.Layout, attrs: ?*PangoAttrList) void;
-// pub extern fn pango_layout_get_attributes(layout: ?*pango.Layout) ?*PangoAttrList;
+pub extern fn pango_layout_set_attributes(layout: ?*pango.Layout, attrs: ?*pango.AttrList) void;
+pub extern fn pango_layout_get_attributes(layout: ?*pango.Layout) ?*pango.AttrList;
 pub extern fn pango_layout_set_text(layout: ?*pango.Layout, text: [*c]const u8, length: c_int) void;
 pub extern fn pango_layout_get_text(layout: ?*pango.Layout) [*c]const u8;
 pub extern fn pango_layout_get_character_count(layout: ?*pango.Layout) c_int;
@@ -89,7 +89,7 @@ pub extern fn pango_layout_get_serial(layout: ?*pango.Layout) c_uint;
 // pub extern fn pango_layout_get_extents(layout: ?*pango.Layout, ink_rect: [*c]PangoRectangle, logical_rect: [*c]PangoRectangle) void;
 // pub extern fn pango_layout_get_pixel_extents(layout: ?*pango.Layout, ink_rect: [*c]PangoRectangle, logical_rect: [*c]PangoRectangle) void;
 pub extern fn pango_layout_get_size(layout: ?*pango.Layout, width: [*c]c_int, height: [*c]c_int) void;
-// pub extern fn pango_layout_get_pixel_size(layout: ?*pango.Layout, width: [*c]c_int, height: [*c]c_int) void;
+pub extern fn pango_layout_get_pixel_size(layout: ?*pango.Layout, width: [*c]c_int, height: [*c]c_int) void;
 // pub extern fn pango_layout_get_baseline(layout: ?*pango.Layout) c_int;
 // pub extern fn pango_layout_get_line_count(layout: ?*pango.Layout) c_int;
 // pub extern fn pango_layout_get_line(layout: ?*pango.Layout, line: c_int) ?*pango.LayoutLine;
@@ -181,6 +181,14 @@ pub extern fn pango_language_get_sample_string(language: ?*pango.Language) [*c]c
 pub extern fn pango_language_matches(language: ?*pango.Language, range_list: [*c]const u8) c_bool;
 // pub extern fn pango_language_includes_script(language: ?*pango.Language, script: pango.Script) gboolean;
 // pub extern fn pango_language_get_scripts(language: ?*pango.Language, num_scripts: [*c]c_int) [*c]const pango.Script;
+
+// Attribute
+// pub extern fn pango_attr_type_register(name: [*c]const u8) PangoAttrType;
+// pub extern fn pango_attr_type_get_name(@"type": PangoAttrType) [*c]const u8;
+// pub extern fn pango_attribute_init(attr: [*c]PangoAttribute, klass: [*c]const PangoAttrClass) void;
+// pub extern fn pango_attribute_copy(attr: [*c]const PangoAttribute) [*c]PangoAttribute;
+pub extern fn pango_attribute_destroy(attr: [*c]pango.Attribute) void;
+// pub extern fn pango_attribute_equal(attr1: [*c]const PangoAttribute, attr2: [*c]const PangoAttribute) gboolean;
 
 // AttrList
 pub extern fn pango_attr_list_new() ?*pango.AttrList;

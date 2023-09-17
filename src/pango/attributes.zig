@@ -70,6 +70,11 @@ pub const Attribute = extern struct {
     /// End index of the range (in bytes). The character at this index is not
     /// included in the range.
     end_index: c_uint,
+
+    pub fn destroy(self: *Attribute) void {
+        c.pango_attribute_destroy(self);
+        if (safety.tracing) safety.destroy(self);
+    }
 };
 
 /// The `pango.AttrClass` structure stores the type and operations for a
@@ -186,6 +191,7 @@ pub const AttrList = opaque {
     /// - `attr`: the attribute to insert
     pub fn insert(self: *AttrList, attr: *Attribute) void {
         c.pango_attr_list_insert(self, attr);
+        if (safety.tracing) safety.destroy(attr);
     }
 
     /// Insert the given attribute into the `pango.AttrList`.
@@ -197,6 +203,7 @@ pub const AttrList = opaque {
     /// - `attr`: the attribute to insert
     pub fn insertBefore(self: *AttrList, attr: *Attribute) void {
         c.pango_attr_list_insert_before(self, attr);
+        if (safety.tracing) safety.destroy(attr);
     }
 
     /// Insert the given attribute into the `pango.AttrList`.
@@ -214,6 +221,7 @@ pub const AttrList = opaque {
     /// - `attr`: the attribute to insert
     pub fn change(self: *AttrList, attr: *Attribute) void {
         c.pango_attr_list_change(self, attr);
+        if (safety.tracing) safety.destroy(attr);
     }
 
     /// This function opens up a hole in `self`, fills it in with attributes
@@ -353,21 +361,61 @@ pub const AttrShape = extern struct {
     /// Destroy function for the user data.
     destroy_func: pango.GDestroyNotify,
 
-    // /// Create a new shape attribute.
-    // ///
-    // /// A shape is used to impose a particular ink and logical rectangle on the
-    // /// result of shaping a particular glyph. This might be used, for instance,
-    // /// for embedding a picture or a widget inside a `pango.Layout`.
-    // ///
-    // /// **Parameters**
-    // /// - `ink_rect`: ink rectangle to assign to each character
-    // /// - `logical_rect`: logical rectangle to assign to each character
-    // ///
-    // /// **Returns**
-    // ///
-    // /// the newly allocated `pango.Attribute`, which should be freed with
-    // /// `.destroy()`.
-    // pub fn new(ink_rect: *const pango.Rectangle, logical_rect: *const pango.Rectangle) *Attribute {
+    /// Create a new shape attribute.
+    ///
+    /// A shape is used to impose a particular ink and logical rectangle on the
+    /// result of shaping a particular glyph. This might be used, for instance,
+    /// for embedding a picture or a widget inside a `pango.Layout`.
+    ///
+    /// **Parameters**
+    /// - `ink_rect`: ink rectangle to assign to each character
+    /// - `logical_rect`: logical rectangle to assign to each character
+    ///
+    /// **Returns**
+    ///
+    /// the newly allocated `pango.Attribute`.
+    ///
+    /// **NOTE**: The caller owns the created `pango.Attribute` and should call
+    /// `.destroy()` when done with it. You can use idiomatic Zig pattern
+    /// with `defer`:
+    /// ```zig
+    /// const attr = try pango.AttrShape.new();
+    /// defer attr.destroy();
+    /// ```
+    pub fn new(ink_rect: *const pango.Rectangle, logical_rect: *const pango.Rectangle) !*Attribute {
+        const ptr = c.pango_attr_shape_new(ink_rect, logical_rect) orelse return error.NullPointer;
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), ptr);
+        return ptr;
+    }
 
-    // }
+    /// Creates a new shape attribute.
+    ///
+    /// Like `pango.AttrShape.new()`, but a user data pointer is also provided;
+    /// this pointer can be accessed when later rendering the glyph.
+    ///
+    /// **Parameters**
+    /// - `ink_rect`: ink rectangle to assign to each character
+    /// - `logical_rect`: logical rectangle to assign to each character
+    /// - `data`: user data pointer
+    /// - `copy_func`: function to copy `data` when the attribute is copied; If
+    /// `null`, data is simply copied as a pointer
+    /// - `destroy_func`: function to free `data` when the attribute is freed
+    ///
+    /// **Returns**
+    ///
+    /// the newly allocated `pango.Attribute`.
+    ///
+    /// **NOTE**: The caller owns the created `pango.Attribute` and should call
+    /// `.destroy()` when done with it. You can use idiomatic Zig pattern
+    /// with `defer`:
+    /// ```zig
+    /// const attr = try pango.AttrShape.newWithData(...);
+    /// defer attr.destroy();
+    /// ```
+    pub fn newWithData(ink_rect: *const pango.Rectangle, logical_rect: *const pango.Rectangle, data: ?*anyopaque, copy_func: pango.AttrDataCopyFunc, destroy_func: pango.GDestroyNotify) !*Attribute {
+        // TODO: fix example
+        const ptr = c.pango_attr_shape_new_with_data(ink_rect, logical_rect, data, copy_func, destroy_func) orelse return error.NullPointer;
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), ptr);
+        return ptr;
+    }
 };
