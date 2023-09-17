@@ -66,11 +66,11 @@ There are just the two of them, but what are these two!
 
 **cairo** sometimes returns allocated objects with user-managed lifetime, take for example:
 ```zig
-const surface = try cairo.ImageSurface.create(.ARGB32, 600, 400); // cairo.ImageSurface with alpha 600x400px
+const surface = try cairo.ImageSurface.create(.argb32, 600, 400); // cairo.ImageSurface with alpha 600x400px
 ```
 `surface` is owned by user and should be destroyed at some point with `surface.destroy()`. It can be done nicely with Zig `defer` pattern:
 ```zig
-const surface = try cairo.ImageSurface.create(.ARGB32, 600, 400);
+const surface = try cairo.ImageSurface.create(.argb32, 600, 400);
 defer surface.destroy();
 ```
 But what if we can't do this? Let's see some example:
@@ -78,7 +78,7 @@ But what if we can't do this? Let's see some example:
 const cairo = @import("cairo");
 
 test "safety" {
-    const surface = try cairo.ImageSurface.create(.ARGB32, 600, 400);
+    const surface = try cairo.ImageSurface.create(.argb32, 600, 400);
     _ = surface; // surface should be destroyed somewhere else, but we forgot
 }
 ```
@@ -87,7 +87,7 @@ Run it:
 $ zig build test
 run test: error: [giza] (err): Leak detected! ImageSurface@1cc4470 leaked:
 /some/path/to/safety_test.zig:4:50: 0x235821 in test.safety (test)
-    const surface = try cairo.ImageSurface.create(.ARGB32, 600, 400);
+    const surface = try cairo.ImageSurface.create(.argb32, 600, 400);
                                                  ^
 ...
 Build Summary: 1/3 steps succeeded; 1 failed; 1/1 tests passed (disable with --summary none)
