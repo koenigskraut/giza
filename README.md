@@ -1,10 +1,62 @@
 # giza
 
-An attempt to make a binding for the popular [cairo](https://gitlab.freedesktop.org/cairo/cairo) graphics library with some idiomatic Zig elements (and some that will make true Zig enjoyers' skin crawl).
+An attempt to make a binding for the popular [cairo](https://gitlab.freedesktop.org/cairo/cairo) and [pango](https://gitlab.gnome.org/GNOME/pango) graphics libraries with some idiomatic Zig elements (and some that will make true Zig enjoyers' skin crawl).
 
-Many thanks to [jackdbd](https://github.com/jackdbd) for his [implementation](https://github.com/jackdbd/zig-cairo) of such binding.
+Many thanks to [jackdbd](https://github.com/jackdbd) for his [implementation](https://github.com/jackdbd/zig-cairo) of similar binding.
 
 Zig version is 0.11.0.
+
+## Quick start
+
+1. Add giza as a dependency in your build.zig.zon as follows:
+
+    ```diff
+    .{
+        .name = "your-project",
+        .version = "1.0.0",
+        .dependencies = .{
+    +       .giza = .{
+    +           .url = "https://github.com/koenigskraut/giza/archive/refs/tags/0.1.0.tar.gz",
+    +           .hash = "12202e1b6ae20694324cef241beacaa745ee9e2611cda002830bb0ee681791970ffd",
+    +       },
+        },
+    }
+    ```
+
+2. In your build.zig add giza as a dependency and attach its modules to your project:
+
+    ```diff
+    const std = @import("std");
+
+    pub fn build(b: *std.Build) void {
+        const target = b.standardTargetOptions(.{});
+        const optimize = b.standardOptimizeOption(.{});
+
+    +   const opts = .{ .target = target, .optimize = optimize };
+    +   const dep = b.dependency("giza", opts);
+    +   const json_module = b.dependency("json", opts).module("json");
+    +
+    +   const cairo_module = dep.module("cairo");
+    +   const pango_module = dep.module("pango");
+    +   const pangocairo_module = dep.module("pangocairo");
+
+        const exe = b.addExecutable(.{
+            .name = "test",
+            .root_source_file = .{ .path = "src/main.zig" },
+            .target = target,
+            .optimize = optimize,
+        });
+    +   lib.addModule("cairo", cairo_module);
+    +   lib.addModule("pango", pango_module);
+    +   lib.addModule("pangocairo", pangocairo_module);
+    +   lib.linkSystemLibrary("pangocairo"); // if you need both cairo and pango, use this
+        exe.install();
+
+        ...
+    }
+    ```
+
+Then you can check cairo website for reference, [samples](https://www.cairographics.org/samples/) section in particular. You will find ports of these snippets to Zig along with some other examples in giza [examples](https://github.com/koenigskraut/giza/blob/master/examples).
 
 ## Killer features
 
@@ -21,13 +73,13 @@ const surface = try cairo.ImageSurface.create(.ARGB32, 600, 400); // cairo.Image
 const surface = try cairo.ImageSurface.create(.ARGB32, 600, 400);
 defer surface.destroy();
 ```
-But what if it cannot? Let's see some example:
+But what if we can't do this? Let's see some example:
 ```zig
 const cairo = @import("cairo");
 
 test "safety" {
     const surface = try cairo.ImageSurface.create(.ARGB32, 600, 400);
-    _ = surface;
+    _ = surface; // surface should be destroyed somewhere else, but we forgot
 }
 ```
 Run it:
@@ -103,6 +155,6 @@ Every C object in **giza** is a valid Zig `opaque`/`extern struct`/`enum`, so yo
 
 ## Coverage and progress
 
-You can find coverage info [here](https://github.com/koenigskraut/giza/blob/master/coverage_cairo.md). Current progress is 80.6% regarding **cairo** functionality, __*but*__ it generally should work already. The only two parts that are missing are fonts and real devices (other than script one). If you only need cairo to write some PNG/PDF/SVG files, that is already covered. There are other surfaces, devices and fonts coverage planned, but that would require using header files, which this wrapping has avoided so far, so we'll see.
+Cairo is somewhat covered (info [here](https://github.com/koenigskraut/giza/blob/master/coverage_cairo.md)), current progress is 80.6% regarding **cairo** its functionality, __*but*__ it should work already. The only missing parts are font support for FreeType/Windows etc. and real devices (other than script one). If you only need cairo to write some PNG/PDF/SVG files, that is already covered: see [examples](https://github.com/koenigskraut/giza/tree/master/examples). Further progress is planned, but that would require using header files, which this wrapping has avoided so far, so we'll see.
 
-Also pango support is planned, probably as part of this repo.
+Pango support is really lacking for now, but there is basic support (see [this](https://github.com/koenigskraut/giza/blob/master/examples/pango_simple.zig) and [this](https://github.com/koenigskraut/giza/blob/master/examples/pango_shape.zig)).
