@@ -1,5 +1,6 @@
 const safety = @import("safety");
-const c = @import("../pango.zig").c;
+const pango = @import("../pango.zig");
+const c = pango.c;
 
 /// The `pango.Rectangle` structure represents a rectangle.
 ///
@@ -15,6 +16,10 @@ pub const Rectangle = extern struct {
     width: c_int,
     /// Height of the rectangle.
     height: c_int,
+
+    pub fn init(x: c_int, y: c_int, width: c_int, height: c_int) Rectangle {
+        return .{ .x = x, .y = y, .width = width, .height = height };
+    }
 };
 
 pub fn free(memory: anytype) void {
@@ -25,3 +30,21 @@ pub fn free(memory: anytype) void {
     }
     if (safety.tracing) safety.destroy(@ptrCast(memory));
 }
+
+/// Type of a function that can duplicate user data for an attribute.
+///
+/// **Parameters**
+/// - `user_data`: user data to copy
+///
+/// **Returns**
+///
+/// new copy of `user_data`.
+pub const AttrDataCopyFunc = ?*const fn (?*const anyopaque) callconv(.C) ?*anyopaque;
+// TODO: clarify ownership
+
+/// Specifies the type of function which is called when a data element is
+/// destroyed. It is passed the pointer to the data element and should free any
+/// memory and resources allocated for it.
+pub const GDestroyNotify = ?*const fn (?*anyopaque) callconv(.C) void;
+
+pub const AttrFilterFunc = ?*const fn ([*c]pango.Attribute, ?*anyopaque) callconv(.C) c_int; // bool

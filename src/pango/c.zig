@@ -181,3 +181,23 @@ pub extern fn pango_language_get_sample_string(language: ?*pango.Language) [*c]c
 pub extern fn pango_language_matches(language: ?*pango.Language, range_list: [*c]const u8) c_bool;
 // pub extern fn pango_language_includes_script(language: ?*pango.Language, script: pango.Script) gboolean;
 // pub extern fn pango_language_get_scripts(language: ?*pango.Language, num_scripts: [*c]c_int) [*c]const pango.Script;
+
+// AttrList
+pub extern fn pango_attr_list_new() ?*pango.AttrList;
+pub extern fn pango_attr_list_ref(list: ?*pango.AttrList) ?*pango.AttrList;
+pub extern fn pango_attr_list_unref(list: ?*pango.AttrList) void;
+pub extern fn pango_attr_list_copy(list: ?*pango.AttrList) ?*pango.AttrList;
+pub extern fn pango_attr_list_insert(list: ?*pango.AttrList, attr: [*c]pango.Attribute) void;
+pub extern fn pango_attr_list_insert_before(list: ?*pango.AttrList, attr: [*c]pango.Attribute) void;
+pub extern fn pango_attr_list_change(list: ?*pango.AttrList, attr: [*c]pango.Attribute) void;
+pub extern fn pango_attr_list_splice(list: ?*pango.AttrList, other: ?*pango.AttrList, pos: c_int, len: c_int) void;
+pub extern fn pango_attr_list_update(list: ?*pango.AttrList, pos: c_int, remove: c_int, add: c_int) void;
+pub extern fn pango_attr_list_filter(list: ?*pango.AttrList, func: pango.AttrFilterFunc, data: ?*anyopaque) ?*pango.AttrList;
+// pub extern fn pango_attr_list_get_attributes(list: ?*pango.AttrList) [*c]GSList;
+pub extern fn pango_attr_list_equal(list: ?*pango.AttrList, other_list: ?*pango.AttrList) c_bool;
+pub extern fn pango_attr_list_to_string(list: ?*pango.AttrList) [*c]u8;
+pub extern fn pango_attr_list_from_string(text: [*c]const u8) ?*pango.AttrList;
+
+// AttrShape
+pub extern fn pango_attr_shape_new(ink_rect: [*c]const pango.Rectangle, logical_rect: [*c]const pango.Rectangle) [*c]pango.Attribute;
+pub extern fn pango_attr_shape_new_with_data(ink_rect: [*c]const pango.Rectangle, logical_rect: [*c]const pango.Rectangle, data: ?*anyopaque, copy_func: pango.AttrDataCopyFunc, destroy_func: pango.GDestroyNotify) [*c]pango.Attribute;
