@@ -546,23 +546,21 @@ pub const Path = extern struct {
 /// The semantics and ordering of the coordinate values are consistent with
 /// `ctx.moveTo()`, `ctx.lineTo()`, `ctx.curveTo()`, and `ctx.closePath()`.
 ///
-/// Here is sample code for iterating through a `Path`:
+/// `cairo.Path` has an `Iterator` that makes handling it more user-friendly,
+/// here is sample code:
 /// ```zig
-/// var i: usize = 0;
-/// var data: *cairo.PathData = undefined;
-///
 /// const path = try context.copyPath();
 /// defer path.destroy();
+/// var it = path.iterator();
 ///
-/// while (i < path.num_data) : (i += @intCast(path.data[i].header.length)) {
-///     data = &path.data[i];
-///     switch (data.header.h_type) {
-///         .MoveTo => doMoveToThigs(data[1].point.x, data[1].point.y),
-///         .LineTo => doLineToThigs(data[1].point.x, data[1].point.y),
+/// while (it.next()) |item| {
+///     switch (item.h_type) {
+///         .MoveTo => doMoveToThigs(item.points[1].x, item.points[1].y),
+///         .LineTo => doLineToThigs(item.points[1].x, item.points[1].y),
 ///         .CurveTo => doCurveToThigs(
-///             data[1].point.x, data[1].point.y,
-///             data[2].point.x, data[2].point.y,
-///             data[3].point.x, data[3].point.y,
+///             item.points[1].x, item.points[1].y,
+///             item.points[2].x, item.points[2].y,
+///             item.points[3].x, item.points[3].y,
 ///         ),
 ///         .ClosePath => doClosePathThings(),
 ///     }
@@ -577,7 +575,6 @@ pub const Path = extern struct {
 ///
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-data-t)
 pub const PathData = extern union {
-    // TODO: examine code
     header: Header,
     point: Point,
 
