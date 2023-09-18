@@ -25,6 +25,7 @@ const EXAMPLES = [_][]const u8{
     "multi_segment_caps",
     "pango_simple",
     "pango_shape",
+    "pango_twisted",
     "pythagoras_tree",
     "rounded_rectangle",
     "save_and_restore",
