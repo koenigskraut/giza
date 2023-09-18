@@ -92,8 +92,8 @@ pub extern fn pango_layout_get_size(layout: ?*pango.Layout, width: [*c]c_int, he
 pub extern fn pango_layout_get_pixel_size(layout: ?*pango.Layout, width: [*c]c_int, height: [*c]c_int) void;
 // pub extern fn pango_layout_get_baseline(layout: ?*pango.Layout) c_int;
 // pub extern fn pango_layout_get_line_count(layout: ?*pango.Layout) c_int;
-// pub extern fn pango_layout_get_line(layout: ?*pango.Layout, line: c_int) ?*pango.LayoutLine;
-// pub extern fn pango_layout_get_line_readonly(layout: ?*pango.Layout, line: c_int) ?*pango.LayoutLine;
+pub extern fn pango_layout_get_line(layout: ?*pango.Layout, line: c_int) ?*pango.Layout.Line;
+pub extern fn pango_layout_get_line_readonly(layout: ?*pango.Layout, line: c_int) ?*pango.Layout.Line;
 // pub extern fn pango_layout_get_lines(layout: ?*pango.Layout) [*c]GSList;
 // pub extern fn pango_layout_get_lines_readonly(layout: ?*pango.Layout) [*c]GSList;
 

@@ -568,8 +568,15 @@ pub const Layout = opaque {
 
     // pub extern fn pango_layout_get_baseline(layout: ?*pango.Layout) c_int;
     // pub extern fn pango_layout_get_line_count(layout: ?*pango.Layout) c_int;
-    // pub extern fn pango_layout_get_line(layout: ?*pango.Layout, line: c_int) ?*pango.LayoutLine;
-    // pub extern fn pango_layout_get_line_readonly(layout: ?*pango.Layout, line: c_int) ?*pango.LayoutLine;
+
+    pub fn getLine(self: *pango.Layout, line: u32) !*pango.Layout.Line {
+        return c.pango_layout_get_line(self, @intCast(line)) orelse error.NullPointer;
+    }
+
+    pub fn getLineReadonly(self: *pango.Layout, line: u32) !*pango.Layout.Line {
+        return c.pango_layout_get_line_readonly(self, @intCast(line)) orelse error.NullPointer;
+    }
+
     // pub extern fn pango_layout_get_lines(layout: ?*pango.Layout) [*c]GSList;
     // pub extern fn pango_layout_get_lines_readonly(layout: ?*pango.Layout) [*c]GSList;
 
