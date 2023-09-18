@@ -485,6 +485,45 @@ pub const Path = extern struct {
         c.cairo_path_destroy(self);
         if (safety.tracing) safety.destroy(self);
     }
+
+    /// A convenience function that returns `cairo.Path`'s `data` as a slice.
+    pub fn items(self: *Path) []PathData {
+        return self.data[0..@intCast(self.num_data)];
+    }
+
+    pub const Iterator = struct {
+        buffer: []PathData,
+        index: usize,
+
+        const resultT = struct { h_type: PathData.Type, points: []Point };
+        // TODO: destructure it on new Zig version
+
+        pub fn next(self: *Iterator) ?resultT {
+            const result = self.peek() orelse return null;
+            self.index += result.points.len + 1;
+            return result;
+        }
+
+        pub fn peek(self: *Iterator) ?resultT {
+            if (self.index >= self.buffer.len) return null;
+            const end: usize = @intCast(self.buffer[self.index].header.length);
+            return .{
+                .h_type = self.buffer[self.index].header.h_type,
+                .points = @ptrCast(self.buffer[self.index..][1..end]),
+            };
+        }
+
+        pub fn reset(self: *Iterator) void {
+            self.index = 0;
+        }
+    };
+
+    pub fn iterator(self: *Path) Iterator {
+        return .{
+            .buffer = self.items(),
+            .index = 0,
+        };
+    }
 };
 
 /// `PathData` is used to represent the path data inside a `Path`.
@@ -539,8 +578,10 @@ pub const Path = extern struct {
 /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-path-data-t)
 pub const PathData = extern union {
     // TODO: examine code
-    header: extern struct { h_type: PathData.Type, length: c_int },
-    point: extern struct { x: f64, y: f64 },
+    header: Header,
+    point: Point,
+
+    pub const Header = extern struct { h_type: PathData.Type, length: c_int };
 
     /// `cairo.PathData.Type` is used to describe the type of one portion of a
     /// path when represented as a `cairo.Path`. See `cairo.PathData` for

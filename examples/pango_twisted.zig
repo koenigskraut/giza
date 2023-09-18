@@ -26,21 +26,20 @@ fn _fancyStroke(cr: *cairo.Context, preserve: bool) !void {
     const line_width = cr.getLineWidth();
     const path = try cr.copyPath();
     defer path.destroy();
-    const path_data = path.items();
+    var it = path.iterator();
     cr.newPath();
 
     cr.save();
     cr.setLineWidth(line_width / 3);
     cr.setDash(&dash, 0);
 
-    var i: usize = 0;
-    while (i < path_data.len) : (i += @intCast(path_data[i].header.length)) {
-        switch (path_data[i].header.h_type) {
-            .LineTo, .MoveTo => cr.moveTo(path_data[i..][1].point.x, path_data[i..][1].point.y),
+    while (it.next()) |item| {
+        switch (item.h_type) {
+            .LineTo, .MoveTo => cr.moveTo(item.points[0].x, item.points[0].y),
             .CurveTo => {
-                cr.lineTo(path_data[i..][1].point.x, path_data[i..][1].point.y);
-                cr.moveTo(path_data[i..][2].point.x, path_data[i..][2].point.y);
-                cr.lineTo(path_data[i..][3].point.x, path_data[i..][3].point.y);
+                cr.lineTo(item.points[0].x, item.points[0].y);
+                cr.moveTo(item.points[1].x, item.points[1].y);
+                cr.lineTo(item.points[2].x, item.points[2].y);
             },
             else => {},
         }
@@ -53,21 +52,21 @@ fn _fancyStroke(cr: *cairo.Context, preserve: bool) !void {
     cr.setLineWidth(line_width * 4);
     cr.setLineCap(.Round);
 
-    i = 0;
-    while (i < path_data.len) : (i += @intCast(path_data[i].header.length)) {
-        switch (path_data[i].header.h_type) {
-            .MoveTo => cr.moveTo(path_data[i..][1].point.x, path_data[i..][1].point.y),
+    it.reset();
+    while (it.next()) |item| {
+        switch (item.h_type) {
+            .MoveTo => cr.moveTo(item.points[0].x, item.points[0].y),
             .LineTo => {
                 cr.relLineTo(0, 0);
-                cr.moveTo(path_data[i..][1].point.x, path_data[i..][1].point.y);
+                cr.moveTo(item.points[0].x, item.points[0].y);
             },
             .CurveTo => {
                 cr.relLineTo(0, 0);
-                cr.moveTo(path_data[i..][1].point.x, path_data[i..][1].point.y);
+                cr.moveTo(item.points[0].x, item.points[0].y);
                 cr.relLineTo(0, 0);
-                cr.moveTo(path_data[i..][2].point.x, path_data[i..][2].point.y);
+                cr.moveTo(item.points[1].x, item.points[1].y);
                 cr.relLineTo(0, 0);
-                cr.moveTo(path_data[i..][3].point.x, path_data[i..][3].point.y);
+                cr.moveTo(item.points[2].x, item.points[2].y);
             },
             .ClosePath => {
                 cr.relLineTo(0, 0);
@@ -78,12 +77,12 @@ fn _fancyStroke(cr: *cairo.Context, preserve: bool) !void {
     cr.stroke();
     cr.restore();
 
-    i = 0;
-    while (i < path_data.len) : (i += @intCast(path_data[i].header.length)) {
-        switch (path_data[i].header.h_type) {
-            .MoveTo => cr.moveTo(path_data[i..][1].point.x, path_data[i..][1].point.y),
-            .LineTo => cr.lineTo(path_data[i..][1].point.x, path_data[i..][1].point.y),
-            .CurveTo => cr.curveTo(path_data[i..][1].point.x, path_data[i..][1].point.y, path_data[i..][2].point.x, path_data[i..][2].point.y, path_data[i..][3].point.x, path_data[i..][3].point.y),
+    it.reset();
+    while (it.next()) |item| {
+        switch (item.h_type) {
+            .MoveTo => cr.moveTo(item.points[0].x, item.points[0].y),
+            .LineTo => cr.lineTo(item.points[0].x, item.points[0].y),
+            .CurveTo => cr.curveTo(item.points[0].x, item.points[0].y, item.points[1].x, item.points[1].y, item.points[2].x, item.points[2].y),
             .ClosePath => cr.closePath(),
         }
     }
@@ -93,9 +92,9 @@ fn _fancyStroke(cr: *cairo.Context, preserve: bool) !void {
 }
 
 // Returns Euclidean distance between two points
-fn twoPointsDistance(a: cairo.PathData, b: cairo.PathData) f64 {
-    const dx = b.point.x - a.point.x;
-    const dy = b.point.y - a.point.y;
+fn twoPointsDistance(a: cairo.Point, b: cairo.Point) f64 {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
     return @sqrt(dx * dx + dy * dy);
 }
 
@@ -115,17 +114,15 @@ fn curveLength(x0: f64, y0: f64, x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3
     const path = try cr.copyPathFlat();
     defer path.destroy();
 
-    var i: usize = 0;
-    var current_point: cairo.PathData = undefined;
-    const data = path.items();
+    var current_point: cairo.Point = undefined;
+    var it = path.iterator();
 
-    while (i < data.len) : (i += @intCast(data[i].header.length)) {
-        const header = data[i].header;
-        switch (header.h_type) {
-            .MoveTo => current_point = data[i + 1],
+    while (it.next()) |item| {
+        switch (item.h_type) {
+            .MoveTo => current_point = item.points[0],
             .LineTo => {
-                length += twoPointsDistance(current_point, data[i + 1]);
-                current_point = data[i + 1];
+                length += twoPointsDistance(current_point, item.points[0]);
+                current_point = item.points[0];
             },
             else => unreachable,
         }
@@ -144,41 +141,40 @@ const alloc = std.heap.c_allocator;
 fn parametrizePath(path: *cairo.Path) ![]parametrizationT {
     const parametrization = try alloc.alloc(parametrizationT, @intCast(path.num_data));
 
-    const data = path.items();
-    var i: usize = 0;
-    var last_move_to: cairo.PathData = undefined;
-    var current_point: cairo.PathData = undefined;
+    var last_move_to: cairo.Point = undefined;
+    var current_point: cairo.Point = undefined;
 
-    while (i < data.len) : (i += @intCast(data[i].header.length)) {
+    var it = path.iterator();
+    var i: usize = 0;
+    while (it.next()) |item| : (i = it.index) {
         parametrization[i] = 0;
-        switch (data[i].header.h_type) {
+        switch (item.h_type) {
             .MoveTo => {
-                last_move_to = data[i..][1];
-                current_point = data[i..][1];
+                last_move_to = item.points[0];
+                current_point = item.points[0];
             },
             .ClosePath, .LineTo => |tag| {
                 // .ClosePath: make it look like it's a line_to to last_move_to
-                const point = if (tag == .ClosePath) last_move_to else data[i..][1];
+                const point = if (tag == .ClosePath) last_move_to else item.points[0];
                 parametrization[i] = twoPointsDistance(current_point, point);
                 current_point = point;
             },
-
             // naive curve-length, treating bezier as three line segments:
             // parametrization[i] = two_points_distance (&current_point, &data[1])
             //            + two_points_distance (&data[1], &data[2])
             //            + two_points_distance (&data[2], &data[3]);
             .CurveTo => {
                 parametrization[i] = try curveLength(
-                    current_point.point.x,
-                    current_point.point.y,
-                    data[i..][1].point.x,
-                    data[i..][1].point.y,
-                    data[i..][2].point.x,
-                    data[i..][2].point.y,
-                    data[i..][3].point.x,
-                    data[i..][3].point.y,
+                    current_point.x,
+                    current_point.y,
+                    item.points[0].x,
+                    item.points[0].y,
+                    item.points[1].x,
+                    item.points[1].y,
+                    item.points[2].x,
+                    item.points[2].y,
                 );
-                current_point = data[i..][3];
+                current_point = item.points[3];
             },
         }
     }
@@ -190,16 +186,14 @@ const TransformPointFn = *const fn (closure: *ParametrizedPath, x: *f64, y: *f64
 // Project a path using a function.  Each point of the path (including Bezier
 // control points) is passed to the function for transformation.
 fn transformPath(path: *cairo.Path, f: TransformPointFn, closure: *ParametrizedPath) void {
-    var i: usize = 0;
-    const data = path.items();
-    while (i < data.len) : (i += @intCast(data[i].header.length)) {
-        const tag = data[i].header.h_type;
-        if (tag == .ClosePath) continue;
-        if (tag == .CurveTo) {
-            f(closure, &data[i..][3].point.x, &data[i..][3].point.y);
-            f(closure, &data[i..][2].point.x, &data[i..][2].point.y);
+    var it = path.iterator();
+    while (it.next()) |item| {
+        if (item.h_type == .ClosePath) continue;
+        if (item.h_type == .CurveTo) {
+            f(closure, &item.points[2].x, &item.points[2].y);
+            f(closure, &item.points[1].x, &item.points[1].y);
         }
-        f(closure, &data[i..][1].point.x, &data[i..][1].point.y);
+        f(closure, &item.points[0].x, &item.points[0].y);
     }
 }
 
@@ -237,41 +231,42 @@ fn pointOnPath(param: *ParametrizedPath, x: *f64, y: *f64) void {
     var dy: f64 = undefined;
 
     const path = param.path;
-    const data = path.items();
     const parametrization = param.parametrization;
 
     var i: usize = 0;
-    var last_move_to: cairo.PathData = undefined;
-    var current_point: cairo.PathData = undefined;
+    var last_move_to: cairo.Point = undefined;
+    var current_point: cairo.Point = undefined;
+    var it = path.iterator();
 
-    while (i + @as(usize, @intCast(data[i].header.length)) < data.len and
-        (the_x > parametrization[i] or data[i].header.h_type == .MoveTo)) : (i += @intCast(data[i].header.length))
-    {
+    while (it.next()) |item| : (i = it.index) {
+        if (i + item.points.len + 1 >= it.buffer.len or (the_x <= parametrization[i] and item.h_type != .MoveTo)) break;
         the_x -= parametrization[i];
-        switch (data[i].header.h_type) {
+        switch (item.h_type) {
             .MoveTo => {
-                current_point = data[i..][1];
-                last_move_to = data[i..][1];
+                current_point = item.points[0];
+                last_move_to = item.points[0];
             },
-            .LineTo => current_point = data[i..][1],
-            .CurveTo => current_point = data[i..][3],
+            .LineTo => current_point = item.points[0],
+            .CurveTo => current_point = item.points[2],
             .ClosePath => {},
         }
     }
 
-    switch (data[i].header.h_type) {
-        .ClosePath, .LineTo => |tag| {
+    const tag = it.buffer[i].header.h_type;
+    const points: []cairo.Point = @ptrCast(it.buffer[i + 1 ..]);
+    switch (tag) {
+        .ClosePath, .LineTo => {
             // On .ClosePath make it look like it's a line_to to last_move_to
-            const point = if (tag == .ClosePath) last_move_to.point else data[i..][1].point;
+            const point = if (tag == .ClosePath) last_move_to else points[0];
             ratio = the_x / parametrization[i];
 
             // Line polynomial
-            x.* = current_point.point.x * (1 - ratio) + point.x * ratio;
-            y.* = current_point.point.y * (1 - ratio) + point.y * ratio;
+            x.* = current_point.x * (1 - ratio) + point.x * ratio;
+            y.* = current_point.y * (1 - ratio) + point.y * ratio;
 
             // Line gradient
-            dx = -(current_point.point.x - point.x);
-            dy = -(current_point.point.y - point.y);
+            dx = -(current_point.x - point.x);
+            dy = -(current_point.y - point.y);
 
             // optimization for: ratio = the_y / sqrt (dx * dx + dy * dy);
             ratio = the_y / parametrization[i];
@@ -313,12 +308,12 @@ fn pointOnPath(param: *ParametrizedPath, x: *f64, y: *f64) void {
             _2ratio_1_0_3ratio_2_0 = 2 * ratio_1_0 - 3 * ratio_2_0;
 
             // Bezier polynomial
-            x.* = current_point.point.x * ratio_0_3 + 3 * data[i..][1].point.x * ratio_1_2 + 3 * data[i..][2].point.x * ratio_2_1 + data[i..][3].point.x * ratio_3_0;
-            y.* = current_point.point.y * ratio_0_3 + 3 * data[i..][1].point.y * ratio_1_2 + 3 * data[i..][2].point.y * ratio_2_1 + data[i..][3].point.y * ratio_3_0;
+            x.* = current_point.x * ratio_0_3 + 3 * points[0].x * ratio_1_2 + 3 * points[1].x * ratio_2_1 + points[2].x * ratio_3_0;
+            y.* = current_point.y * ratio_0_3 + 3 * points[0].y * ratio_1_2 + 3 * points[1].y * ratio_2_1 + points[2].y * ratio_3_0;
 
             // Bezier gradient
-            dx = -3 * current_point.point.x * ratio_0_2 + 3 * data[i..][1].point.x * _1__4ratio_1_0_3ratio_2_0 + 3 * data[i..][2].point.x * _2ratio_1_0_3ratio_2_0 + 3 * data[i..][3].point.x * ratio_2_0;
-            dy = -3 * current_point.point.y * ratio_0_2 + 3 * data[i..][1].point.y * _1__4ratio_1_0_3ratio_2_0 + 3 * data[i..][2].point.y * _2ratio_1_0_3ratio_2_0 + 3 * data[i..][3].point.y * ratio_2_0;
+            dx = -3 * current_point.x * ratio_0_2 + 3 * points[0].x * _1__4ratio_1_0_3ratio_2_0 + 3 * points[1].x * _2ratio_1_0_3ratio_2_0 + 3 * points[2].x * ratio_2_0;
+            dy = -3 * current_point.y * ratio_0_2 + 3 * points[0].y * _1__4ratio_1_0_3ratio_2_0 + 3 * points[1].y * _2ratio_1_0_3ratio_2_0 + 3 * points[2].y * ratio_2_0;
 
             ratio = the_y / sqrt(dx * dx + dy * dy);
             x.* += -dy * ratio;
