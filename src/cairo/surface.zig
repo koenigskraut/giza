@@ -8,3 +8,4 @@ pub const Surface = @import("surfaces/base.zig").Surface;
 pub usingnamespace svg;
 pub usingnamespace script;
 pub usingnamespace pdf;
+pub const Win32Surface = @import("surfaces/win32.zig").Win32Surface;

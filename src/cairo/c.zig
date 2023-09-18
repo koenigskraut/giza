@@ -368,3 +368,12 @@ pub extern fn cairo_matrix_invert(matrix: [*c]cairo.Matrix) cairo.Status;
 pub extern fn cairo_matrix_multiply(result: [*c]cairo.Matrix, a: [*c]const cairo.Matrix, b: [*c]const cairo.Matrix) void;
 pub extern fn cairo_matrix_transform_distance(matrix: [*c]const cairo.Matrix, dx: [*c]f64, dy: [*c]f64) void;
 pub extern fn cairo_matrix_transform_point(matrix: [*c]const cairo.Matrix, x: [*c]f64, y: [*c]f64) void;
+
+// Win32
+pub extern fn cairo_win32_surface_create(hdc: ?*anyopaque) ?*cairo.Win32Surface;
+pub extern fn cairo_win32_surface_create_with_dib(format: cairo.Surface.Format, width: c_int, height: c_int) ?*cairo.Win32Surface;
+pub extern fn cairo_win32_surface_create_with_ddb(hdc: ?*anyopaque, format: cairo.Surface.Format, width: c_int, height: c_int) ?*cairo.Win32Surface;
+pub extern fn cairo_win32_surface_create_with_format(hdc: ?*anyopaque, format: cairo.Surface.Format) ?*cairo.Win32Surface;
+pub extern fn cairo_win32_printing_surface_create(hdc: ?*anyopaque) ?*cairo.Win32Surface;
+pub extern fn cairo_win32_surface_get_dc(surface: ?*cairo.Win32Surface) ?*anyopaque;
+pub extern fn cairo_win32_surface_get_image(surface: ?*cairo.Win32Surface) ?*cairo.ImageSurface;
