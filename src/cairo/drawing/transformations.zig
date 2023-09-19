@@ -16,7 +16,7 @@ const Matrix = cairo.Matrix;
 /// Modifies the current transformation matrix (CTM) by translating the
 /// user-space origin by `(tx, ty)`. This offset is interpreted as a
 /// user-space coordinate according to the CTM in place before the new call
-/// to `ctx.translate()`. In other words, the translation of the user-space
+/// to `cr.translate()`. In other words, the translation of the user-space
 /// origin takes place after any existing transformation.
 ///
 /// **Parameters**
@@ -112,7 +112,7 @@ pub fn userToDevice(self: *Context, x: *f64, y: *f64) void {
 }
 
 /// Transform a distance vector from user space to device space. This
-/// function is similar to `ctx.userToDevice()` except that the translation
+/// function is similar to `cr.userToDevice()` except that the translation
 /// components of the CTM will be ignored when transforming `(dx, dy)`.
 ///
 /// **Parameters**
@@ -138,7 +138,7 @@ pub fn deviceToUser(self: *Context, x: *f64, y: *f64) void {
 }
 
 /// Transform a distance vector from device space to user space. This
-/// function is similar to `ctx.userToDevice()` except that the translation
+/// function is similar to `cr.userToDevice()` except that the translation
 /// components of the inverse CTM will be ignored when transforming
 /// `(dx, dy)`.
 ///

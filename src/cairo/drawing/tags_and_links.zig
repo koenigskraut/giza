@@ -13,11 +13,11 @@
 //!
 //! For example:
 //! ```zig
-//! // ctx is cairo.Context
-//! ctx.tagBegin(cairo.TagLink, "uri='https://cairographics.org'");
-//! ctx.moveTo(50, 50);
-//! ctx.showText("This is a link to the cairo website.");
-//! ctx.tagEnd(cairo.TagLink);
+//! // cr is cairo.Context
+//! cr.tagBegin(cairo.TagLink, "uri='https://cairographics.org'");
+//! cr.moveTo(50, 50);
+//! cr.showText("This is a link to the cairo website.");
+//! cr.tagEnd(cairo.TagLink);
 //! ```
 //!
 //! The PDF backend uses one or more rectangles to define the clickable area of
@@ -34,15 +34,15 @@
 //!
 //! An example of creating a link with user specified clickable region:
 //! ```zig
-//! // ctx is cairo.Context
+//! // cr is cairo.Context
 //! const text1 = "This link is split";
 //! const text2 = "across two lines";
-//! const font_extents = ctx.fontExtents(); // ?
+//! const font_extents = cr.fontExtents(); // ?
 //! _ = font_extents;
-//! ctx.moveTo(450, 50);
-//! const text1_extents = ctx.textExtents(text1);
-//! ctx.moveTo(50, 70);
-//! const text2_extents = ctx.textExtents(text2);
+//! cr.moveTo(450, 50);
+//! const text1_extents = cr.textExtents(text1);
+//! cr.moveTo(50, 70);
+//! const text2_extents = cr.textExtents(text2);
 //! var attribsBuf: [1024]u8 = undefined;
 //! const attribs = try std.fmt.bufPrintZ(&attribsBuf, "rect=[ {d:.3} {d:.3} {d:.3} {d:.3} {d:.3} {d:.3} {d:.3} {d:.3}] uri='https://cairographics.org'", .{
 //!     text1_extents.x_bearing,
@@ -55,13 +55,13 @@
 //!     text2_extents.height,
 //! });
 //! std.debug.print("{s}\n", .{attribs});
-//! ctx.tagBegin(TagLink, attribs);
-//! ctx.showText("This is a link to the cairo website");
-//! ctx.moveTo(450, 50);
-//! ctx.showText(text1);
-//! ctx.moveTo(50, 70);
-//! ctx.showText(text2);
-//! ctx.tagEnd(TagLink);
+//! cr.tagBegin(TagLink, attribs);
+//! cr.showText("This is a link to the cairo website");
+//! cr.moveTo(450, 50);
+//! cr.showText(text1);
+//! cr.moveTo(50, 70);
+//! cr.showText(text2);
+//! cr.tagEnd(TagLink);
 //! ```
 //!
 //! additional documentation is at https://www.cairographics.org/manual/cairo-Tags-and-Links.html
@@ -70,7 +70,7 @@ const cairo = @import("../../cairo.zig");
 const c = cairo.c;
 const Context = cairo.Context;
 
-/// Marks the beginning of the `tag_name` structure. Call `ctx.tagEnd()` with
+/// Marks the beginning of the `tag_name` structure. Call `cr.tagEnd()` with
 /// the same `tag_name` to mark the end of the structure.
 ///
 /// The `attributes` string is of the form `"key1=value2 key2=value2 ..."`.

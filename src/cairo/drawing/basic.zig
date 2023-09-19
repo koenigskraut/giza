@@ -45,25 +45,25 @@ pub const Mixin = struct {
     /// raised. You can use this object normally, but no drawing will be done.
     ///
     /// **NOTE**: The caller owns the created context and should call
-    /// `ctx.destroy()` when done with it. You can use idiomatic Zig pattern
+    /// `cr.destroy()` when done with it. You can use idiomatic Zig pattern
     /// with `defer`:
     /// ```zig
-    /// const ctx = try cairo.Context.create(surface);
-    /// defer ctx.destroy();
+    /// const cr = try cairo.Context.create(surface);
+    /// defer cr.destroy();
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-create)
     pub fn create(target: *Surface) CairoError!*Context {
-        const ctx = c.cairo_create(target).?;
-        try ctx.status().toErr();
-        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), ctx);
-        return ctx;
+        const cr = c.cairo_create(target).?;
+        try cr.status().toErr();
+        if (safety.tracing) try safety.markForLeakDetection(@returnAddress(), cr);
+        return cr;
     }
 
     /// Increases the reference count on context by one. This prevents context
-    /// from being destroyed until a matching call to `ctx.destroy()` is made.
+    /// from being destroyed until a matching call to `cr.destroy()` is made.
     ///
-    /// Use `ctx.getReferenceCount()` to get the number of references to a
+    /// Use `cr.getReferenceCount()` to get the number of references to a
     /// `cairo.Context`.
     ///
     /// **Returns**
@@ -95,13 +95,13 @@ pub const Mixin = struct {
 
     /// Makes a copy of the current state of `self` and saves it on an internal
     /// stack of saved states for `self`. When `.restore()` is called, `self`
-    /// will be restored to the saved state. Multiple calls to `ctx.save()` and
-    /// `ctx.restore()` can be nested; each call to `.restore()` restores the
+    /// will be restored to the saved state. Multiple calls to `cr.save()` and
+    /// `cr.restore()` can be nested; each call to `.restore()` restores the
     /// state from the matching paired `.save()`.
     ///
     /// It isn't necessary to clear all saved states before a `cairo.Context`
     /// is freed. If the reference count of a `cairo.Context` drops to zero in
-    /// response to a call to `ctx.destroy()`, any saved states will be freed
+    /// response to a call to `cr.destroy()`, any saved states will be freed
     /// along with the `cairo.Context`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-save)
@@ -109,7 +109,7 @@ pub const Mixin = struct {
         c.cairo_save(self);
     }
 
-    /// Restores `self` to the state saved by a preceding call to `ctx.save()`
+    /// Restores `self` to the state saved by a preceding call to `cr.save()`
     /// and removes that state from the stack of saved states.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-restore)
@@ -135,7 +135,7 @@ pub const Mixin = struct {
 
     /// Temporarily redirects drawing to an intermediate surface known as a
     /// group. The redirection lasts until the group is completed by a call to
-    /// `ctx.popGroup()` or `ctx.popGroupToSource()`. These calls provide the
+    /// `cr.popGroup()` or `cr.popGroupToSource()`. These calls provide the
     /// result of any drawing to the group as a pattern, (either as an explicit
     /// object, or set as the source pattern).
     ///
@@ -145,28 +145,28 @@ pub const Mixin = struct {
     /// result with translucence onto the destination.
     ///
     /// Groups can be nested arbitrarily deep by making balanced calls to
-    /// `ctx.pushGroup()`/`ctx.popGroup()`. Each call pushes/pops the new
+    /// `cr.pushGroup()`/`cr.popGroup()`. Each call pushes/pops the new
     /// target group onto/from a stack.
     ///
-    /// The `ctx.pushGroup()` function calls `ctx.save()` so that any changes
+    /// The `cr.pushGroup()` function calls `cr.save()` so that any changes
     /// to the graphics state will not be visible outside the group, (the
-    /// `popGroup` functions call `ctx.restore()`).
+    /// `popGroup` functions call `cr.restore()`).
     ///
     /// By default the intermediate group will have a content type of
     /// `.ColorAlpha`. Other content types can be chosen for the group by using
-    /// `ctx.pushGroupWithContent()` instead.
+    /// `cr.pushGroupWithContent()` instead.
     ///
     /// As an example, here is how one might fill and stroke a path with
     /// translucence, but without any portion of the fill being visible under
     /// the stroke:
     /// ```zig
-    /// ctx.pushGroup();
-    /// ctx.setSource(fillPattern);
-    /// ctx.fillPreserve();
-    /// ctx.setSource(strokePattern);
-    /// ctx.stroke();
-    /// ctx.popGroupToSource();
-    /// ctx.paintWithAlpha(alpha);
+    /// cr.pushGroup();
+    /// cr.setSource(fillPattern);
+    /// cr.fillPreserve();
+    /// cr.setSource(strokePattern);
+    /// cr.stroke();
+    /// cr.popGroupToSource();
+    /// cr.paintWithAlpha(alpha);
     /// ```
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-push-group)
@@ -176,13 +176,13 @@ pub const Mixin = struct {
 
     /// Temporarily redirects drawing to an intermediate surface known as a
     /// group. The redirection lasts until the group is completed by a call to
-    /// `ctx.popGroup()` or `ctx.popGroupToSource()`. These calls provide the
+    /// `cr.popGroup()` or `cr.popGroupToSource()`. These calls provide the
     /// result of any drawing to the group as a pattern, (either as an explicit
     /// object, or set as the source pattern).
     ///
     /// The group will have a content type of `content`. The ability to control
     /// this content type is the only distinction between this function and
-    /// `ctx.pushGroup()` which you should see for a more detailed description
+    /// `cr.pushGroup()` which you should see for a more detailed description
     /// of group rendering.
     ///
     /// **Parameters**
@@ -194,13 +194,13 @@ pub const Mixin = struct {
         c.cairo_push_group_with_content(self, content);
     }
 
-    /// Terminates the redirection begun by a call to `ctx.pushGroup()` or
-    /// `ctx.pushGroupWithContent()` and returns a new pattern containing the
+    /// Terminates the redirection begun by a call to `cr.pushGroup()` or
+    /// `cr.pushGroupWithContent()` and returns a new pattern containing the
     /// results of all drawing operations performed to the group.
     ///
-    /// The `ctx.popGroup()` function calls `ctx.restore()`, (balancing a call
-    /// to `ctx.save()` by the `pushGroup` function), so that any changes to
-    /// the graphics state will not be visible outside the group.
+    /// The `cr.popGroup()` function calls `cr.restore()`, (balancing a call to
+    /// `cr.save()` by the `pushGroup` function), so that any changes to the
+    /// graphics state will not be visible outside the group.
     ///
     /// **Returns**
     ///
@@ -211,7 +211,7 @@ pub const Mixin = struct {
     /// `patern.destroy()` when done with it. You can use idiomatic Zig pattern
     /// with `defer`:
     /// ```zig
-    /// const pattern = ctx.popGroup();
+    /// const pattern = cr.popGroup();
     /// defer pattern.destroy();
     /// ```
     ///
@@ -222,23 +222,23 @@ pub const Mixin = struct {
         return pattern;
     }
 
-    /// Terminates the redirection begun by a call to `ctx.pushGroup()` or
-    /// `ctx.pushGroupWithContent()` and installs the resulting pattern as the
+    /// Terminates the redirection begun by a call to `cr.pushGroup()` or
+    /// `cr.pushGroupWithContent()` and installs the resulting pattern as the
     /// source pattern in the given cairo context.
     ///
     /// The behavior of this function is equivalent to the sequence of
     /// operations:
     /// ```zig
-    /// const group = ctx.popGroup();
-    /// ctx.setSource(group);
+    /// const group = cr.popGroup();
+    /// cr.setSource(group);
     /// group.destroy();
     /// ```
     /// but is more convenient as their is no need for a variable to store the
     /// short-lived pointer to the pattern.
     ///
-    /// The `ctx.popGroup()` function calls `ctx.restore()`, (balancing a call
-    /// to `ctx.save()` by the `pushGroup` function), so that any changes to
-    /// the graphics state will not be visible outside the group.
+    /// The `cr.popGroup()` function calls `cr.restore()`, (balancing a call to
+    /// `cr.save()` by the `pushGroup` function), so that any changes to the
+    /// graphics state will not be visible outside the group.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-pop-group-to-source)
     pub fn popGroupToSource(self: *Context) void {
@@ -248,7 +248,7 @@ pub const Mixin = struct {
     /// Gets the current destination surface for the context. This is either
     /// the original target surface as passed to `cairo.Context.create()` or
     /// the target surface for the current group as started by the most recent
-    /// call to `ctx.pushGroup()` or `ctx.pushGroupWithContent()`.
+    /// call to `cr.pushGroup()` or `cr.pushGroupWithContent()`.
     ///
     /// **Returns**
     ///
@@ -271,7 +271,7 @@ pub const Mixin = struct {
     /// If the values passed in are outside that range, they will be clamped.
     ///
     /// The default source pattern is opaque black, (that is, it is equivalent
-    /// to `ctx.setSourceRgb(0.0, 0.0, 0.0)`).
+    /// to `cr.setSourceRgb(0.0, 0.0, 0.0)`).
     ///
     /// **Parameters**
     /// - `red`: red component of color
@@ -292,7 +292,7 @@ pub const Mixin = struct {
     /// clamped.
     ///
     /// The default source pattern is opaque black, (that is, it is equivalent
-    /// to `ctx.setSourceRgba(0.0, 0.0, 0.0, 1.0)`).
+    /// to `cr.setSourceRgba(0.0, 0.0, 0.0, 1.0)`).
     ///
     /// **Parameters**
     /// - `red`: red component of color
@@ -315,7 +315,7 @@ pub const Mixin = struct {
     /// affect the source pattern. See `cairo.Pattern.setMatrix()`.
     ///
     /// The default source pattern is a solid pattern that is opaque black,
-    /// (that is, it is equivalent to `ctx.setSourceRgb(0.0, 0.0, 0.0)`).
+    /// (that is, it is equivalent to `cr.setSourceRgb(0.0, 0.0, 0.0)`).
     ///
     /// **Parameters**
     /// - `source`: a `cairo.Pattern` to be used as the source for subsequent
@@ -339,7 +339,7 @@ pub const Mixin = struct {
     /// Other than the initial translation pattern matrix, as described above,
     /// all other pattern attributes, (such as its extend mode), are set to the
     /// default values as in `cairo.SurfacePattern.createFor()`. The resulting
-    /// pattern can be queried with `ctx.getSource()` so that these attributes
+    /// pattern can be queried with `cr.getSource()` so that these attributes
     /// can be modified if desired, (eg. to create a repeating pattern with
     /// `pattern.setExtend()`).
     ///
@@ -378,7 +378,7 @@ pub const Mixin = struct {
     }
 
     /// Gets the current shape antialiasing mode, as set by
-    /// `ctx.setAntialias()`.
+    /// `cr.setAntialias()`.
     ///
     /// **Returns**
     ///
@@ -389,7 +389,7 @@ pub const Mixin = struct {
         return c.cairo_get_antialias(self);
     }
 
-    /// Sets the dash pattern to be used by `ctx.stroke()`. A dash pattern is
+    /// Sets the dash pattern to be used by `cr.stroke()`. A dash pattern is
     /// specified by `dashes`, a slice of positive values. Each value provides
     /// the length of alternate "on" and "off" portions of the stroke. The
     /// `offset` specifies an offset into the pattern at which the stroke
@@ -402,7 +402,7 @@ pub const Mixin = struct {
     ///
     /// Note: The length values are in user-space units as evaluated at the
     /// time of stroking. This is not necessarily the same as the user space
-    /// at the time of `ctx.setDash()`.
+    /// at the time of `cr.setDash()`.
     ///
     /// If `dashes.len` is 0 dashing is disabled.
     ///
@@ -439,7 +439,7 @@ pub const Mixin = struct {
     }
 
     /// Gets the current dash array. If not `null`, dashes should be big enough
-    /// to hold at least the number of values returned by `ctx.getDashCount()`.
+    /// to hold at least the number of values returned by `cr.getDashCount()`.
     ///
     /// **Parameters**
     /// - `dashes`: return value for the dash array, or `null`
@@ -454,7 +454,7 @@ pub const Mixin = struct {
     /// Set the current fill rule within the cairo context. The fill rule is
     /// used to determine which regions are inside or outside a complex
     /// (potentially self-intersecting) path. The current fill rule affects
-    /// both `ctx.fill()` and `ctx.clip()`. See `cairo.Context.FillRule` for
+    /// both `cr.fill()` and `cr.clip()`. See `cairo.Context.FillRule` for
     /// details on the semantics of each available fill rule.
     ///
     /// The default fill rule is `.Winding`.
@@ -467,7 +467,7 @@ pub const Mixin = struct {
         c.cairo_set_fill_rule(self, fill_rule);
     }
 
-    /// Gets the current fill rule, as set by `ctx.setFillRule()`.
+    /// Gets the current fill rule, as set by `cr.setFillRule()`.
     ///
     /// **Returns**
     ///
@@ -483,8 +483,8 @@ pub const Mixin = struct {
     /// styles are drawn.
     ///
     /// As with the other stroke parameters, the current line cap style is
-    /// examined by `ctx.stroke()`, `ctx.strokeExtents()`, and
-    /// `ctx.strokeToPath()`, but does not have any effect during path
+    /// examined by `cr.stroke()`, `cr.strokeExtents()`, and
+    /// `cr.strokeToPath()`, but does not have any effect during path
     /// construction.
     ///
     /// The default line cap style is `.Butt`.
@@ -497,7 +497,7 @@ pub const Mixin = struct {
         c.cairo_set_line_cap(self, line_cap);
     }
 
-    /// Gets the current line cap style, as set by `ctx.setLineCap()`.
+    /// Gets the current line cap style, as set by `cr.setLineCap()`.
     ///
     /// **Returns**
     ///
@@ -513,8 +513,8 @@ pub const Mixin = struct {
     /// styles are drawn.
     ///
     /// As with the other stroke parameters, the current line join style is
-    /// examined by `ctx.stroke()`, `ctx.strokeExtents()`, and
-    /// `ctx.strokeToPath()`, but does not have any effect during path
+    /// examined by `cr.stroke()`, `cr.strokeExtents()`, and
+    /// `cr.strokeToPath()`, but does not have any effect during path
     /// construction.
     ///
     /// The default line join style is `.Miter`.
@@ -527,7 +527,7 @@ pub const Mixin = struct {
         c.cairo_set_line_join(self, line_join);
     }
 
-    /// Gets the current line join style, as set by `ctx.setLineJoin()`.
+    /// Gets the current line join style, as set by `cr.setLineJoin()`.
     ///
     /// **Returns**
     ///
@@ -546,14 +546,14 @@ pub const Mixin = struct {
     /// Note: When the description above refers to user space and CTM it refers
     /// to the user space and CTM in effect at the time of the stroking
     /// operation, not the user space and CTM in effect at the time of the call
-    /// to `ctx.setLineWidth()`. The simplest usage makes both of these spaces
+    /// to `cr.setLineWidth()`. The simplest usage makes both of these spaces
     /// identical. That is, if there is no change to the CTM between a call to
-    /// `ctx.setLineWidth()` and the stroking operation, then one can just pass
-    /// user-space values to `ctx.setLineWidth()` and ignore this note.
+    /// `cr.setLineWidth()` and the stroking operation, then one can just pass
+    /// user-space values to `cr.setLineWidth()` and ignore this note.
     ///
     /// As with the other stroke parameters, the current line width is
-    /// examined by `ctx.stroke()`, `ctx.strokeExtents()`, and
-    /// `ctx.strokeToPath()`, but does not have any effect during path
+    /// examined by `cr.stroke()`, `cr.strokeExtents()`, and
+    /// `cr.strokeToPath()`, but does not have any effect during path
     /// construction.
     ///
     /// The default line width value is 2.0.
@@ -567,9 +567,9 @@ pub const Mixin = struct {
     }
 
     /// This function returns the current line width value exactly as set by
-    /// `ctx.setLineWidth()`. Note that the value is unchanged even if the CTM
-    /// has changed between the calls to `ctx.setLineWidth()` and
-    /// `ctx.getLineWidth()`.
+    /// `cr.setLineWidth()`. Note that the value is unchanged even if the CTM
+    /// has changed between the calls to `cr.setLineWidth()` and
+    /// `cr.getLineWidth()`.
     ///
     /// **Returns**
     ///
@@ -589,8 +589,8 @@ pub const Mixin = struct {
     /// is greater than the miter limit, the style is converted to a bevel.
     ///
     /// As with the other stroke parameters, the current line miter limit is
-    /// examined by `ctx.stroke()`, `ctx.strokeExtents()`, and
-    /// `ctx.strokeToPath()`, but does not have any effect during path
+    /// examined by `cr.stroke()`, `cr.strokeExtents()`, and
+    /// `cr.strokeToPath()`, but does not have any effect during path
     /// construction.
     ///
     /// The default miter limit value is 10.0, which will convert joins with
@@ -609,7 +609,7 @@ pub const Mixin = struct {
         c.cairo_set_miter_limit(self, limit);
     }
 
-    /// Gets the current miter limit, as set by `ctx.setMiterLimit()`.
+    /// Gets the current miter limit, as set by `cr.setMiterLimit()`.
     ///
     /// **Returns**
     ///
@@ -663,7 +663,7 @@ pub const Mixin = struct {
         c.cairo_set_tolerance(self, tolerance);
     }
 
-    /// Gets the current tolerance value, as set by `ctx.setTolerance()`.
+    /// Gets the current tolerance value, as set by `cr.setTolerance()`.
     ///
     /// **Returns**
     ///
@@ -675,21 +675,21 @@ pub const Mixin = struct {
     }
 
     /// Establishes a new clip region by intersecting the current clip region
-    /// with the current path as it would be filled by `ctx.fill()` and
+    /// with the current path as it would be filled by `cr.fill()` and
     /// according to the current fill rule (see `cairo.Context.setFillRule()`).
     ///
-    /// After `ctx.clip()`, the current path will be cleared from the cairo
+    /// After `cr.clip()`, the current path will be cleared from the cairo
     /// context.
     ///
     /// The current clip region affects all drawing operations by effectively
     /// masking out any changes to the surface that are outside the current
     /// clip region.
     ///
-    /// Calling `ctx.clip()` can only make the clip region smaller, never
+    /// Calling `cr.clip()` can only make the clip region smaller, never
     /// larger. But the current clip is part of the graphics state, so a
     /// temporary restriction of the clip region can be achieved by calling
-    /// `ctx.clip()` within a `ctx.save()`/`ctx.restore()` pair. The only other
-    /// means of increasing the size of the clip region is `ctx.resetClip()`.
+    /// `cr.clip()` within a `cr.save()`/`cr.restore()` pair. The only other
+    /// means of increasing the size of the clip region is `cr.resetClip()`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-clip)
     pub fn clip(self: *Context) void {
@@ -697,22 +697,22 @@ pub const Mixin = struct {
     }
 
     /// Establishes a new clip region by intersecting the current clip region
-    /// with the current path as it would be filled by `ctx.fill()` and
+    /// with the current path as it would be filled by `cr.fill()` and
     /// according to the current fill rule (see `cairo.Context.setFillRule()`).
     ///
-    /// Unlike `ctx.clip()`, `ctx.clipPreserve()` preserves the path within the
+    /// Unlike `cr.clip()`, `cr.clipPreserve()` preserves the path within the
     /// cairo context.
     ///
     /// The current clip region affects all drawing operations by effectively
     /// masking out any changes to the surface that are outside the current
     /// clip region.
     ///
-    /// Calling `ctx.clipPreserve()` can only make the clip region smaller,
+    /// Calling `cr.clipPreserve()` can only make the clip region smaller,
     /// never larger. But the current clip is part of the graphics state, so a
     /// temporary restriction of the clip region can be achieved by calling
-    /// `ctx.clipPreserve()` within a `ctx.save()`/`ctx.restore()` pair. The
+    /// `cr.clipPreserve()` within a `cr.save()`/`cr.restore()` pair. The
     /// only other means of increasing the size of the clip region is
-    /// `ctx.resetClip()`.
+    /// `cr.resetClip()`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-clip-preserve)
     pub fn clipPreserve(self: *Context) void {
@@ -732,7 +732,7 @@ pub const Mixin = struct {
 
     /// Tests whether the given point is inside the area that would be visible
     /// through the current clip, i.e. the area that would be filled by a
-    /// `ctx.paint()` operation.
+    /// `cr.paint()` operation.
     ///
     /// See `cairo.Context.clip()`, and `cairo.Context.clipPreserve()`.
     ///
@@ -754,10 +754,10 @@ pub const Mixin = struct {
     /// imagine the clip region being reset to the exact bounds of the target
     /// surface.
     ///
-    /// Note that code meant to be reusable should not call `ctx.resetClip()`
-    /// as it will cause results unexpected by higher-level code which calls
-    /// `ctx.clip()`. Consider using `ctx.save()` and `ctx.restore()` around
-    /// `ctx.clip()` as a more robust means of temporarily restricting the clip
+    /// Note that code meant to be reusable should not call `cr.resetClip()` as
+    /// it will cause results unexpected by higher-level code which calls
+    /// `cr.clip()`. Consider using `cr.save()` and `cr.restore()` around
+    /// `cr.clip()` as a more robust means of temporarily restricting the clip
     /// region.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-reset-clip)
@@ -788,8 +788,8 @@ pub const Mixin = struct {
 
     /// A drawing operator that fills the current path according to the current
     /// fill rule, (each sub-path is implicitly closed before being filled).
-    /// After `ctx.fill()`, the current path will be cleared from the cairo
-    /// context. See `cairo.Context.setFillRule()` and `ctx.fillPreserve()`.
+    /// After `cr.fill()`, the current path will be cleared from the cairo
+    /// context. See `cairo.Context.setFillRule()` and `cr.fillPreserve()`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-fill)
     pub fn fill(self: *Context) void {
@@ -798,7 +798,7 @@ pub const Mixin = struct {
 
     /// A drawing operator that fills the current path according to the current
     /// fill rule, (each sub-path is implicitly closed before being filled).
-    /// Unlike `ctx.fill()`, `ctx.fillPreserve()` preserves the path within the
+    /// Unlike `cr.fill()`, `cr.fillPreserve()` preserves the path within the
     /// cairo context.
     ///
     /// See `cairo.Context.setFillRule()` and `cairo.Context.fill()`.
@@ -809,7 +809,7 @@ pub const Mixin = struct {
     }
 
     /// Computes a bounding box in user coordinates covering the area that
-    /// would be affected, (the "inked" area), by a `ctx.fill()` operation
+    /// would be affected, (the "inked" area), by a `cr.fill()` operation
     /// given the current path and fill parameters. If the current path is
     /// empty, returns an empty rectangle `((0,0), (0,0))`. Surface
     /// dimensions and clipping are not taken into account.
@@ -818,7 +818,7 @@ pub const Mixin = struct {
     /// returns non-zero extents for some paths with no inked area, (such as a
     /// simple line segment).
     ///
-    /// Note that `ctx.fillExtents()` must necessarily do more work to compute
+    /// Note that `cr.fillExtents()` must necessarily do more work to compute
     /// the precise inked areas in light of the fill rule, so
     /// `cairo.Context.pathExtents()` may be more desirable for sake of
     /// performance if the non-inked path extents are desired.
@@ -835,7 +835,7 @@ pub const Mixin = struct {
     }
 
     /// Tests whether the given point is inside the area that would be affected
-    /// by a `ctx.fill()` operation given the current path and filling
+    /// by a `cr.fill()` operation given the current path and filling
     /// parameters. Surface dimensions and clipping are not taken into account.
     ///
     /// See `cairo.Context.fill()`, `cairo.Context.setFillRule()` and
@@ -902,7 +902,7 @@ pub const Mixin = struct {
 
     /// A drawing operator that strokes the current path according to the
     /// current line width, line join, line cap, and dash settings. After
-    /// `ctx.stroke()`, the current path will be cleared from the cairo
+    /// `cr.stroke()`, the current path will be cleared from the cairo
     /// context.
     ///
     /// See `cairo.Context.setLineWidth()`, `cairo.Context.setLinejoin()`,
@@ -911,13 +911,13 @@ pub const Mixin = struct {
     ///
     /// Note: Degenerate segments and sub-paths are treated specially and
     /// provide a useful result. These can result in two different situations:
-    /// 1. Zero-length "on" segments set in `ctx.setDash()`. If the cap style
-    /// is `.Round` or `.Square` then these segments will be drawn as circular
+    /// 1. Zero-length "on" segments set in `cr.setDash()`. If the cap style is
+    /// `.Round` or `.Square` then these segments will be drawn as circular
     /// dots or squares respectively. In the case of `.Square`, the orientation
     /// of the squares is determined by the direction of the underlying path.
-    /// 2. A sub-path created by `ctx.moveTo()` followed by either a
-    /// `ctx.closePath()` or one or more calls to `ctx.lineTo()` to the same
-    /// coordinate as the `ctx.moveTo()`. If the cap style is `.Round` then
+    /// 2. A sub-path created by `cr.moveTo()` followed by either a
+    /// `cr.closePath()` or one or more calls to `cr.lineTo()` to the same
+    /// coordinate as the `cr.moveTo()`. If the cap style is `.Round` then
     /// these sub-paths will be drawn as circular dots. Note that in the case
     /// of `.Square` a degenerate sub-path will not be drawn at all, (since the
     /// correct orientation is indeterminate).
@@ -932,7 +932,7 @@ pub const Mixin = struct {
 
     /// A drawing operator that strokes the current path according to the
     /// current line width, line join, line cap, and dash settings. Unlike
-    /// `ctx.stroke()`, `ctx.strokePreserve()` preserves the path within the
+    /// `cr.stroke()`, `cr.strokePreserve()` preserves the path within the
     /// cairo context.
     ///
     /// See `cairo.Context.setLineWidth()`, `cairo.Context.setLinejoin()`,
@@ -945,17 +945,17 @@ pub const Mixin = struct {
     }
 
     /// Computes a bounding box in user coordinates covering the area that
-    /// would be affected, (the "inked" area), by a `ctx.stroke()` operation
+    /// would be affected, (the "inked" area), by a `cr.stroke()` operation
     /// given the current path and stroke parameters. If the current path is
     /// empty, returns an empty rectangle `((0,0), (0,0))`. Surface dimensions
     /// and clipping are not taken into account.
     ///
     /// Note that if the line width is set to exactly zero, then
-    /// `ctx.strokeExtents()` will return an empty rectangle. Contrast with
+    /// `cr.strokeExtents()` will return an empty rectangle. Contrast with
     /// `cairo.Context.pathExtents()` which can be used to compute the
     /// non-empty bounds as the line width approaches zero.
     ///
-    /// Note that `ctx.strokeExtents()` must necessarily do more work to
+    /// Note that `cr.strokeExtents()` must necessarily do more work to
     /// compute the precise inked areas in light of the stroke parameters, so
     /// `cairo.Context.pathExtents()` may be more desirable for sake of
     /// performance if non-inked path extents are desired.
@@ -973,7 +973,7 @@ pub const Mixin = struct {
     }
 
     /// Tests whether the given point is inside the area that would be affected
-    /// by a `ctx.stroke()` operation given the current path and stroking
+    /// by a `cr.stroke()` operation given the current path and stroking
     /// parameters. Surface dimensions and clipping are not taken into account.
     ///
     /// See `cairo.Context.stroke()`, `cairo.Context.setLineWidth()`,
@@ -990,7 +990,7 @@ pub const Mixin = struct {
 
     /// Emits the current page for backends that support multiple pages, but
     /// doesn't clear it, so, the contents of the current page will be retained
-    /// for the next page too. Use `ctx.showPage()` if you want to get an empty
+    /// for the next page too. Use `cr.showPage()` if you want to get an empty
     /// page after the emission.
     ///
     /// This is a convenience function that simply calls `surface.copyPage()`
@@ -1002,7 +1002,7 @@ pub const Mixin = struct {
     }
 
     /// Emits and clears the current page for backends that support multiple
-    /// pages. Use `ctx.copyPage()` if you don't want to clear the page.
+    /// pages. Use `cr.copyPage()` if you don't want to clear the page.
     ///
     /// This is a convenience function that simply calls `surface.showPage()`
     /// on `self`'s target.

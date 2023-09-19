@@ -57,7 +57,7 @@ pub const ImageSurface = opaque {
     /// must be kept around until the `cairo.ImageSurface` is destroyed or
     /// `surface.finish()` is called on it. The initial contents of `data` will
     /// be used as the initial image contents; you must explicitly clear the
-    /// buffer, using, for example, `ctx.rectangle()` and `ctx.fill()` if you
+    /// buffer, using, for example, `cr.rectangle()` and `cr.fill()` if you
     /// want it cleared.
     ///
     /// Note that the stride may be larger than `width * bytes_per_pixel` to

@@ -6,7 +6,7 @@
 //!
 //! A cairo pattern is created by using one of the many constructors, of the
 //! form `cairo.Pattern.create*Type*()` or implicitly through
-//! `ctx.setSource*Type*()` functions.
+//! `cr.setSource*Type*()` functions.
 //!
 //! [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-pattern-t.html)
 
@@ -223,7 +223,7 @@ fn Mixin(comptime Self: type) type {
 ///
 /// Other than various `cairo.Pattern.create*Type*()` functions, some of the
 /// pattern types can be implicitly created using various
-/// `ctx.setSource*Type*()` functions; for example `ctx.setSourceRgb()`.
+/// `cr.setSource*Type*()` functions; for example `cr.setSourceRgb()`.
 ///
 /// The type of a pattern can be queried with `pattern.getType()`.
 ///
@@ -446,12 +446,12 @@ pub const SurfacePattern = opaque {
     ///
     /// >Note that you might want to control filtering even when you do not
     /// have an explicit `cairo.Pattern` object, (for example when using
-    /// `ctx.setSourceSurface()`). In these cases, it is convenient to use
-    /// `ctx.getSource()` to get access to the pattern that cairo creates
+    /// `cr.setSourceSurface()`). In these cases, it is convenient to use
+    /// `cr.getSource()` to get access to the pattern that cairo creates
     /// implicitly. For example:
     /// ```zig
-    /// ctx.setSourceSurface(image, x, y);
-    /// Pattern.setFilter(ctx.getSource(), .Nearest);
+    /// cr.setSourceSurface(image, x, y);
+    /// Pattern.setFilter(cr.getSource(), .Nearest);
     /// ```
     ///
     /// **Parameters**
@@ -486,7 +486,7 @@ fn Gradient(comptime Self: type) type {
         /// (x1,y1) while a radial gradient's control vector is from any point
         /// on the start circle to the corresponding point on the end circle.
         ///
-        /// The color is specified in the same way as in `ctx.setSourceRgb()`.
+        /// The color is specified in the same way as in `cr.setSourceRgb()`.
         ///
         /// If two (or more) stops are specified with identical offset values,
         /// they will be sorted according to the order in which the stops are
@@ -517,7 +517,7 @@ fn Gradient(comptime Self: type) type {
         /// (x1,y1) while a radial gradient's control vector is from any point
         /// on the start circle to the corresponding point on the end circle.
         ///
-        /// The color is specified in the same way as in `ctx.setSourceRgba()`.
+        /// The color is specified in the same way as in `cr.setSourceRgba()`.
         ///
         /// If two (or more) stops are specified with identical offset values,
         /// they will be sorted according to the order in which the stops are

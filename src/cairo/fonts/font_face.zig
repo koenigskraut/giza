@@ -113,8 +113,8 @@ pub fn Base(comptime Self: type) type {
 /// A `cairo.FontFace` specifies all aspects of a font other than the size or
 /// font matrix (a font matrix is used to distort a font by shearing it or
 /// scaling it unequally in the two directions). A font face can be set on a
-/// `cairo.Context` by using `ctx.setFontFace()` on it; the size and font
-/// matrix are set with `ctx.setFontSize()` and `ctx.setFontMatrix()`.
+/// `cairo.Context` by using `cr.setFontFace()` on it; the size and font
+/// matrix are set with `cr.setFontSize()` and `cr.setFontMatrix()`.
 ///
 /// There are various types of font faces, depending on the *font backend* they
 /// use. The type of a font face can be queried using `fontFace.getType()`.

@@ -14,8 +14,8 @@ const Status = cairo.Status;
 /// Cairo contexts, are central to cairo and all drawing with cairo is always
 /// done to a `cairo.Context` object.
 ///
-/// Memory management of `cairo.Context` is done with `ctx.reference()` and
-/// `ctx.destroy()`.
+/// Memory management of `cairo.Context` is done with `cr.reference()` and
+/// `cr.destroy()`.
 ///
 /// [Link to Cairo Manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-t)
 pub const Context = opaque {
@@ -170,7 +170,7 @@ pub const Context = opaque {
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-t.html#cairo-line-join-t)
     pub const LineJoin = enum(c_uint) {
-        /// use a sharp (angled) corner, see ctx.setMiterLimit()
+        /// use a sharp (angled) corner, see `cr.setMiterLimit()`
         Miter,
         /// use a rounded join, the center of the circle is the joint point
         Round,

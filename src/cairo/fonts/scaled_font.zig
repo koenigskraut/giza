@@ -121,7 +121,7 @@ pub const ScaledFont = opaque {
     /// `cairo.Context.showText()` if the cairo graphics state were set to the
     /// same font_face, font_matrix, ctm, and font_options as `self`).
     /// Additionally, the `x_advance` and `y_advance` values indicate the
-    /// amount by which the current point would be advanced by `ctx.showText().
+    /// amount by which the current point would be advanced by `cr.showText().
     ///
     /// Note that whitespace characters do not directly contribute to the size
     /// of the rectangle (`.width` and `.height`). They do contribute
@@ -335,7 +335,7 @@ pub const ScaledFont = opaque {
 ///
 /// Because font metrics are in user-space coordinates, they are mostly, but
 /// not entirely, independent of the current transformation matrix. If you call
-/// `ctx.scale(2.0, 2.0)`, text will be drawn twice as big, but the reported
+/// `cr.scale(2.0, 2.0)`, text will be drawn twice as big, but the reported
 /// text extents will not be doubled. They will change slightly due to hinting
 /// (so you can't assume that metrics are independent of the transformation
 /// matrix), but otherwise will remain unchanged.
@@ -373,7 +373,7 @@ pub const FontExtents = extern struct {
 /// The `cairo.TextExtents` structure stores the extents of a single glyph or a
 /// string of glyphs in user-space coordinates. Because text extents are in
 /// user-space coordinates, they are mostly, but not entirely, independent of
-/// the current transformation matrix. If you call `ctx.scale(2.0, 2.0)`, text
+/// the current transformation matrix. If you call `cr.scale(2.0, 2.0)`, text
 /// will be drawn twice as big, but the reported text extents will not be
 /// doubled. They will change slightly due to hinting (so you can't assume that
 /// metrics are independent of the transformation matrix), but otherwise will

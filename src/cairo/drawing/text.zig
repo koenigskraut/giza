@@ -38,7 +38,7 @@ const Matrix = cairo.Matrix;
 const FontFaceMixin = @import("../fonts/font_face.zig").Base;
 
 pub const Mixin = struct {
-    /// **Note**: The `ctx.selectFontFace()` function call is part of what the
+    /// **Note**: The `cr.selectFontFace()` function call is part of what the
     /// cairo designers call the "toy" text API. It is convenient for short
     /// demos and simple programs, but it is not expected to be adequate for
     /// serious text-using applications.
@@ -66,8 +66,8 @@ pub const Mixin = struct {
     /// comprehensive font handling and text layout library, (for example,
     /// pango), in conjunction with cairo.
     ///
-    /// If text is drawn without a call to `ctx.selectFontFace()`, (nor
-    /// `ctx.setFontFace()` nor `ctx.setScaledFont()`), the default family is
+    /// If text is drawn without a call to `cr.selectFontFace()`, (nor
+    /// `cr.setFontFace()` nor `cr.setScaledFont()`), the default family is
     /// platform-specific, but is essentially "sans-serif". Default slant is
     /// `cairo.FontFace.FontSlant.Normal`, and default weight is
     /// `cairo.FontFace.FontWeight.Normal`.
@@ -86,13 +86,13 @@ pub const Mixin = struct {
     }
 
     /// Sets the current font matrix to a scale by a factor of `size`,
-    /// replacing any font matrix previously set with `ctx.setFontSize()` or
-    /// `ctx.setFontMatrix()`. This results in a font size of `size` user space
+    /// replacing any font matrix previously set with `cr.setFontSize()` or
+    /// `cr.setFontMatrix()`. This results in a font size of `size` user space
     /// units. (More precisely, this matrix will result in the font's em-square
     /// being a `size` by `size` square in user space.)
     ///
-    /// If text is drawn without a call to `ctx.setFontSize()`, (nor
-    /// `ctx.setFontMatrix()` nor `ctx.setScaledFont()`), the default font size
+    /// If text is drawn without a call to `cr.setFontSize()`, (nor
+    /// `cr.setFontMatrix()` nor `cr.setScaledFont()`), the default font size
     /// is 10.0.
     ///
     /// **Parameters**
@@ -106,7 +106,7 @@ pub const Mixin = struct {
     /// Sets the current font matrix to `matrix`. The font matrix gives a
     /// transformation from the design space of the font (in this space, the
     /// em-square is 1 unit by 1 unit) to user space. Normally, a simple scale
-    /// is used (see `ctx.setFontSize()`), but a more complex font matrix can
+    /// is used (see `cr.setFontSize()`), but a more complex font matrix can
     /// be used to shear the font or stretch it unequally along the two axes
     ///
     /// **Parameters**
@@ -118,7 +118,7 @@ pub const Mixin = struct {
         c.cairo_set_font_matrix(self, matrix);
     }
 
-    /// Gets the current font matrix. See `ctx.setFontMatrix()`.
+    /// Gets the current font matrix. See `cr.setFontMatrix()`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-text.html#cairo-get-font-matrix)
     pub fn getFontMatrix(self: *Context) Matrix {
@@ -227,7 +227,7 @@ pub const Mixin = struct {
     /// advance values. This allows for easy display of a single logical string
     /// with multiple calls to `cairo.Context.showText()`.
     ///
-    /// Note: The `ctx.showText()` function call is part of what the cairo
+    /// Note: The `cr.showText()` function call is part of what the cairo
     /// designers call the "toy" text API. It is convenient for short demos and
     /// simple programs, but it is not expected to be adequate for serious
     /// text-using applications. See `cairo.Context.showGlyphs()` for the

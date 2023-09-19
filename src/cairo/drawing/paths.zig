@@ -45,7 +45,7 @@ pub const Mixin = struct {
     /// a `cairo.Path`. See `cairo.PathData` for hints on how to iterate over
     /// the returned data structure.
     ///
-    /// This function is like `ctx.copyPath()` except that any curves in the
+    /// This function is like `cr.copyPath()` except that any curves in the
     /// path will be approximated with piecewise-linear approximations,
     /// (accurate to within the current tolerance value). That is, the result
     /// is guaranteed to not have any elements of type `.CurveTo` which will
@@ -70,7 +70,7 @@ pub const Mixin = struct {
     }
 
     /// Append the `path` onto the current path. The path may be either the
-    /// return value from one of `ctx.copyPath()` or `ctx.copyFlatPath()` or it
+    /// return value from one of `cr.copyPath()` or `cr.copyFlatPath()` or it
     /// may be constructed manually. See `cairo.Path` for details on how the
     /// path data structure should be initialized, and note that `path.status`
     /// must be initialized to `.Success`.
@@ -101,21 +101,21 @@ pub const Mixin = struct {
     /// The current point is returned in the user-space coordinate system. If
     /// there is no defined current point or if `self` is in an error status,
     /// `x` and `y` will both be set to `0.0`. It is possible to check this in
-    /// advance with `ctx.hasCurrentPoint()`.
+    /// advance with `cr.hasCurrentPoint()`.
     ///
     /// Most path construction functions alter the current point. See the
     /// following for details on how they affect the current point:
-    /// `ctx.newPath()`, `ctx.newSubPath()`, `ctx.appendPath()`,
-    /// `ctx.closePath()`, `ctx.moveTo()`, `ctx.lineTo()`, `ctx.curveTo()`,
-    /// `ctx.relMoveTo()`, `ctx.relLineTo()`, `ctx.relCurveTo()`, `ctx.arc()`,
-    /// `ctx.arcNegative()`, `ctx.rectangle()`, `ctx.textPath()`,
-    /// `ctx.glyphPath()`, `ctx.strokeToPath(`).
+    /// `cr.newPath()`, `cr.newSubPath()`, `cr.appendPath()`, `cr.closePath()`,
+    /// `cr.moveTo()`, `cr.lineTo()`, `cr.curveTo()`, `cr.relMoveTo()`,
+    /// `cr.relLineTo()`, `cr.relCurveTo()`, `cr.arc()`, `cr.arcNegative()`,
+    /// `cr.rectangle()`, `cr.textPath()`, `cr.glyphPath()`,
+    /// `cr.strokeToPath(`).
     ///
     /// Some functions use and alter the current point but do not otherwise
-    /// change current path: `ctx.showText()`.
+    /// change current path: `cr.showText()`.
     ///
     /// Some functions unset the current path and as a result, current point:
-    /// `ctx.fill()`, `ctx.stroke()`.
+    /// `cr.fill()`, `cr.stroke()`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-get-current-point)
     pub fn getCurrentPoint(self: *Context) Point {
@@ -137,12 +137,12 @@ pub const Mixin = struct {
     /// After this call there will be no current point.
     ///
     /// In many cases, this call is not needed since new sub-paths are
-    /// frequently started with `ctx.moveTo()`.
+    /// frequently started with `cr.moveTo()`.
     ///
-    /// A call to `ctx.newSubPath()` is particularly useful when beginning a
-    /// new sub-path with one of the `ctx.arc()` calls. This makes things
-    /// easier as it is no longer necessary to manually compute the arc's
-    /// initial coordinates for a call to `ctx.moveTo()`.
+    /// A call to `cr.newSubPath()` is particularly useful when beginning a new
+    /// sub-path with one of the `cr.arc()` calls. This makes things easier as
+    /// it is no longer necessary to manually compute the arc's initial
+    /// coordinates for a call to `cr.moveTo()`.
     ///
     /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-Paths.html#cairo-new-sub-path)
     pub fn newSubPath(self: *Context) void {
@@ -151,21 +151,21 @@ pub const Mixin = struct {
 
     /// Adds a line segment to the path from the current point to the beginning
     /// of the current sub-path, (the most recent point passed to
-    /// `ctx.moveTo()`), and closes this sub-path. After this call the current
+    /// `cr.moveTo()`), and closes this sub-path. After this call the current
     /// point will be at the joined endpoint of the sub-path.
     ///
-    /// The behavior of `ctx.closePath()` is distinct from simply calling
-    /// `ctx.lineTo()` with the equivalent coordinate in the case of stroking.
+    /// The behavior of `cr.closePath()` is distinct from simply calling
+    /// `cr.lineTo()` with the equivalent coordinate in the case of stroking.
     /// When a closed sub-path is stroked, there are no caps on the ends of the
     /// sub-path. Instead, there is a line join connecting the final and
     /// initial segments of the sub-path.
     ///
-    /// If there is no current point before the call to `ctx.closePath()`, this
+    /// If there is no current point before the call to `cr.closePath()`, this
     /// function will have no effect.
     ///
-    /// **Note:** As of cairo version 1.2.4 any call to `ctx.closePath()` will
+    /// **Note:** As of cairo version 1.2.4 any call to `cr.closePath()` will
     /// place an explicit `.MoveTo` element into the path immediately after the
-    /// `.ClosePath` element, (which can be seen in `ctx.copyPath()` for
+    /// `.ClosePath` element, (which can be seen in `cr.copyPath()` for
     /// example). This can simplify path processing in some cases as it may not
     /// be necessary to save the "last move_to point" during processing as the
     /// `.MoveTo` immediately after the `.ClosePath` will provide that point.
@@ -184,7 +184,7 @@ pub const Mixin = struct {
     /// If there is a current point, an initial line segment will be added to
     /// the path to connect the current point to the beginning of the arc. If
     /// this initial line is undesired, it can be avoided by calling
-    /// `ctx.newSubPath()` before calling `ctx.arc()`.
+    /// `cr.newSubPath()` before calling `cr.arc()`.
     ///
     /// Angles are measured in radians. An angle of 0.0 is in the direction of
     /// the positive X axis (in user space). An angle of `std.math.pi/2.0`
@@ -205,11 +205,11 @@ pub const Mixin = struct {
     /// X and Y directions. For example, to draw an ellipse in the box given by
     /// `x`, `y`, `width`, `height`:
     /// ```zig
-    /// ctx.save();
-    /// ctx.translate(x + width / 2.0, y + height / 2.0);
-    /// ctx.scale(width / 2.0, height / 2.0);
-    /// ctx.arc(0.0, 0.0, 1.0, 0.0, 2.0 * std.math.pi);
-    /// ctx.restore();
+    /// cr.save();
+    /// cr.translate(x + width / 2.0, y + height / 2.0);
+    /// cr.scale(width / 2.0, height / 2.0);
+    /// cr.arc(0.0, 0.0, 1.0, 0.0, 2.0 * std.math.pi);
+    /// cr.restore();
     /// ```
     /// **Parameters**
     /// - `xc`: X position of the center of the arc
@@ -249,8 +249,8 @@ pub const Mixin = struct {
     /// `(x2, y2)` as the control points. After this call the current point
     /// will be `(x3, y3)`.
     ///
-    /// If there is no current point before the call to `ctx.curveTo()` this
-    /// function will behave as if preceded by a call to `ctx.moveTo(x1, y1)`.
+    /// If there is no current point before the call to `cr.curveTo()` this
+    /// function will behave as if preceded by a call to `cr.moveTo(x1, y1)`.
     ///
     /// **Parameters**
     /// - `x1`: the X coordinate of the first control point
@@ -269,8 +269,8 @@ pub const Mixin = struct {
     /// user-space coordinates. After this call the current point will be
     /// `(x, y)`.
     ///
-    /// If there is no current point before the call to `ctx.lineTo()` this
-    /// function will behave as `ctx.moveTo(x, y)`.
+    /// If there is no current point before the call to `cr.lineTo()` this
+    /// function will behave as `cr.moveTo(x, y)`.
     ///
     /// **Parameters**
     /// - `x`: the X coordinate of the end of the new line
@@ -298,11 +298,11 @@ pub const Mixin = struct {
     ///
     /// This function is logically equivalent to:
     /// ```zig
-    /// ctx.moveTo(x, y);
-    /// ctx.relLineTo(width, 0);
-    /// ctx.relLineTo(0, height);
-    /// ctx.relLineTo(-width, 0);
-    /// ctx.closePath();
+    /// cr.moveTo(x, y);
+    /// cr.relLineTo(width, 0);
+    /// cr.relLineTo(0, height);
+    /// cr.relLineTo(-width, 0);
+    /// cr.closePath();
     /// ```
     /// **Parameters**
     /// - `rect`: `cairo.Rectangle` with coordinates of the rectangle
@@ -325,21 +325,21 @@ pub const Mixin = struct {
     }
 
     /// Adds closed paths for text to the current path. The generated path if
-    /// filled, achieves an effect similar to that of `ctx.showText()`.
+    /// filled, achieves an effect similar to that of `cr.showText()`.
     ///
-    /// Text conversion and positioning is done similar to `ctx.showText()`.
+    /// Text conversion and positioning is done similar to `cr.showText()`.
     ///
-    /// Like `ctx.showText()`, After this call the current point is moved to
+    /// Like `cr.showText()`, After this call the current point is moved to
     /// the origin of where the next glyph would be placed in this same
     /// progression. That is, the current point will be at the origin of the
     /// final glyph offset by its advance values. This allows for chaining
-    /// multiple calls to to `ctx.textPath()` without having to set current
+    /// multiple calls to to `cr.textPath()` without having to set current
     /// point in between.
     ///
-    /// **Note:** The `ctx.textPath()` function call is part of what the cairo
+    /// **Note:** The `cr.textPath()` function call is part of what the cairo
     /// designers call the "toy" text API. It is convenient for short demos and
     /// simple programs, but it is not expected to be adequate for serious
-    /// text-using applications. See `ctx.glyphPath()` for the "real" text path
+    /// text-using applications. See `cr.glyphPath()` for the "real" text path
     /// API in cairo.
     ///
     /// **Parameters**
@@ -350,7 +350,7 @@ pub const Mixin = struct {
         c.cairo_text_path(self, utf8 orelse null);
     }
 
-    /// Relative-coordinate version of `ctx.curveTo()`. All offsets are
+    /// Relative-coordinate version of `cr.curveTo()`. All offsets are
     /// relative to the current point. Adds a cubic Bézier spline to the path
     /// from the current point to a point offset from the current point by
     /// `(dx3, dy3)`, using points offset by `(dx1, dy1)` and `(dx2, dy2)` as
@@ -359,11 +359,11 @@ pub const Mixin = struct {
     ///
     /// Given a current point of `(x, y)`,
     /// ```
-    /// ctx.relCurveTo(dx1, dy1, dx2, dy2, dx3, dy3);
+    /// cr.relCurveTo(dx1, dy1, dx2, dy2, dx3, dy3);
     /// ```
     /// is logically equivalent to
     /// ```
-    /// ctx.curveTo(x+dx1, y+dy1, x+dx2, y+dy2, x+dx3, y+dy3);
+    /// cr.curveTo(x+dx1, y+dy1, x+dx2, y+dy2, x+dx3, y+dy3);
     /// ```
     /// It is an error to call this function with no current point. Doing so
     /// will cause `self` to shutdown with a status of
@@ -382,13 +382,13 @@ pub const Mixin = struct {
         c.cairo_rel_curve_to(self, dx1, dy1, dx2, dy2, dx3, dy3);
     }
 
-    /// Relative-coordinate version of `ctx.lineTo()`. Adds a line to the path
+    /// Relative-coordinate version of `cr.lineTo()`. Adds a line to the path
     /// from the current point to a point that is offset from the current point
     /// by `(dx, dy)` in user space. After this call the current point will be
     /// offset by `(dx, dy)`.
     ///
-    /// Given a current point of `(x, y)`, `ctx.relLineTo(dx, dy)` is logically
-    /// equivalent to `ctx.lineTo(x + dx, y + dy)`.
+    /// Given a current point of `(x, y)`, `cr.relLineTo(dx, dy)` is logically
+    /// equivalent to `cr.lineTo(x + dx, y + dy)`.
     ///
     /// It is an error to call this function with no current point. Doing so
     /// will cause `self` to shutdown with a status of
@@ -406,8 +406,8 @@ pub const Mixin = struct {
     /// Begin a new sub-path. After this call the current point will offset by
     /// `(dx, dy)`.
     ///
-    /// Given a current point of `(x, y)`, `ctx.relMoveTo(dx, dy)` is logically
-    /// equivalent to `ctx.moveTo(x + dx, y + dy)`.
+    /// Given a current point of `(x, y)`, `cr.relMoveTo(dx, dy)` is logically
+    /// equivalent to `cr.moveTo(x + dx, y + dy)`.
     ///
     /// It is an error to call this function with no current point. Doing so
     /// will cause `self` to shutdown with a status of
@@ -427,20 +427,20 @@ pub const Mixin = struct {
     /// rectangle `((0,0), (0,0))`. Stroke parameters, fill rule, surface
     /// dimensions and clipping are not taken into account.
     ///
-    /// Contrast with `ctx.fillExtents()` and `ctx.strokeExtents()` which
+    /// Contrast with `cr.fillExtents()` and `cr.strokeExtents()` which
     /// return the extents of only the area that would be "inked" by the
     /// corresponding drawing operations.
     ///
-    /// The result of `ctx.pathExtents()` is defined as equivalent to the
-    /// limit of `ctx.strokeExtents()` with `cairo.Context.LineCap.Round` as
+    /// The result of `cr.pathExtents()` is defined as equivalent to the
+    /// limit of `cr.strokeExtents()` with `cairo.Context.LineCap.Round` as
     /// the line width approaches 0.0, (but never reaching the empty-rectangle
-    /// returned by `ctx.strokeExtents()` for a line width of 0.0).
+    /// returned by `cr.strokeExtents()` for a line width of 0.0).
     ///
     /// Specifically, this means that zero-area sub-paths such as
-    /// `ctx.moveTo()`; `ctx.lineTo()` segments, (even degenerate cases where
+    /// `cr.moveTo()`; `cr.lineTo()` segments, (even degenerate cases where
     /// the coordinates to both calls are identical), will be considered as
-    /// contributing to the extents. However, a lone `ctx.moveTo()` will not
-    /// contribute to the results of `ctx.pathExtents()`.
+    /// contributing to the extents. However, a lone `cr.moveTo()` will not
+    /// contribute to the results of `cr.pathExtents()`.
     ///
     /// **Parameters**
     /// - `extents`: resulting extents
@@ -452,8 +452,8 @@ pub const Mixin = struct {
 };
 
 /// A data structure for holding a path. This data structure serves as the
-/// return value for `ctx.copyPath()` and `ctx.copyPathFlat()` as well the
-/// input value for `ctx.appendPath()`.
+/// return value for `cr.copyPath()` and `cr.copyPathFlat()` as well the
+/// input value for `cr.appendPath()`.
 ///
 /// See `PathData` for hints on how to iterate over the actual data within the
 /// path.
@@ -544,7 +544,7 @@ pub const Path = extern struct {
 /// .ClosePath:  0 points
 /// ```
 /// The semantics and ordering of the coordinate values are consistent with
-/// `ctx.moveTo()`, `ctx.lineTo()`, `ctx.curveTo()`, and `ctx.closePath()`.
+/// `cr.moveTo()`, `cr.lineTo()`, `cr.curveTo()`, and `cr.closePath()`.
 ///
 /// `cairo.Path` has an `Iterator` that makes handling it more user-friendly,
 /// here is sample code:

@@ -264,7 +264,7 @@ pub fn Base(comptime Self: type) type {
         /// cast an instance of `cairo.Surface` to a base type; used when the
         /// function can accept any type of surface, example:
         /// ```zig
-        /// const ctx = cairo.Context.create(image.asSurface());
+        /// const cr = cairo.Context.create(image.asSurface());
         /// ```
         /// where `image` is `cairo.ImageSurface`
         pub inline fn asSurface(surface: *Self) *Surface {
@@ -684,7 +684,7 @@ pub fn Base(comptime Self: type) type {
         /// want to get an empty page after the emission.
         ///
         /// There is a convenience function for this that works with a
-        /// `cairo.Context`, namely `ctx.copyPage()`.
+        /// `cairo.Context`, namely `cr.copyPage()`.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-copy-page)
         pub fn copyPage(surface: *Self) void {
@@ -696,7 +696,7 @@ pub fn Base(comptime Self: type) type {
         /// the page.
         ///
         /// There is a convenience function for this that works with a
-        /// `cairo.Context`, namely `ctx.showPage()`.
+        /// `cairo.Context`, namely `cr.showPage()`.
         ///
         /// [Link to Cairo manual](https://www.cairographics.org/manual/cairo-cairo-surface-t.html#cairo-surface-show-page)
         pub fn showPage(surface: *Self) void {
@@ -706,11 +706,11 @@ pub fn Base(comptime Self: type) type {
         /// Returns whether the surface supports sophisticated
         /// `cairo.Context.showTextGlyphs()` operations. That is, whether it
         /// actually uses the provided text and cluster data to a
-        /// `ctx.showTextGlyphs()` call.
+        /// `cr.showTextGlyphs()` call.
         ///
         /// Note: Even if this function returns `false`, a
-        /// `ctx.showTextGlyphs()` operation targeted at `surface` will still
-        /// succeed. It just will act like a `ctx.showGlyphs()` operation.
+        /// `cr.showTextGlyphs()` operation targeted at `surface` will still
+        /// succeed. It just will act like a `cr.showGlyphs()` operation.
         /// Users can use this function to avoid computing UTF-8 text and
         /// cluster mapping if the target surface does not use it.
         ///

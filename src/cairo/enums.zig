@@ -121,7 +121,7 @@ pub const CairoError = error{
 /// `cairo.Status` is used to indicate errors that can occur when using Cairo.
 /// In some cases it is returned directly by functions, but when using
 /// `cairo.Context`, the last error, if any, is stored in the context
-/// and can be retrieved with `ctx.status()`.
+/// and can be retrieved with `cr.status()`.
 ///
 /// Use `status.toString()` to get a human-readable representation of an error
 /// message.
@@ -133,10 +133,10 @@ pub const Status = enum(c_uint) {
 
     /// out of memory
     NoMemory,
-    /// `ctx.restore()` called without matching `ctx.save()`
+    /// `cr.restore()` called without matching `cr.save()`
     InvalidRestore,
-    /// no saved group to pop, i.e. `ctx.popGroup()` without matching
-    /// `ctx.pushGroup()`
+    /// no saved group to pop, i.e. `cr.popGroup()` without matching
+    /// `cr.pushGroup()`
     InvalidPopGroup,
     /// no current point defined
     NoCurrentPoint,
