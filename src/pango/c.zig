@@ -182,6 +182,21 @@ pub extern fn pango_language_matches(language: ?*pango.Language, range_list: [*c
 // pub extern fn pango_language_includes_script(language: ?*pango.Language, script: pango.Script) gboolean;
 // pub extern fn pango_language_get_scripts(language: ?*pango.Language, num_scripts: [*c]c_int) [*c]const pango.Script;
 
+// Matrix
+pub extern fn pango_matrix_copy(matrix: [*c]const pango.Matrix) [*c]pango.Matrix;
+pub extern fn pango_matrix_free(matrix: [*c]pango.Matrix) void;
+pub extern fn pango_matrix_translate(matrix: [*c]pango.Matrix, tx: f64, ty: f64) void;
+pub extern fn pango_matrix_scale(matrix: [*c]pango.Matrix, scale_x: f64, scale_y: f64) void;
+pub extern fn pango_matrix_rotate(matrix: [*c]pango.Matrix, degrees: f64) void;
+pub extern fn pango_matrix_concat(matrix: [*c]pango.Matrix, new_matrix: [*c]const pango.Matrix) void;
+pub extern fn pango_matrix_transform_point(matrix: [*c]const pango.Matrix, x: [*c]f64, y: [*c]f64) void;
+pub extern fn pango_matrix_transform_distance(matrix: [*c]const pango.Matrix, dx: [*c]f64, dy: [*c]f64) void;
+pub extern fn pango_matrix_transform_rectangle(matrix: [*c]const pango.Matrix, rect: [*c]pango.Rectangle) void;
+pub extern fn pango_matrix_transform_pixel_rectangle(matrix: [*c]const pango.Matrix, rect: [*c]pango.Rectangle) void;
+pub extern fn pango_matrix_get_font_scale_factor(matrix: [*c]const pango.Matrix) f64;
+pub extern fn pango_matrix_get_font_scale_factors(matrix: [*c]const pango.Matrix, xscale: [*c]f64, yscale: [*c]f64) void;
+pub extern fn pango_matrix_get_slant_ratio(matrix: [*c]const pango.Matrix) f64;
+
 // Attribute
 // pub extern fn pango_attr_type_register(name: [*c]const u8) PangoAttrType;
 // pub extern fn pango_attr_type_get_name(@"type": PangoAttrType) [*c]const u8;
