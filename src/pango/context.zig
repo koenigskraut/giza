@@ -115,6 +115,44 @@ pub const Context = opaque {
     // }
     // pango_context_list_families(context: ?*pango.Context, families: [*c][*c][*c]pango.FontFamily, n_families: [*c]c_int) void;
 
+    /// Set the default font description for the context.
+    ///
+    /// **Parameters**
+    /// - `desc`: the new pango font description
+    pub fn setFontDescription(self: *Context, desc: *const pango.FontDescription) void {
+        c.pango_context_set_font_description(self, desc);
+    }
+
+    /// Retrieve the default font description for the context.
+    ///
+    /// **Returns**
+    ///
+    /// a pointer to the context’s default font description. This value must
+    /// not be modified or freed.
+    pub fn getFontDescription(self: *Context) ?*const pango.FontDescription {
+        return c.pango_context_get_font_description(self);
+    }
+
+    /// Sets the global language tag for the context.
+    ///
+    /// The default language for the locale of the running process can be found
+    /// using `pango.Language.getDefault()`.
+    ///
+    /// **Parameters**
+    /// - `language`: the new language tag
+    pub fn setLanguage(self: *Context, language: *pango.Language) void {
+        return c.pango_context_set_language(self, language);
+    }
+
+    /// Retrieves the global language tag for the context.
+    ///
+    /// **Returns**
+    ///
+    /// the global language tag.
+    pub fn getLanguage(self: *Context) !*pango.Language {
+        return c.pango_context_get_language(self) orelse error.NullPointer;
+    }
+
     /// Sets the base direction for the context.
     ///
     /// The base direction is used in applying the Unicode bidirectional
@@ -139,5 +177,115 @@ pub const Context = opaque {
     /// the base direction for the context.
     pub fn getBaseDir(self: *Context) Direction {
         return c.pango_context_get_base_dir(self);
+    }
+
+    /// Sets the base gravity for the context.
+    ///
+    /// The base gravity is used in laying vertical text out.
+    ///
+    /// **Parameters**
+    /// - `gravity`: the new base gravity
+    pub fn setBaseGravity(self: *Context, gravity: pango.Gravity) void {
+        c.pango_context_set_base_gravity(self, gravity);
+    }
+
+    /// Retrieves the base gravity for the context.
+    ///
+    /// See `pango.Context.setBaseGravity()`.
+    ///
+    /// **Returns**
+    ///
+    /// the base gravity for the context.
+    pub fn getBaseGravity(self: *Context) pango.Gravity {
+        return c.pango_context_get_base_gravity(self);
+    }
+
+    /// Retrieves the gravity for the context.
+    ///
+    /// This is similar to `pango.Context.getBaseGravity()`, except for when
+    /// the base gravity is `pango.Gravity.Auto` for which
+    /// `pango.Gravity.getForMatrix()` is used to return the gravity from the
+    /// current context matrix.
+    ///
+    /// **Returns**
+    ///
+    /// the resolved gravity for the context.
+    pub fn getGravity(self: *Context) pango.Gravity {
+        return c.pango_context_get_gravity(self);
+    }
+
+    /// Sets the gravity hint for the context.
+    ///
+    /// The gravity hint is used in laying vertical text out, and is only
+    /// relevant if gravity of the context as returned by
+    /// `pango.Context.getGravity()` is set to `pango.Gravity.East` or
+    /// `pango.Gravity.West`.
+    ///
+    /// **Parameters**
+    /// - `hint`: the new gravity hint
+    pub fn setGravityHint(self: *Context, hint: pango.GravityHint) void {
+        c.pango_context_set_gravity_hint(self, hint);
+    }
+
+    /// Retrieves the gravity hint for the context.
+    ///
+    /// See `pango.Context.setGravityHint()`.
+    ///
+    /// **Returns**
+    ///
+    /// the gravity hint for the context.
+    pub fn getGravityHint(self: *Context) pango.GravityHint {
+        return c.pango_context_get_gravity_hint(self);
+    }
+
+    /// Sets the transformation matrix that will be applied when rendering with
+    /// this context.
+    ///
+    /// Note that reported metrics are in the user space coordinates before the
+    /// application of the matrix, not device-space coordinates after the
+    /// application of the matrix. So, they don’t scale with the matrix, though
+    /// they may change slightly for different matrices, depending on how the
+    /// text is fit to the pixel grid.
+    ///
+    /// **Parameters**
+    /// - `matrix`: a `pango.Matrix`, or `null` to unset any existing matrix
+    /// (no matrix set is the same as setting the identity matrix)
+    pub fn setMatrix(self: *Context, matrix: ?*const pango.Matrix) void {
+        c.pango_context_set_matrix(self, matrix);
+    }
+
+    /// Gets the transformation matrix that will be applied when rendering with
+    /// this context.
+    ///
+    /// See `pango.Context.setMatrix()`.
+    ///
+    /// **Returns**
+    ///
+    /// the matrix, or `null` if no matrix has been set (which is the same as
+    /// the identity matrix). The returned matrix is owned by Pango and must
+    /// not be modified or freed.
+    pub fn getMatrix(self: *Context) ?*const pango.Matrix {
+        return c.pango_context_get_matrix(self);
+    }
+
+    /// Sets whether font rendering with this context should round glyph
+    /// positions and widths to integral positions, in device units.
+    ///
+    /// This is useful when the renderer can’t handle subpixel positioning of
+    /// glyphs.
+    ///
+    /// The default value is to round glyph positions, to remain compatible
+    /// with previous Pango behavior.
+    ///
+    /// **Parameters**
+    /// - `round_positions`: whether to round glyph positions
+    pub fn setRoundGlyphPositions(self: *Context, round_positions: bool) void {
+        c.pango_context_set_round_glyph_positions(self, if (round_positions) 1 else 0);
+    }
+
+    /// Returns whether font rendering with this context should round glyph
+    /// positions and widths.
+    pub fn getRoundGlyphPositions(self: *Context) bool {
+        return c.pango_context_get_round_glyph_positions(self) != 0;
     }
 };

@@ -5,6 +5,8 @@ pub usingnamespace @import("pango/enums.zig");
 pub usingnamespace @import("pango/bit_fields.zig");
 pub usingnamespace @import("pango/util.zig");
 
+pub const Matrix = @import("pango/matrix.zig").Matrix;
+
 pub const Context = @import("pango/context.zig").Context;
 pub const Layout = @import("pango/layout.zig").Layout;
 pub const Language = @import("pango/language.zig").Language;

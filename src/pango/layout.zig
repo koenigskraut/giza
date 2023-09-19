@@ -78,14 +78,65 @@ pub const Layout = opaque {
         return @intCast(c.pango_layout_get_character_count(self));
     }
 
-    // pub fn setMarkup
-    // pub fn setMarkupWithAccel
-    pub fn setFontDescription(self: *Layout, desc: *pango.FontDescription) void {
+    /// Sets the layout text and attribute list from marked-up text.
+    ///
+    /// See [Pango Markup](https://docs.gtk.org/Pango/pango_markup.html).
+    ///
+    /// Replaces the current text and attribute list.
+    ///
+    /// This is the same as `pango.Layout.setMarkupWithAccel()`, but the markup
+    /// text isn’t scanned for accelerators.
+    ///
+    /// **Parameters**
+    /// - `markup`: marked-up text
+    pub fn setMarkup(self: *Layout, markup: []const u8) void {
+        c.pango_layout_set_markup(self, markup.ptr, @intCast(markup.len));
+    }
+
+    /// Sets the layout text and attribute list from marked-up text.
+    ///
+    /// See [Pango Markup](https://docs.gtk.org/Pango/pango_markup.html).
+    ///
+    /// Replaces the current text and attribute list.
+    ///
+    /// If accel_marker is nonzero, the given character will mark the character
+    /// following it as an accelerator. For example, accel_marker might be an
+    /// ampersand or underscore. All characters marked as an accelerator will
+    /// receive a `pango.Underline.Low` attribute, and the first character so
+    /// marked will be returned in accel_char. Two accel_marker characters
+    /// following each other produce a single literal accel_marker character.
+    ///
+    /// **Parameters**
+    /// - `markup`: marked-up text
+    /// - `accel_marker`: marker for accelerators in the text
+    /// - `accel_char`: return location for first located accelerator
+    pub fn setMarkupWithAccel(self: *Layout, markup: []const u8, accel_marker: c_uint, accel_char: *c_uint) void {
+        // TODO: look into this, why not return it?
+        c.pango_layout_set_markup_with_accel(self, markup.ptr, @intCast(markup.len), accel_marker, accel_char);
+    }
+
+    /// Sets the default font description for the layout.
+    ///
+    /// If no font description is set on the layout, the font description from
+    /// the layout’s context is used.
+    ///
+    /// **Parameters**
+    /// - `desc`: the new PangoFontDescription to unset the current font
+    /// description
+    pub fn setFontDescription(self: *Layout, desc: *const pango.FontDescription) void {
         c.pango_layout_set_font_description(self, desc);
     }
 
-    pub fn getFontDescription(self: *Layout) !*pango.FontDescription {
-        return c.pango_layout_get_font_description(self) orelse error.NullPointer;
+    /// Gets the font description for the layout, if any.
+    ///
+    /// **Returns**
+    ///
+    /// a pointer to the layout’s font description, or `null` if the font
+    /// description from the layout’s context is inherited.
+    ///
+    /// **Note**: data is owned by instance.
+    pub fn getFontDescription(self: *Layout) ?*const pango.FontDescription {
+        return c.pango_layout_get_font_description(self);
     }
 
     /// Sets the width to which the lines of the `pango.Layout` should wrap or
@@ -536,8 +587,44 @@ pub const Layout = opaque {
     // pub extern fn pango_layout_get_caret_pos(layout: ?*pango.Layout, index_: c_int, strong_pos: [*c]PangoRectangle, weak_pos: [*c]PangoRectangle) void;
     // pub extern fn pango_layout_move_cursor_visually(layout: ?*pango.Layout, strong: c_bool, old_index: c_int, old_trailing: c_int, direction: c_int, new_index: [*c]c_int, new_trailing: [*c]c_int) void;
     // pub extern fn pango_layout_xy_to_index(layout: ?*pango.Layout, x: c_int, y: c_int, index_: [*c]c_int, trailing: [*c]c_int) c_bool;
-    // pub extern fn pango_layout_get_extents(layout: ?*pango.Layout, ink_rect: [*c]PangoRectangle, logical_rect: [*c]PangoRectangle) void;
-    // pub extern fn pango_layout_get_pixel_extents(layout: ?*pango.Layout, ink_rect: [*c]PangoRectangle, logical_rect: [*c]PangoRectangle) void;
+
+    /// Computes the logical and ink extents of `self`.
+    ///
+    /// Logical extents are usually what you want for positioning things. Note
+    /// that both extents may have non-zero x and y. You may want to use those
+    /// to offset where you render the layout. Not doing that is a very typical
+    /// bug that shows up as right-to-left layouts not being correctly
+    /// positioned in a layout with a set width.
+    ///
+    /// The extents are given in layout coordinates and in Pango units; layout
+    /// coordinates begin at the top left corner of the layout.
+    ///
+    /// **Parameters**
+    /// - `ink_rect`: rectangle used to store the extents of the layout as
+    /// drawn, can be `null`
+    /// - `logical_rect`: rectangle used to store the logical extents of the
+    /// layout, can be `null`
+    pub fn getExtents(self: *Layout, ink_rect: ?*pango.Rectangle, logical_rect: ?*pango.Rectangle) void {
+        c.pango_layout_get_extents(self, ink_rect, logical_rect);
+    }
+
+    /// Computes the logical and ink extents of `self` in device units.
+    ///
+    /// This function just calls `pango.Layout.getExtents()` followed by two
+    /// `pango_extents_to_pixels()` calls, rounding `ink_rect` and
+    /// `logical_rect` such that the rounded rectangles fully contain the
+    /// unrounded one (that is, passes them as first argument to
+    /// `pango_extents_to_pixels()`).
+    ///
+    /// **Parameters**
+    /// - `ink_rect`: rectangle used to store the extents of the layout as
+    /// drawn, can be `null`
+    /// - `logical_rect`: rectangle used to store the logical extents of the
+    /// layout, can be `null`
+    pub fn getPixelExtents(self: *Layout, ink_rect: ?*pango.Rectangle, logical_rect: ?*pango.Rectangle) void {
+        // TODO: fix desc
+        c.pango_layout_get_pixel_extents(self, ink_rect, logical_rect);
+    }
 
     /// Determines the logical width and height of a `pango.Layout` in Pango
     /// units.
@@ -548,7 +635,7 @@ pub const Layout = opaque {
     /// **Parameters**
     /// - `width`: location to store the logical width
     /// - `height`: location to store the logical height
-    pub fn getSize(self: *pango.Layout, width: ?*i32, height: ?*i32) void {
+    pub fn getSize(self: *Layout, width: ?*i32, height: ?*i32) void {
         c.pango_layout_get_size(self, @ptrCast(width), @ptrCast(height));
     }
 
@@ -562,7 +649,7 @@ pub const Layout = opaque {
     /// **Parameters**
     /// - `width`: location to store the logical width
     /// - `height`: location to store the logical height
-    pub fn getPixelSize(self: *pango.Layout, width: ?*i32, height: ?*i32) void {
+    pub fn getPixelSize(self: *Layout, width: ?*i32, height: ?*i32) void {
         c.pango_layout_get_pixel_size(self, width, height);
     }
 
@@ -723,7 +810,7 @@ pub const Layout = opaque {
         /// the line passed in.
         pub fn reference(self: *Line) !*Line {
             const ptr = c.pango_layout_line_ref(self) orelse return error.NullPointer;
-            if (safety.tracing) safety.reference(self);
+            if (safety.tracing) safety.reference(@returnAddress(), self);
             return ptr;
         }
 
